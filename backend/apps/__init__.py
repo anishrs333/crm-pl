@@ -1,0 +1,1 @@
+"""CRM Modular Applications package."""
