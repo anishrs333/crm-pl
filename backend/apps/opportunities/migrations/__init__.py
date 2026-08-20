@@ -1,0 +1,1 @@
+"""Opportunities migrations package."""
