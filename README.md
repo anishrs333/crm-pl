@@ -1,14 +1,14 @@
 # PL Soft Tech Solutions - CRM Software
 
-A comprehensive, scalable Customer Relationship Management (CRM) platform designed to streamline lead management, customer interactions, sales pipelines, quotation generation, task tracking, and analytics.
+A modern, scalable Customer Relationship Management (CRM) platform designed to streamline lead management, customer interactions, sales pipelines, quotation generation, task tracking, and analytics.
 
 ---
 
 ## Tech Stack
 
-- **Frontend**: React.js (Vite), React Router, Axios, Tailwind CSS / Lucide Icons
-- **Backend**: Python 3.10+, Django, Django REST Framework (DRF)
-- **Database**: PostgreSQL
+- **Frontend**: React.js (Vite), React Router, Axios, Tailwind CSS, Lucide Icons
+- **Backend**: Python 3.10+, Django 5.x, Django REST Framework (DRF)
+- **Database**: MySQL 8.x
 - **Authentication**: JWT (JSON Web Tokens via `djangorestframework-simplejwt`)
 - **CI/CD**: GitHub Actions
 
@@ -58,7 +58,7 @@ crm-project/
 
 - **Python**: 3.10 or higher
 - **Node.js**: 18.x or higher & npm
-- **PostgreSQL**: 14 or higher (or SQLite for development fallback)
+- **MySQL**: 8.x (or MariaDB)
 - **Git**
 
 ---
@@ -86,23 +86,28 @@ crm-project/
    pip install -r requirements.txt
    ```
 
-4. **Set up environment variables**:
-   Copy `.env.example` to `.env` and fill in your database credentials:
+4. **Create the MySQL Database**:
+   ```sql
+   CREATE DATABASE crm_db CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+   ```
+
+5. **Set up environment variables**:
+   Copy `.env.example` to `.env` and fill in your MySQL credentials:
    ```bash
    cp .env.example .env
    ```
 
-5. **Run database migrations**:
+6. **Run database migrations**:
    ```bash
    python manage.py migrate
    ```
 
-6. **Create a superuser**:
+7. **Create a superuser**:
    ```bash
    python manage.py createsuperuser
    ```
 
-7. **Start the Django development server**:
+8. **Start the Django development server**:
    ```bash
    python manage.py runserver
    ```
