@@ -1,20 +1,46 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.password_validation import validate_password
 from .models import User
 
 
-class UserSerializer(serializers.ModelSerializer):
-    role_display = serializers.CharField(source='get_role_display', read_only=True)
+class LoginSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        data['user'] = {
+            'id': self.user.id,
+            'username': self.user.username,
+            'email': self.user.email,
+            'name': self.user.get_full_name() or self.user.username,
+            'role': self.user.role,
+            'department': self.user.department,
+        }
+        return data
+
+
+class UserListSerializer(serializers.ModelSerializer):
+    role_label = serializers.CharField(source='get_role_display', read_only=True)
 
     class Meta:
         model = User
-        fields = ['id','username','email','first_name','last_name','role',
-            'role_display','phone','department','is_active','date_joined', 
+        fields = [
+            'id',
+            'username',
+            'email',
+            'first_name',
+            'last_name',
+            'role',
+            'role_label',
+            'phone',
+            'department',
+            'designation',
+            'is_active',
+            'date_joined',
         ]
         read_only_fields = ['id', 'date_joined']
 
 
-class UserCreateSerializer(serializers.ModelSerializer):
+class CreateUserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(
         write_only=True,
         required=True,
@@ -34,6 +60,7 @@ class UserCreateSerializer(serializers.ModelSerializer):
             'role',
             'phone',
             'department',
+            'designation',
         ]
         read_only_fields = ['id']
 
@@ -41,8 +68,8 @@ class UserCreateSerializer(serializers.ModelSerializer):
         return User.objects.create_user(**validated_data)
 
 
-class UserProfileSerializer(serializers.ModelSerializer):
-    role_display = serializers.CharField(source='get_role_display', read_only=True)
+class ProfileSerializer(serializers.ModelSerializer):
+    role_label = serializers.CharField(source='get_role_display', read_only=True)
 
     class Meta:
         model = User
@@ -54,7 +81,8 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'last_name',
             'phone',
             'department',
+            'designation',
             'role',
-            'role_display',
+            'role_label',
         ]
-        read_only_fields = ['id', 'username', 'role']  
+        read_only_fields = ['id', 'username', 'role']
