@@ -6,9 +6,11 @@ from apps.users.views import LoginView
 urlpatterns = [
     path('admin/', admin.site.urls),
 
-    # Auth
+    # Auth endpoints (supports both /login/ and standard SimpleJWT /token/)
     path('api/auth/login/', LoginView.as_view(), name='login'),
+    path('api/auth/token/', LoginView.as_view(), name='token_obtain_pair'),
     path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/auth/token/refresh/', TokenRefreshView.as_view(), name='token_refresh_alt'),
 
     # Apps
     path('api/users/', include('apps.users.urls')),

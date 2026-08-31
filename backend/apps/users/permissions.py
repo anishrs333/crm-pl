@@ -14,10 +14,7 @@ class IsManager(BasePermission):
 
 
 class IsOwnerOrManager(BasePermission):
-    """
-    Allows managers full access, but restricts regular sales reps
-    to only records they own or are assigned to.
-    """
+   
     def has_object_permission(self, request, view, obj):
         user = request.user
         if not user or not user.is_authenticated:
