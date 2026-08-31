@@ -1,14 +1,57 @@
 import React, { useState } from 'react'
 import "./Login.css";
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../../context/AuthContext';
 
 function Login() {
 
+    const navigate = useNavigate();
+
+    const {login} = useAuth();
+
     const [showPassword, setShowPassword] = useState(false);
 
-    const handleSubmit =(e)=>{
+    const [userId, setUserId] = useState("");
+
+    const [password, setPassword] = useState("");
+
+    const [error, setError] = useState("");
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const handleSubmit = async (e)=>{
         e.preventDefault();
 
-        console.log("Login submitted");
+        setError("");
+
+        if(!userId.trim()){
+            setError("Please enter your User ID ");
+            return;
+        }
+
+        if(!password.trim()){
+            setError("Please enter your password");
+            return;
+        }
+
+        setIsSubmitting(true);
+
+        const fakeResponse = {
+            access: "temporary-token",
+            refresh:"temporary-refresh-token",
+            user:{
+                id:1,
+                userId: userId,
+                name: "Admin",
+                role: "admin",
+            },
+        };
+
+        login(fakeResponse);
+
+        setIsSubmitting(false);
+
+        navigate("/dashboard");
         
     };
   return (
@@ -68,15 +111,18 @@ function Login() {
 
                     <form onSubmit={handleSubmit}>
                         <div className="form-group">
-                            <label htmlFor="email">
-                                Email address 
+                            <label htmlFor="userId">
+                                User ID  
                             </label>
 
                             <input 
-                              id="email"
-                              type="email"
-                              placeholder="Enter your email"
-                              required
+                              id="userId"
+                              type="text"
+                              placeholder="Enter your User ID"
+                              value={userId}
+                              onChange={(e)=>setUserId(e.target.value)}
+                              autoComplete="username"
+                              
                             />
                         </div>
 
@@ -95,11 +141,15 @@ function Login() {
 
                             </div>
                             <div className="password-input">
+
                                 <input 
                                   id="password"
                                   type={showPassword ? "text" : "password"}
                                   placeholder="Enter your password"
-                                  required
+                                  value={password}
+                                  onChange={(e)=> setPassword(e.target.value)}
+                                  autoComplete='current-password'
+                                  
                                 />
 
                                 <button 
@@ -114,7 +164,14 @@ function Login() {
 
                         </div>
 
+                        {error && (
+                            <div className="login-error">
+                                {error}
+                            </div>
+                        )}
+
                         <div className="remember-row">
+
                             <label>
                                 <input type="checkbox" />
                                 <span>Remember me </span>
@@ -124,8 +181,11 @@ function Login() {
                         <button 
                           type="submit"
                           className="login-button"
+                          disabled={isSubmitting}
                         >
-                            Sign in 
+                            {isSubmitting
+                              ? "Signing in..." : "Sign in" }
+                            
                         </button>
                     </form>
 
