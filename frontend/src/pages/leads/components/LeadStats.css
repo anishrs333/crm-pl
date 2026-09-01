@@ -1,0 +1,212 @@
+/* =========================================
+   LEAD STATISTICS
+========================================= */
+
+.lead-stats {
+    display: grid;
+
+    grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+    gap: 16px;
+
+    margin-bottom: 20px;
+}
+
+
+/* =========================================
+   STAT CARD
+========================================= */
+
+.lead-stat-card {
+    min-width: 0;
+
+    padding: 20px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 14px;
+
+    background: var(--bg-surface);
+
+    box-shadow: var(--shadow-xs);
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.lead-stat-card:hover {
+    transform: translateY(-2px);
+
+    box-shadow: var(--shadow-md);
+}
+
+
+/* =========================================
+   TOP
+========================================= */
+
+.lead-stat-top {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+}
+
+.lead-stat-label {
+    font-size: 11px;
+
+    font-weight: 750;
+
+    letter-spacing: 0.8px;
+
+    color: var(--text-muted);
+}
+
+
+/* =========================================
+   ICON
+========================================= */
+
+.lead-stat-icon {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    width: 36px;
+
+    height: 36px;
+
+    border-radius: 10px;
+
+    font-size: 15px;
+
+    font-weight: 700;
+}
+
+
+/* Primary */
+
+.lead-stat-primary .lead-stat-icon {
+    background: var(--primary-light);
+
+    color: var(--primary);
+}
+
+
+/* Info */
+
+.lead-stat-info .lead-stat-icon {
+    background: var(--info-light);
+
+    color: var(--info);
+}
+
+
+/* Success */
+
+.lead-stat-success .lead-stat-icon {
+    background: var(--success-light);
+
+    color: var(--success);
+}
+
+
+/* Warning */
+
+.lead-stat-warning .lead-stat-icon {
+    background: var(--warning-light);
+
+    color: var(--warning);
+}
+
+
+/* =========================================
+   VALUE
+========================================= */
+
+.lead-stat-value {
+    margin-top: 16px;
+
+    font-size: 30px;
+
+    line-height: 1;
+
+    font-weight: 720;
+
+    letter-spacing: -0.6px;
+
+    color: var(--text-primary);
+}
+
+
+/* =========================================
+   FOOTER
+========================================= */
+
+.lead-stat-footer {
+    display: flex;
+
+    align-items: center;
+
+    gap: 8px;
+
+    margin-top: 13px;
+}
+
+.lead-stat-change {
+    font-size: 11px;
+
+    font-weight: 700;
+
+    color: var(--success);
+}
+
+.lead-stat-description {
+    font-size: 11px;
+
+    color: var(--text-muted);
+}
+
+
+/* =========================================
+   TABLET
+========================================= */
+
+@media (max-width: 1000px) {
+
+    .lead-stats {
+        grid-template-columns:
+            repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+
+    .lead-stats {
+        grid-template-columns: 1fr;
+
+        gap: 12px;
+    }
+
+    .lead-stat-card {
+        padding: 18px;
+    }
+
+    .lead-stat-value {
+        font-size: 27px;
+    }
+
+    .lead-stat-label {
+        font-size: 10px;
+    }
+}

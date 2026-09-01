@@ -1,0 +1,256 @@
+.sales-overview-card {
+    background: var(--bg-card);
+
+    border: 1px solid var(--border-color);
+
+    border-radius: var(--radius-md);
+
+    padding: 24px;
+
+    box-shadow: var(--shadow-sm);
+}
+
+
+/* =========================
+   HEADER
+========================= */
+
+.sales-overview-header {
+    display: flex;
+
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+.dashboard-section-label {
+    display: block;
+
+    margin-bottom: 6px;
+
+    color: var(--primary);
+
+    font-size: 9px;
+    font-weight: 700;
+
+    letter-spacing: 1.4px;
+}
+
+.sales-overview-header h2 {
+    font-family: "DM Sans", sans-serif;
+
+    color: var(--text-primary);
+
+    font-size: 17px;
+    font-weight: 650;
+}
+
+.sales-overview-header p {
+    margin-top: 4px;
+
+    color: var(--text-muted);
+
+    font-size: 11px;
+}
+
+
+.dashboard-more-button {
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 1px solid var(--border-light);
+
+    border-radius: 7px;
+
+    background: transparent;
+
+    color: var(--text-muted);
+
+    cursor: pointer;
+}
+
+
+/* =========================
+   SUMMARY
+========================= */
+
+.sales-summary {
+    display: flex;
+
+    align-items: baseline;
+
+    gap: 9px;
+
+    margin-top: 24px;
+}
+
+.sales-total {
+    font-family: "DM Sans", sans-serif;
+
+    color: var(--text-primary);
+
+    font-size: 25px;
+    font-weight: 650;
+}
+
+.sales-growth {
+    color: var(--success);
+
+    font-size: 10px;
+    font-weight: 700;
+}
+
+.sales-summary > span {
+    color: var(--text-muted);
+
+    font-size: 10px;
+}
+
+
+/* =========================
+   CHART
+========================= */
+
+.sales-chart {
+    display: flex;
+
+    height: 230px;
+
+    margin-top: 25px;
+}
+
+.chart-y-axis {
+    width: 35px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+
+    padding-bottom: 23px;
+
+    color: var(--text-muted);
+
+    font-size: 9px;
+
+    text-align: right;
+}
+
+.chart-area {
+    position: relative;
+
+    flex: 1;
+
+    margin-left: 12px;
+}
+
+.chart-grid-lines {
+    position: absolute;
+
+    inset: 0 0 23px 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.chart-grid-lines span {
+    width: 100%;
+
+    border-top: 1px dashed var(--border-light);
+}
+
+
+/* =========================
+   BARS
+========================= */
+
+.chart-bars {
+    position: absolute;
+
+    inset: 0;
+
+    display: flex;
+
+    align-items: flex-end;
+    justify-content: space-around;
+
+    gap: 10px;
+}
+
+.chart-column {
+    height: 100%;
+
+    flex: 1;
+
+    display: flex;
+    flex-direction: column;
+
+    align-items: center;
+    justify-content: flex-end;
+
+    gap: 9px;
+}
+
+.chart-bar {
+    width: 100%;
+    max-width: 30px;
+
+    min-height: 8px;
+
+    border-radius:
+        6px 6px 3px 3px;
+
+    background:
+        linear-gradient(
+            to top,
+            var(--primary),
+            #15988e
+        );
+
+    opacity: 0.9;
+
+    transition:
+        height 0.4s ease,
+        opacity 0.2s ease;
+}
+
+.chart-bar:hover {
+    opacity: 1;
+}
+
+.chart-column span {
+    color: var(--text-muted);
+
+    font-size: 9px;
+}
+
+
+/* =========================
+   RESPONSIVE
+========================= */
+
+@media (max-width: 600px) {
+
+    .sales-overview-card {
+        padding: 18px;
+    }
+
+    .sales-summary {
+        flex-wrap: wrap;
+    }
+
+    .sales-summary > span {
+        width: 100%;
+    }
+
+    .sales-chart {
+        height: 200px;
+    }
+
+    .chart-bar {
+        max-width: 22px;
+    }
+}

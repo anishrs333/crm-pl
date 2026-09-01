@@ -1,0 +1,401 @@
+/* =========================================
+   SIDEBAR
+========================================= */
+
+.crm-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+
+    display: flex;
+    flex-direction: column;
+
+    width: var(--sidebar-width);
+    height: 100vh;
+
+    padding: 24px 15px 15px;
+
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border-color);
+
+    transition:
+        transform var(--transition-slow),
+        box-shadow var(--transition-slow);
+}
+
+
+/* =========================================
+   BRAND
+========================================= */
+
+.sidebar-brand {
+    display: flex;
+    align-items: center;
+
+    gap: 11px;
+
+    padding: 0 10px 28px;
+}
+
+
+.brand-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 36px;
+    height: 36px;
+
+    border-radius: 10px;
+
+    background: var(--primary);
+    color: white;
+
+    font-size: 15px;
+    font-weight: 800;
+}
+
+
+.brand-text {
+    display: flex;
+    flex-direction: column;
+
+    line-height: 1;
+}
+
+
+.brand-text strong {
+    font-size: 16px;
+    font-weight: 750;
+
+    letter-spacing: 1.2px;
+
+    color: var(--text-primary);
+}
+
+
+.brand-text span {
+    margin-top: 5px;
+
+    font-size: 10px;
+    font-weight: 700;
+
+    letter-spacing: 2px;
+
+    color: var(--primary);
+}
+
+
+.sidebar-close {
+    display: none;
+
+    margin-left: auto;
+
+    background: transparent;
+    color: var(--text-muted);
+
+    font-size: 26px;
+}
+
+
+/* =========================================
+   NAVIGATION
+========================================= */
+
+.sidebar-navigation {
+    flex: 1;
+
+    overflow-y: auto;
+
+    padding: 2px 2px 15px;
+}
+
+
+.sidebar-section {
+    margin-bottom: 25px;
+}
+
+
+.sidebar-section-title {
+    display: block;
+
+    padding: 0 11px;
+
+    margin-bottom: 9px;
+
+    font-size: 11px;
+    font-weight: 700;
+
+    letter-spacing: 1.3px;
+
+    color: var(--text-light);
+}
+
+
+.sidebar-menu {
+    display: flex;
+    flex-direction: column;
+
+    gap: 3px;
+}
+
+
+/* =========================================
+   NAVIGATION LINK
+========================================= */
+
+.sidebar-link {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    gap: 12px;
+
+    min-height: 43px;
+
+    padding: 0 11px;
+
+    border-radius: 10px;
+
+    color: var(--text-secondary);
+
+    font-size: 15px;
+    font-weight: 500;
+
+    transition:
+        background var(--transition-normal),
+        color var(--transition-normal),
+        transform var(--transition-normal);
+}
+
+
+.sidebar-link:hover {
+    background: var(--bg-hover);
+    color: var(--text-primary);
+
+    transform: translateX(1px);
+}
+
+
+/* =========================================
+   ACTIVE LINK
+========================================= */
+
+.sidebar-link-active {
+    background: var(--primary-light);
+
+    color: var(--primary);
+
+    font-size: 15px;
+    font-weight: 650;
+}
+
+
+.sidebar-link-active::before {
+    content: "";
+
+    position: absolute;
+
+    left: -2px;
+    top: 9px;
+
+    width: 3px;
+    height: 25px;
+
+    border-radius: 10px;
+
+    background: var(--primary);
+}
+
+
+/* =========================================
+   ICON
+========================================= */
+
+.sidebar-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 20px;
+
+    font-size: 18px;
+
+    line-height: 1;
+}
+
+
+.sidebar-label {
+    flex: 1;
+}
+
+
+/* =========================================
+   USER AREA
+========================================= */
+
+.sidebar-user {
+    display: flex;
+    align-items: center;
+
+    gap: 10px;
+
+    padding: 15px 9px 8px;
+
+    border-top: 1px solid var(--border-light);
+}
+
+
+.user-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    flex-shrink: 0;
+
+    width: 38px;
+    height: 38px;
+
+    border-radius: 50%;
+
+    background: var(--secondary-light);
+    color: var(--secondary);
+
+    font-size: 11px;
+    font-weight: 750;
+}
+
+
+.user-details {
+    display: flex;
+    flex-direction: column;
+
+    min-width: 0;
+    flex: 1;
+}
+
+
+.user-details strong {
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    font-size: 14px;
+    font-weight: 650;
+
+    color: var(--text-primary);
+}
+
+
+.user-details span {
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    margin-top: 4px;
+
+    font-size: 12px;
+
+    color: var(--text-muted);
+}
+
+
+.user-menu-button {
+    background: transparent;
+
+    color: var(--text-muted);
+
+    letter-spacing: 1px;
+
+    font-size: 13px;
+}
+
+
+/* =========================================
+   MOBILE OVERLAY
+========================================= */
+
+.sidebar-overlay {
+    display: none;
+}
+
+
+/* =========================================
+   TABLET / MOBILE
+========================================= */
+
+@media (max-width: 900px) {
+
+    .crm-sidebar {
+        transform: translateX(-100%);
+
+        box-shadow: none;
+    }
+
+
+    .crm-sidebar.sidebar-open {
+        transform: translateX(0);
+
+        box-shadow: var(--shadow-lg);
+    }
+
+
+    .sidebar-close {
+        display: block;
+    }
+
+
+    .sidebar-overlay {
+        position: fixed;
+
+        inset: 0;
+
+        z-index: 999;
+
+        display: block;
+
+        background: rgba(20, 30, 27, 0.25);
+
+        backdrop-filter: blur(2px);
+    }
+
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 600px) {
+
+    .crm-sidebar {
+        width: min(var(--sidebar-width), 85vw);
+    }
+
+
+    .sidebar-link {
+        min-height: 44px;
+
+        font-size: 15px;
+    }
+
+
+    .sidebar-section-title {
+        font-size: 11px;
+    }
+
+
+    .user-details strong {
+        font-size: 14px;
+    }
+
+
+    .user-details span {
+        font-size: 12px;
+    }
+
+}

@@ -1,0 +1,99 @@
+.common-button{
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.common-button.small{
+    height: 34px;
+    padding: 0 12px;
+    font-size: 12px;
+}
+
+.common-button.medium{
+    height: 42px;
+    padding: 0 18px;
+    font-size: 14px;
+}
+
+.common-button.large{
+    height: 48px;
+    padding: 0 24px;
+    font-size: 15px;
+}
+
+.common-button.primary{
+    background: #2563eb;
+    color: white;
+}
+
+.common-button.primary:hover{
+    background: #1d4ed8;
+}
+
+.common-button.secondary{
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.common-button.secondary:hover{
+    background: #e2e8f0;
+}
+
+.common-button.danger {
+  background: #dc2626;
+
+  color: white;
+}
+
+.common-button.danger:hover {
+  background: #b91c1c;
+}
+
+.common-button.outline {
+  background: white;
+
+  color: #2563eb;
+
+  border: 1px solid #2563eb;
+}
+
+.common-button.outline:hover {
+  background: #eff6ff;
+}
+
+.common-button:disabled {
+  opacity: 0.55;
+
+  cursor: not-allowed;
+
+  transform: none;
+}
+
+
+
+@media (max-width: 600px) {
+
+  .common-button.medium {
+    height: 40px;
+
+    padding: 0 15px;
+
+    font-size: 13px;
+  }
+
+  .common-button.large {
+    height: 44px;
+
+    padding: 0 18px;
+
+    font-size: 14px;
+  }
+
+}
