@@ -1,0 +1,35 @@
+/* =========================================
+   APPLICATION LAYOUT
+========================================= */
+
+.crm-layout {
+    min-height: 100vh;
+
+    background: var(--bg-app);
+}
+
+
+.crm-main {
+    min-height: 100vh;
+
+    margin-left: var(--sidebar-width);
+}
+
+
+.crm-content {
+    min-height: 100vh;
+
+    padding-top: var(--navbar-height);
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 900px) {
+
+    .crm-main {
+        margin-left: 0;
+    }
+}

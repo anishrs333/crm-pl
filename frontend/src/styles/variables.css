@@ -1,0 +1,125 @@
+:root {
+
+    /* =================================
+       APPLICATION BACKGROUND
+    ================================= */
+
+    --bg-app: #f6f7f5;
+    --bg-surface: #ffffff;
+    --bg-soft: #f0f3f1;
+    --bg-hover: #f4f7f5;
+
+
+    /* =================================
+       BRAND
+    ================================= */
+
+    --primary: #16796b;
+    --primary-dark: #105e53;
+    --primary-light: #e5f2ef;
+
+    --secondary: #6d6ae8;
+    --secondary-light: #eeedff;
+
+
+    /* =================================
+       TEXT
+    ================================= */
+
+    --text-primary: #18211f;
+    --text-secondary: #596662;
+    --text-muted: #8a9691;
+    --text-light: #aab3af;
+
+    --text-white: #ffffff;
+
+
+    /* =================================
+       STATUS
+    ================================= */
+
+    --success: #21865b;
+    --success-light: #e6f5ed;
+
+    --warning: #c88928;
+    --warning-light: #fff4df;
+
+    --danger: #c65353;
+    --danger-light: #fbeaea;
+
+    --info: #4b72c2;
+    --info-light: #eaf0fc;
+
+
+    /* =================================
+       BORDERS
+    ================================= */
+
+    --border-color: #e1e7e4;
+    --border-light: #edf0ee;
+    --border-dark: #cfd8d4;
+
+
+    /* =================================
+       SHADOWS
+    ================================= */
+
+    --shadow-xs:
+        0 1px 2px rgba(20, 35, 30, 0.04);
+
+    --shadow-sm:
+        0 3px 10px rgba(20, 35, 30, 0.05);
+
+    --shadow-md:
+        0 8px 25px rgba(20, 35, 30, 0.07);
+
+    --shadow-lg:
+        0 18px 45px rgba(20, 35, 30, 0.09);
+
+
+    /* =================================
+       RADIUS
+    ================================= */
+
+    --radius-xs: 5px;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 16px;
+    --radius-xl: 22px;
+
+
+    /* =================================
+       LAYOUT
+    ================================= */
+
+    --sidebar-width: 248px;
+    --navbar-height: 68px;
+
+    --content-max-width: 1600px;
+
+
+    /* =================================
+       SPACING
+    ================================= */
+
+    --space-1: 4px;
+    --space-2: 8px;
+    --space-3: 12px;
+    --space-4: 16px;
+    --space-5: 20px;
+    --space-6: 24px;
+    --space-7: 32px;
+    --space-8: 40px;
+    --space-9: 48px;
+
+
+    /* =================================
+       TRANSITIONS
+    ================================= */
+
+    --transition-fast: 0.15s ease;
+
+    --transition-normal: 0.22s ease;
+
+    --transition-slow: 0.3s ease;
+}

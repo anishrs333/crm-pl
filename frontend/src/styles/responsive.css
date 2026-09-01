@@ -1,0 +1,32 @@
+/* =========================================
+   GLOBAL RESPONSIVE RULES
+========================================= */
+
+/* Tablet */
+@media (max-width: 900px) {
+
+    .desktop-only {
+        display: none !important;
+    }
+
+}
+
+
+/* Mobile */
+@media (max-width: 600px) {
+
+    .desktop-only {
+        display: none !important;
+    }
+
+}
+
+
+/* Small Mobile */
+@media (max-width: 400px) {
+
+    .hide-small-screen {
+        display: none !important;
+    }
+
+}

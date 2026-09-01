@@ -3,20 +3,33 @@ import { createContext, useContext, useEffect, useState } from "react";
 const AuthContext = createContext(null);
 
 export function AuthProvider({children}){
+
     const [user, setUser] = useState(null);
 
     const [loading, setLoading] = useState(true);
 
     useEffect(()=>{
+
         const savedUser = localStorage.getItem("user");
 
         const accessToken = localStorage.getItem("access_token");
 
         if(savedUser && accessToken){
+
             try{
-                setUser(JSON.parse(savedUser));
+
+                const parsedUser =
+                   JSON.parse(savedUser);
+
+                   setUser(parsedUser);
             }
             catch(error){
+
+                console.error(
+                       "Invalid saved user",
+                       error
+                );
+
                 localStorage.removeItem("user");
                 localStorage.removeItem("access_token");
                 localStorage.removeItem("refresh_token");
@@ -26,30 +39,31 @@ export function AuthProvider({children}){
         setLoading(false);
     }, []);
 
-    const login = (data)=>{
-        if(data.access){
-            localStorage.setItem(
-                "access_token",
-                data.access
-            );
-        }
+    const login = ({
+        user,
+        accessToken,
+        refreshToken
+    }) => {
+        localStorage.setItem(
+            "user",
+            JSON.stringify(user)
+        );
 
-        if(data.refresh){
+        localStorage.setItem(
+            "access_token",
+            accessToken
+        );
+
+        if(refreshToken){
             localStorage.setItem(
                 "refresh_token",
-                data.refresh
+                refreshToken
             );
         }
 
-        if(data.user){
-            localStorage.setItem(
-                "user",
-                JSON.stringify(data.user)
-            );
-
-            setUser(data.user);
-        }
+        setUser(user);
     };
+       
 
     const logout = ()=>{
         localStorage.removeItem("access_token");
@@ -59,17 +73,18 @@ export function AuthProvider({children}){
         setUser(null);
     };
 
-    const isAuthenticated = !!localStorage.getItem("access_token");
+    const value = {
+        user,
+        loading,
+        login,
+        logout,
+        isAuthenticated: !!user
+    };
+
 
     return(
         <AuthContext.Provider
-         value={{
-            user,
-            loading,
-            login,
-            logout,
-            isAuthenticated,
-         }}>
+              value={value}>
             {children}
          </AuthContext.Provider>
     );
