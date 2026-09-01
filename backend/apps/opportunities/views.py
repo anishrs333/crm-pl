@@ -26,7 +26,6 @@ class OpportunityViewSet(viewsets.ModelViewSet):
         user = self.request.user
         queryset = Opportunity.objects.select_related('customer', 'assigned_to', 'created_by')
 
-        # Data Isolation: Sales Reps only see deals assigned to or created by them
         if not user.is_manager:
             return queryset.filter(Q(assigned_to=user) | Q(created_by=user))
         return queryset
@@ -44,11 +43,6 @@ class OpportunityViewSet(viewsets.ModelViewSet):
 
     @action(detail=False, methods=['get'], url_path='pipeline-summary')
     def pipeline_summary(self, request):
-        """
-        HIGH-PERFORMANCE KANBAN FEED:
-        Returns aggregated deal counts, total stage values, and weighted revenue forecasts
-        grouped by pipeline stage.
-        """
         queryset = self.get_queryset()
 
         stage_metrics = []
@@ -65,7 +59,6 @@ class OpportunityViewSet(viewsets.ModelViewSet):
             total_val = agg['total_val'] or Decimal('0.00')
             deal_count = agg['deal_count'] or 0
 
-            # Calculate weighted value for this stage
             prob = Opportunity.STAGE_PROBABILITY_MAP.get(stage_code, 0)
             weighted_val = (total_val * (Decimal(prob) / Decimal('100.00'))).quantize(Decimal('0.01'))
 
@@ -90,10 +83,6 @@ class OpportunityViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='close')
     def close_deal(self, request, pk=None):
-        """
-        CLOSING ACTION: Mark an opportunity as Closed Won or Closed Lost.
-        POST /api/opportunities/{id}/close/
-        """
         opportunity = self.get_object()
         serializer = CloseOpportunitySerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

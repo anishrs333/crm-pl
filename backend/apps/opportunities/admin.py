@@ -11,7 +11,6 @@ class OpportunityAdmin(admin.ModelAdmin):
         'stage',
         'probability',
         'weighted_amount_display',
-        
         'assigned_to',
         'expected_close_date',
         'created_at'

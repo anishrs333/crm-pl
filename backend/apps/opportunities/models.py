@@ -24,7 +24,9 @@ class Opportunity(models.Model):
     customer = models.ForeignKey(
         'customers.Customer',
         on_delete=models.CASCADE,
-        related_name='opportunities'
+        related_name='opportunities',
+        null=True,
+        blank=True
     )
     lead = models.ForeignKey(
         'leads.Lead',
@@ -93,7 +95,6 @@ class Opportunity(models.Model):
         return (self.amount * (Decimal(self.probability) / Decimal('100.00'))).quantize(Decimal('0.01'))
 
     def save(self, *args, **kwargs):
-        # Auto-set probability if stage changes and probability wasn't manually overridden
         if self.stage in self.STAGE_PROBABILITY_MAP and not kwargs.get('update_fields'):
             if self._state.adding or 'stage' in kwargs.get('update_fields', []):
                 self.probability = self.STAGE_PROBABILITY_MAP[self.stage]

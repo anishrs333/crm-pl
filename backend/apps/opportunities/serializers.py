@@ -1,4 +1,3 @@
-from decimal import Decimal
 from rest_framework import serializers
 from apps.customers.serializers import CustomerListSerializer
 from .models import Opportunity
@@ -84,7 +83,6 @@ class OpportunityCreateUpdateSerializer(serializers.ModelSerializer):
         stage = attrs.get('stage', getattr(self.instance, 'stage', None))
         lost_reason = attrs.get('lost_reason', getattr(self.instance, 'lost_reason', None))
 
-        # Enforce business rule: Closed Lost requires a documented reason
         if stage == Opportunity.Stage.LOST and not lost_reason:
             raise serializers.ValidationError({
                 "lost_reason": "A reason is required when marking an opportunity as Closed Lost."
@@ -93,7 +91,6 @@ class OpportunityCreateUpdateSerializer(serializers.ModelSerializer):
 
 
 class CloseOpportunitySerializer(serializers.Serializer):
-    """Serializer for the close_deal endpoint."""
     status = serializers.ChoiceField(choices=['won', 'lost'])
     lost_reason = serializers.CharField(required=False, allow_blank=True)
 
