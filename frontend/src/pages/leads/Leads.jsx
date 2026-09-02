@@ -25,12 +25,12 @@ function Leads() {
         try {
             const data = await getLeads({ search, status, priority });
             // Support paginated or list response
-            const leadList = data.results ? data.results : data;
+            const leadList = data.results ? data.results : (Array.isArray(data) ? data : []);
             
             // Format lead objects for display compatibility
             const formatted = leadList.map((item) => ({
                 id: item.id,
-                name: `${item.first_name || ""} ${item.last_name || ""}`.strip ? `${item.first_name || ""} ${item.last_name || ""}`.strip() : `${item.first_name || ""} ${item.last_name || ""}`.trim(),
+                name: `${item.first_name || ""} ${item.last_name || ""}`.trim(),
                 first_name: item.first_name,
                 last_name: item.last_name,
                 company_name: item.company_name,
