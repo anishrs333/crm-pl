@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { getLeads, createLead } from "../../services/leadService";
 
 import LeadStats from "./components/LeadStats";
 import LeadFilters from "./components/LeadFilters";
@@ -14,74 +15,68 @@ function Leads() {
     const [status, setStatus] = useState("All");
     const [priority, setPriority] = useState("All");
 
-    const [leads, setLeads] = useState([
-        {
-            id: 1,
-            name: "Arun Kumar",
-            phone: "9876543210",
-            email: "arun@gmail.com",
-            source: "Website",
-            assignedTo: "Abishek",
-            status: "New",
-            priority: "High",
-            createdDate: "01 Sep 2026",
-        },
-        {
-            id: 2,
-            name: "Priya Nair",
-            phone: "9876501234",
-            email: "priya@gmail.com",
-            source: "Referral",
-            assignedTo: "Rahul",
-            status: "Contacted",
-            priority: "Medium",
-            createdDate: "31 Aug 2026",
-        },
-        {
-            id: 3,
-            name: "Vishnu Raj",
-            phone: "9988776655",
-            email: "vishnu@gmail.com",
-            source: "Facebook",
-            assignedTo: "Abishek",
-            status: "Qualified",
-            priority: "High",
-            createdDate: "30 Aug 2026",
-        },
-    ]);
+    const [leads, setLeads] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState("");
 
-    const handleAddLead = (newLead) => {
-        const lead = {
-            id: Date.now(),
-            ...newLead,
-            createdDate: new Date().toLocaleDateString("en-GB"),
-        };
+    const fetchLeads = useCallback(async () => {
+        setLoading(true);
+        setError("");
+        try {
+            const data = await getLeads({ search, status, priority });
+            // Support paginated or list response
+            const leadList = data.results ? data.results : data;
+            
+            // Format lead objects for display compatibility
+            const formatted = leadList.map((item) => ({
+                id: item.id,
+                name: `${item.first_name || ""} ${item.last_name || ""}`.strip ? `${item.first_name || ""} ${item.last_name || ""}`.strip() : `${item.first_name || ""} ${item.last_name || ""}`.trim(),
+                first_name: item.first_name,
+                last_name: item.last_name,
+                company_name: item.company_name,
+                phone: item.phone || "-",
+                email: item.email || "-",
+                source: item.source_label || item.source,
+                assignedTo: item.assigned_to_name || "Unassigned",
+                status: item.status_label || item.status,
+                priority: item.priority_label || item.priority,
+                rawStatus: item.status,
+                rawPriority: item.priority,
+                createdDate: new Date(item.created_at).toLocaleDateString("en-GB"),
+                estimatedBudget: item.estimated_budget,
+            }));
+            setLeads(formatted);
+        } catch (err) {
+            console.error("Error fetching leads:", err);
+            setError("Failed to load leads from server.");
+        } finally {
+            setLoading(false);
+        }
+    }, [search, status, priority]);
 
-        setLeads((previousLeads) => [
-            lead,
-            ...previousLeads,
-        ]);
+    useEffect(() => {
+        fetchLeads();
+    }, [fetchLeads]);
 
-        setShowAddLead(false);
+    const handleAddLead = async (newLeadData) => {
+        try {
+            await createLead(newLeadData);
+            setShowAddLead(false);
+            fetchLeads(); // Refresh lead list
+        } catch (err) {
+            console.error("Error creating lead:", err);
+            alert("Failed to create lead. Please check the required fields.");
+        }
     };
 
     return (
         <div className="leads-page">
-
             {/* Header */}
-
             <div className="leads-page-header">
-
                 <div>
-                    <span className="leads-eyebrow">
-                        CUSTOMER MANAGEMENT
-                    </span>
-
+                    <span className="leads-eyebrow">CUSTOMER MANAGEMENT</span>
                     <h1>Leads</h1>
-
-                    <p>
-                        Manage, track and convert your sales leads.
-                    </p>
+                    <p>Manage, track and convert your sales leads.</p>
                 </div>
 
                 <button
@@ -91,15 +86,15 @@ function Leads() {
                     <span>+</span>
                     Add Lead
                 </button>
-
             </div>
 
-            {/* Statistics */}
+            {/* Error Message */}
+            {error && <div className="login-error" style={{ marginBottom: '1rem' }}>{error}</div>}
 
+            {/* Statistics */}
             <LeadStats leads={leads} />
 
             {/* Filters */}
-
             <LeadFilters
                 search={search}
                 setSearch={setSearch}
@@ -110,23 +105,24 @@ function Leads() {
             />
 
             {/* Table */}
-
-            <LeadTable
-                leads={leads}
-                search={search}
-                status={status}
-                priority={priority}
-            />
+            {loading ? (
+                <div style={{ padding: '2rem', textAlign: 'center', color: '#94a3b8' }}>Loading leads...</div>
+            ) : (
+                <LeadTable
+                    leads={leads}
+                    search={search}
+                    status={status}
+                    priority={priority}
+                />
+            )}
 
             {/* Add Lead Modal */}
-
             {showAddLead && (
                 <AddLeadModal
                     onClose={() => setShowAddLead(false)}
                     onAdd={handleAddLead}
                 />
             )}
-
         </div>
     );
 }

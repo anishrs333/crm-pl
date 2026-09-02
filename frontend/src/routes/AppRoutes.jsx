@@ -5,177 +5,203 @@ import {
     Navigate,
 } from "react-router-dom";
 
+import { useAuth } from "../context/AuthContext";
 import MainLayout from "../components/layouts/MainLayout";
-
+import Login from "../pages/auth/Login";
 import Dashboard from "../pages/dashboard/Dashboard";
-
 import Leads from "../pages/leads/Leads";
 
+function ProtectedRoute({ children }) {
+    const { isAuthenticated, loading } = useAuth();
+
+    if (loading) {
+        return <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>;
+    }
+
+    if (!isAuthenticated) {
+        return <Navigate to="/login" replace />;
+    }
+
+    return children;
+}
+
+function PublicOnlyRoute({ children }) {
+    const { isAuthenticated, loading } = useAuth();
+
+    if (loading) {
+        return <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>;
+    }
+
+    if (isAuthenticated) {
+        return <Navigate to="/dashboard" replace />;
+    }
+
+    return children;
+}
 
 function PlaceholderPage({ title }) {
-
     return (
         <div className="page-container">
-
             <div className="page-header">
-
                 <div>
-                    <h1 className="page-title">
-                        {title}
-                    </h1>
-
-                    <p className="page-description">
-                        This module is being developed.
-                    </p>
+                    <h1 className="page-title">{title}</h1>
+                    <p className="page-description">This module is being developed.</p>
                 </div>
-
             </div>
-
         </div>
     );
 }
 
-
 function AppRoutes() {
-
     return (
-
         <BrowserRouter>
-
             <Routes>
-
                 <Route
-                    path="/"
+                    path="/login"
                     element={
-                        <Navigate
-                            to="/dashboard"
-                            replace
-                        />
+                        <PublicOnlyRoute>
+                            <Login />
+                        </PublicOnlyRoute>
                     }
                 />
 
+                <Route
+                    path="/"
+                    element={<Navigate to="/dashboard" replace />}
+                />
 
                 <Route
                     path="/dashboard"
                     element={
-                        <MainLayout>
-                            <Dashboard />
-                        </MainLayout>
+                        <ProtectedRoute>
+                            <MainLayout>
+                                <Dashboard />
+                            </MainLayout>
+                        </ProtectedRoute>
                     }
                 />
-
 
                 <Route
                     path="/leads"
                     element={
-                        <MainLayout>
-                           <Leads />
-                        </MainLayout>
+                        <ProtectedRoute>
+                            <MainLayout>
+                                <Leads />
+                            </MainLayout>
+                        </ProtectedRoute>
                     }
                 />
-
 
                 <Route
                     path="/customers"
                     element={
-                        <MainLayout>
-                            <PlaceholderPage title="Customers" />
-                        </MainLayout>
+                        <ProtectedRoute>
+                            <MainLayout>
+                                <PlaceholderPage title="Customers" />
+                            </MainLayout>
+                        </ProtectedRoute>
                     }
                 />
-
 
                 <Route
                     path="/opportunities"
                     element={
-                        <MainLayout>
-                            <PlaceholderPage title="Opportunities" />
-                        </MainLayout>
+                        <ProtectedRoute>
+                            <MainLayout>
+                                <PlaceholderPage title="Opportunities" />
+                            </MainLayout>
+                        </ProtectedRoute>
                     }
                 />
-
 
                 <Route
                     path="/activities"
                     element={
-                        <MainLayout>
-                            <PlaceholderPage title="Activities" />
-                        </MainLayout>
+                        <ProtectedRoute>
+                            <MainLayout>
+                                <PlaceholderPage title="Activities" />
+                            </MainLayout>
+                        </ProtectedRoute>
                     }
                 />
-
 
                 <Route
                     path="/tasks"
                     element={
-                        <MainLayout>
-                            <PlaceholderPage title="Tasks" />
-                        </MainLayout>
+                        <ProtectedRoute>
+                            <MainLayout>
+                                <PlaceholderPage title="Tasks" />
+                            </MainLayout>
+                        </ProtectedRoute>
                     }
                 />
-
 
                 <Route
                     path="/quotations"
                     element={
-                        <MainLayout>
-                            <PlaceholderPage title="Quotations" />
-                        </MainLayout>
+                        <ProtectedRoute>
+                            <MainLayout>
+                                <PlaceholderPage title="Quotations" />
+                            </MainLayout>
+                        </ProtectedRoute>
                     }
                 />
-
 
                 <Route
                     path="/products"
                     element={
-                        <MainLayout>
-                            <PlaceholderPage title="Products" />
-                        </MainLayout>
+                        <ProtectedRoute>
+                            <MainLayout>
+                                <PlaceholderPage title="Products" />
+                            </MainLayout>
+                        </ProtectedRoute>
                     }
                 />
-
 
                 <Route
                     path="/employees"
                     element={
-                        <MainLayout>
-                            <PlaceholderPage title="Employees" />
-                        </MainLayout>
+                        <ProtectedRoute>
+                            <MainLayout>
+                                <PlaceholderPage title="Employees" />
+                            </MainLayout>
+                        </ProtectedRoute>
                     }
                 />
-
 
                 <Route
                     path="/reports"
                     element={
-                        <MainLayout>
-                            <PlaceholderPage title="Reports" />
-                        </MainLayout>
+                        <ProtectedRoute>
+                            <MainLayout>
+                                <PlaceholderPage title="Reports" />
+                            </MainLayout>
+                        </ProtectedRoute>
                     }
                 />
-
 
                 <Route
                     path="/notifications"
                     element={
-                        <MainLayout>
-                            <PlaceholderPage title="Notifications" />
-                        </MainLayout>
+                        <ProtectedRoute>
+                            <MainLayout>
+                                <PlaceholderPage title="Notifications" />
+                            </MainLayout>
+                        </ProtectedRoute>
                     }
                 />
-
 
                 <Route
                     path="/settings"
                     element={
-                        <MainLayout>
-                            <PlaceholderPage title="Settings" />
-                        </MainLayout>
+                        <ProtectedRoute>
+                            <MainLayout>
+                                <PlaceholderPage title="Settings" />
+                            </MainLayout>
+                        </ProtectedRoute>
                     }
                 />
-
             </Routes>
-
         </BrowserRouter>
     );
 }
