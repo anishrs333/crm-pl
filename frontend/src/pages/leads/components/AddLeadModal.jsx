@@ -8,14 +8,17 @@ function AddLeadModal({ onClose, onAdd }) {
         email: "",
         phone: "",
         company_name: "",
+        designation: "",
         source: "website",
         status: "new",
         priority: "warm",
         estimated_budget: "",
+        follow_up_date: "",
         notes: "",
     });
 
     const [submitting, setSubmitting] = useState(false);
+    const [errorMsg, setErrorMsg] = useState("");
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -27,33 +30,54 @@ function AddLeadModal({ onClose, onAdd }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setErrorMsg("");
+
+        if (!formData.first_name.trim()) {
+            setErrorMsg("First Name is required.");
+            return;
+        }
+
         setSubmitting(true);
 
         const payload = {
-            first_name: formData.first_name,
-            last_name: formData.last_name,
-            email: formData.email || null,
-            phone: formData.phone || null,
-            company_name: formData.company_name || null,
+            first_name: formData.first_name.trim(),
+            last_name: formData.last_name ? formData.last_name.trim() : null,
+            email: formData.email ? formData.email.trim() : null,
+            phone: formData.phone ? formData.phone.trim() : null,
+            company_name: formData.company_name ? formData.company_name.trim() : null,
+            designation: formData.designation ? formData.designation.trim() : null,
             source: formData.source,
             status: formData.status,
             priority: formData.priority,
             estimated_budget: formData.estimated_budget ? parseFloat(formData.estimated_budget) : null,
+            follow_up_date: formData.follow_up_date ? new Date(formData.follow_up_date).toISOString() : null,
             notes: formData.notes,
         };
 
-        if (onAdd) {
+        try {
             await onAdd(payload);
+        } catch (err) {
+            console.error("Lead submission error:", err);
+            if (err.response && err.response.data) {
+                const data = err.response.data;
+                if (typeof data === "object") {
+                    const firstKey = Object.keys(data)[0];
+                    const firstVal = Array.isArray(data[firstKey]) ? data[firstKey][0] : data[firstKey];
+                    setErrorMsg(`${firstKey.replace('_', ' ').toUpperCase()}: ${firstVal}`);
+                } else {
+                    setErrorMsg("Failed to create lead. Please check input fields.");
+                }
+            } else {
+                setErrorMsg("Network or server error while creating lead.");
+            }
+        } finally {
+            setSubmitting(false);
         }
-        setSubmitting(false);
     };
 
     return (
         <div className="lead-modal-overlay" onClick={onClose}>
-            <div
-                className="lead-modal"
-                onClick={(e) => e.stopPropagation()}
-            >
+            <div className="lead-modal" onClick={(e) => e.stopPropagation()}>
                 {/* HEADER */}
                 <div className="lead-modal-header">
                     <div className="lead-modal-title-area">
@@ -61,7 +85,7 @@ function AddLeadModal({ onClose, onAdd }) {
                         <div>
                             <span className="lead-modal-eyebrow">CUSTOMER MANAGEMENT</span>
                             <h2>Add New Lead</h2>
-                            <p>Create a new lead and add it to your sales pipeline.</p>
+                            <p>Create a new lead and schedule follow-up activities.</p>
                         </div>
                     </div>
                     <button
@@ -73,6 +97,13 @@ function AddLeadModal({ onClose, onAdd }) {
                         ×
                     </button>
                 </div>
+
+                {/* ERROR BANNER */}
+                {errorMsg && (
+                    <div className="login-error" style={{ margin: "1rem 1.5rem 0", borderRadius: "8px" }}>
+                        {errorMsg}
+                    </div>
+                )}
 
                 {/* FORM */}
                 <form className="lead-form" onSubmit={handleSubmit}>
@@ -147,6 +178,18 @@ function AddLeadModal({ onClose, onAdd }) {
                                     placeholder="Company name"
                                 />
                             </div>
+
+                            {/* DESIGNATION */}
+                            <div className="lead-form-group">
+                                <label>Designation / Role</label>
+                                <input
+                                    type="text"
+                                    name="designation"
+                                    value={formData.designation}
+                                    onChange={handleChange}
+                                    placeholder="e.g. Managing Director"
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -155,8 +198,8 @@ function AddLeadModal({ onClose, onAdd }) {
                         <div className="lead-section-heading">
                             <span className="section-number">02</span>
                             <div>
-                                <h3>Lead Details</h3>
-                                <p>Configure the lead and sales information.</p>
+                                <h3>Lead Details & Schedule</h3>
+                                <p>Configure sales priority and follow-up calendar schedule.</p>
                             </div>
                         </div>
 
@@ -222,6 +265,17 @@ function AddLeadModal({ onClose, onAdd }) {
                                     />
                                 </div>
                             </div>
+
+                            {/* FOLLOW UP CALENDAR DATE */}
+                            <div className="lead-form-group">
+                                <label>Follow-up Date / Calendar Schedule</label>
+                                <input
+                                    type="datetime-local"
+                                    name="follow_up_date"
+                                    value={formData.follow_up_date}
+                                    onChange={handleChange}
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -231,7 +285,7 @@ function AddLeadModal({ onClose, onAdd }) {
                             <span className="section-number">03</span>
                             <div>
                                 <h3>Additional Notes</h3>
-                                <p>Add any additional information about this lead.</p>
+                                <p>Add any initial context or meeting requirements.</p>
                             </div>
                         </div>
 
@@ -262,7 +316,7 @@ function AddLeadModal({ onClose, onAdd }) {
                             disabled={submitting}
                         >
                             <span>+</span>
-                            {submitting ? "Saving..." : "Create Lead"}
+                            {submitting ? "Saving Lead..." : "Create Lead"}
                         </button>
                     </div>
                 </form>
