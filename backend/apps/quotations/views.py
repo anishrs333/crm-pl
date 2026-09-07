@@ -1,18 +1,64 @@
-from rest_framework import viewsets
+from django.db import transaction
+from rest_framework import viewsets, status
+from rest_framework.decorators import action
+from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+
+
+from apps.opportunities.models import Opportunity
 from .models import Quotation, QuotationItem
-from .serializers import QuotationSerializer, QuotationItemSerializer
+from .permissions import IsQuotationOwnerOrManager
+from .serializers import (
+    QuotationListSerializer,
+    QuotationDetailSerializer,
+    QuotationCreateUpdateSerializer,
+)
 
 
 class QuotationViewSet(viewsets.ModelViewSet):
-    queryset = Quotation.objects.all().order_by('-created_at')
-    serializer_class = QuotationSerializer
-    permission_classes = [IsAuthenticated]
-    filterset_fields = ['status', 'customer', 'created_by']
-    search_fields = ['quote_number', 'customer__name']
+    permission_classes=[IsAuthenticated,IsQuotationOwnerOrManager]
+    filterset_fields=['status','customer','created_by']
+    search_fields=['quote_number','customer__name','notes']
+    ordering_fields=['created_at','valid_until', 'created_at']
 
 
-class QuotationItemViewSet(viewsets.ModelViewSet):
-    queryset = QuotationItem.objects.all()
-    serializer_class = QuotationItemSerializer
-    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        user=self.request.user
+        queryset=Quotation.objects.select_related('customer', 'created_by').prefetch_related('items')
+
+        if not user.is_manager:
+            return queryset.filter(created_by=user)
+        return queryset
+
+    def get_serializer_class(self):
+        if self.action=='retrieve':
+            return QuotationDetailSerializer
+        elif self.action in ('create','update', 'partial_update'):
+            return QuotationCreateUpdateSerializer
+        return QuotationListSerializer
+
+    def perform_create(self,serializer):
+        serializer.save(created_by=self.request.user)
+
+    @action(detail=True,methods=['post'],url_path='accept')
+    def accept_quotation(self,request,pk=None):
+        quotation=self.get_object()
+
+        with transaction.atomic():
+            quotation.status=Quotation.Status.ACCEPTED
+            quotation.save()
+
+            if quotation.opportunity:
+                opportunity=quotation.opportunity
+                opportunity.stage = Opportunity.Stage.WON
+                opportunity.probability=100
+                opportunity.amount=quotation.grand_total
+                opportunity.save()
+
+        return Response({
+            "message":"Quotation accepted and opportunity updated successfully.",
+            "status":quotation.status,
+            "grand_total":quotation.grand_total,
+
+        },status=status.HTTP_200_OK)
+
