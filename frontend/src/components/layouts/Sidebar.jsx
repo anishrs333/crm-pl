@@ -98,11 +98,6 @@ export const Sidebar = ({
           icon: Users,
         },
         {
-          label: 'Role Permissions',
-          path: '/permissions',
-          icon: ShieldCheck,
-        },
-        {
           label: 'System Settings',
           path: '/settings',
           icon: Settings,
@@ -206,7 +201,7 @@ export const Sidebar = ({
                 {user?.name || 'User'}
               </div>
               <div className="sidebar-user-role">
-                {user?.role || 'Member'} • {user?.department || 'Sales'}
+                Administrator • {user?.department || 'Operations'}
               </div>
             </div>
           </div>

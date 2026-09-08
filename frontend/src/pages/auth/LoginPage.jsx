@@ -226,3 +226,4 @@ export const LoginPage = () => {
     </div>
   );
 };
+

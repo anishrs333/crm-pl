@@ -159,7 +159,7 @@ export const UserListPage = () => {
     {
       key: 'role',
       label: 'Role',
-      render: (val) => <Badge variant="purple">{val}</Badge>,
+      render: () => <Badge variant="primary">Admin</Badge>,
     },
     {
       key: 'department',
@@ -209,17 +209,6 @@ export const UserListPage = () => {
         />
 
         <div className="users-filters-group">
-          <FilterDropdown
-            label="Role"
-            value={roleFilter}
-            onChange={handleRoleFilterChange}
-            options={[
-              { value: '', label: 'All Roles' },
-              { value: 'Admin', label: 'Admin' },
-              { value: 'Manager', label: 'Manager' },
-              { value: 'Employee', label: 'Employee' },
-            ]}
-          />
 
           <FilterDropdown
             label="Status"

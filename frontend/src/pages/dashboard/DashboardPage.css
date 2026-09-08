@@ -1,58 +1,500 @@
-/* ==========================================================================
-   Dashboard Page Styling
+﻿/* ==========================================================================
+   Executive Command Center Dashboard Styling
+   Emerald & Forest Teal Palette Theme
    ========================================================================== */
 
 .dashboard-container {
   display: flex;
   flex-direction: column;
   gap: 24px;
+  animation: fadeIn 0.3s ease-in-out;
 }
 
-/* Dashboard Header */
-.dashboard-header {
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ==========================================================================
+   1. EXECUTIVE COMMAND BAR
+   ========================================================================== */
+
+.cmd-header-card {
+  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 24px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 16px;
+  gap: 24px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
 }
 
-.dashboard-title-area h1 {
-  font-size: 1.6rem;
+.cmd-header-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(180deg, var(--primary-500), var(--primary-700));
+}
+
+.cmd-header-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cmd-header-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.76rem;
   font-weight: 700;
+  color: var(--primary-700);
+  background-color: var(--primary-50);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  width: fit-content;
+  border: 1px solid var(--primary-200);
+  letter-spacing: 0.02em;
+}
+
+.cmd-pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--primary-500);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+  animation: cmdPulse 1.8s infinite;
+}
+
+@keyframes cmdPulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.cmd-header-title {
+  font-size: 1.75rem;
+  font-weight: 800;
   color: var(--text-primary);
   line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
-.dashboard-title-area p {
+.cmd-header-subtitle {
   font-size: 0.9rem;
   color: var(--text-secondary);
-  margin-top: 4px;
+  max-width: 680px;
+  line-height: 1.5;
 }
 
-.dashboard-quick-actions {
+.cmd-meta-tags {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-top: 4px;
   flex-wrap: wrap;
 }
 
-/* Metric Cards Grid */
-.metrics-grid {
+.cmd-date-pill {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-weight: 500;
+}
+
+.cmd-action-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   2. HERO KPI VELOCITY CARDS
+   ========================================================================== */
+
+.cmd-kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 18px;
 }
 
-/* Charts Section Grid */
-.charts-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
+.cmd-kpi-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  position: relative;
+  overflow: hidden;
 }
 
-/* Custom SVG Bar Chart */
-.chart-container {
+.cmd-kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-300);
+}
+
+.cmd-kpi-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cmd-kpi-label {
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cmd-kpi-icon-box {
+  width: 42px;
+  height: 42px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.cmd-kpi-icon-box.emerald {
+  background-color: #ecfdf5;
+  color: #059669;
+}
+
+.cmd-kpi-icon-box.amber {
+  background-color: #fffbeb;
+  color: #d97706;
+}
+
+.cmd-kpi-icon-box.teal {
+  background-color: #f0fdfa;
+  color: #0d9488;
+}
+
+.cmd-kpi-icon-box.cyan {
+  background-color: #ecfeff;
+  color: #0891b2;
+}
+
+.cmd-kpi-metric-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.cmd-kpi-metric-value {
+  font-size: 1.9rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.cmd-trend-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.cmd-trend-chip.positive {
+  background-color: #ecfdf5;
+  color: #065f46;
+}
+
+.cmd-trend-chip.warning {
+  background-color: #fffbeb;
+  color: #92400e;
+}
+
+.cmd-kpi-progress-bar {
+  width: 100%;
+  height: 6px;
+  background-color: var(--bg-subtle);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.cmd-kpi-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cmd-kpi-progress-fill.emerald {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.cmd-kpi-progress-fill.amber {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.cmd-kpi-progress-fill.teal {
+  background: linear-gradient(90deg, #14b8a6, #0d9488);
+}
+
+.cmd-kpi-progress-fill.cyan {
+  background: linear-gradient(90deg, #06b6d4, #0891b2);
+}
+
+.cmd-kpi-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.cmd-kpi-goal {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   3. HORIZONTAL PIPELINE VISUALIZER
+   ========================================================================== */
+
+.cmd-pipeline-flow-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.cmd-pipeline-flow-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+}
+
+.cmd-pipeline-flow-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.cmd-pipeline-flow-subtitle {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+.cmd-pipeline-stages-track {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+
+.cmd-stage-step {
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  position: relative;
+  transition: all var(--transition-fast);
+}
+
+.cmd-stage-step:hover {
+  background-color: #ecfdf5;
+  border-color: var(--primary-300);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xs);
+}
+
+.cmd-stage-step.highlight {
+  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
+  border-color: var(--primary-400);
+}
+
+.cmd-stage-index {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--text-muted);
+  background-color: var(--bg-surface);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--border-color);
+}
+
+.cmd-stage-index.won {
+  color: #065f46;
+  background-color: #a7f3d0;
+  border-color: #34d399;
+}
+
+.cmd-stage-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.cmd-stage-name {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cmd-stage-metric {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+  font-weight: 500;
+}
+
+.cmd-stage-badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  background-color: var(--bg-surface);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.cmd-stage-badge.active {
+  background-color: #dbeafe;
+  color: #1e40af;
+  border-color: #bfdbfe;
+}
+
+.cmd-stage-badge.success {
+  background-color: #d1fae5;
+  color: #065f46;
+  border-color: #a7f3d0;
+}
+
+.cmd-stage-arrow {
+  color: var(--border-color);
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   4. SPLIT COMMAND WORKSPACE
+   ========================================================================== */
+
+.cmd-workspace-grid {
+  display: grid;
+  grid-template-columns: 1.8fr 1.2fr;
+  gap: 22px;
+  align-items: start;
+}
+
+.cmd-workspace-left,
+.cmd-workspace-right {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+/* Opportunities Radar Table */
+.cmd-table-row-hover {
+  transition: background-color var(--transition-fast);
+}
+
+.cmd-table-row-hover:hover {
+  background-color: #f0fdf4 !important;
+}
+
+.cmd-opp-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 0.88rem;
+}
+
+.cmd-opp-sub {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.cmd-opp-client {
+  font-size: 0.86rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.cmd-opp-value {
+  font-weight: 700;
+  color: var(--primary-700);
+  font-size: 0.92rem;
+}
+
+.cmd-prob-pill-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cmd-prob-bar-track {
+  width: 50px;
+  height: 5px;
+  background-color: var(--bg-subtle);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.cmd-prob-bar-fill {
+  height: 100%;
+  background-color: var(--primary-500);
+  border-radius: var(--radius-full);
+}
+
+.cmd-prob-text {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.cmd-opp-date {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Monthly Bar Visualizer */
+.cmd-chart-container {
   width: 100%;
   height: 220px;
   display: flex;
@@ -61,7 +503,7 @@
   padding: 20px 10px 10px;
 }
 
-.bar-column {
+.cmd-bar-column {
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -71,9 +513,9 @@
   gap: 8px;
 }
 
-.bar-fill-track {
+.cmd-bar-fill-track {
   width: 100%;
-  max-width: 42px;
+  max-width: 44px;
   height: 160px;
   background-color: var(--bg-subtle);
   border-radius: var(--radius-sm);
@@ -82,76 +524,122 @@
   overflow: hidden;
 }
 
-.bar-fill {
+.cmd-bar-fill {
   width: 100%;
-  background: linear-gradient(180deg, var(--primary-500), var(--primary-700));
+  background: linear-gradient(180deg, #34d399, #059669);
   border-radius: var(--radius-sm);
   transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.bar-label {
+.cmd-bar-label {
   font-size: 0.78rem;
   font-weight: 600;
   color: var(--text-muted);
 }
 
-.bar-value-tooltip {
-  font-size: 0.72rem;
+.cmd-bar-value-tooltip {
+  font-size: 0.74rem;
   font-weight: 700;
   color: var(--text-secondary);
 }
 
-/* Pipeline Progress / Donut list */
-.pipeline-list {
+/* Actionable Agenda */
+.cmd-agenda-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
-.pipeline-item-header {
+.cmd-agenda-card {
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 14px;
   display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.cmd-agenda-card:hover {
+  border-color: var(--primary-300);
+  box-shadow: var(--shadow-xs);
+}
+
+.cmd-agenda-card-top {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
-  font-size: 0.86rem;
+}
+
+.cmd-agenda-type-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
   font-weight: 600;
+  color: var(--primary-700);
+  background-color: var(--primary-50);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--primary-200);
+}
+
+.cmd-agenda-time {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.76rem;
+  color: var(--warning-text);
+  background-color: var(--warning-bg);
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+}
+
+.cmd-agenda-title {
+  font-weight: 600;
+  font-size: 0.88rem;
+  color: var(--text-primary);
+}
+
+.cmd-agenda-contact {
+  font-size: 0.78rem;
   color: var(--text-secondary);
-  margin-bottom: 5px;
 }
 
-.pipeline-bar-bg {
-  width: 100%;
-  height: 8px;
-  background-color: var(--bg-subtle);
-  border-radius: var(--radius-full);
-  overflow: hidden;
+.cmd-agenda-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 4px;
 }
 
-.pipeline-bar-fill {
-  height: 100%;
-  border-radius: var(--radius-full);
-  transition: width 0.6s ease;
+.cmd-empty-agenda {
+  padding: 30px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-muted);
+  font-size: 0.88rem;
 }
 
-/* Tables & Activity Feed Grid */
-.dashboard-details-grid {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 20px;
-}
-
-/* Activity Feed */
-.activity-feed-list {
+/* Live Audit Stream */
+.cmd-activity-stream {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.activity-feed-item {
+.cmd-stream-item {
   display: flex;
   gap: 12px;
   align-items: flex-start;
 }
 
-.activity-feed-icon {
+.cmd-stream-icon {
   width: 32px;
   height: 32px;
   border-radius: 50%;
@@ -162,28 +650,59 @@
   justify-content: center;
   flex-shrink: 0;
   margin-top: 2px;
+  border: 1px solid var(--primary-200);
 }
 
-.activity-feed-text {
-  font-size: 0.88rem;
+.cmd-stream-text {
+  font-size: 0.86rem;
   color: var(--text-secondary);
   line-height: 1.4;
 }
 
-.activity-feed-text strong {
+.cmd-stream-text strong {
   color: var(--text-primary);
 }
 
-.activity-feed-time {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  display: block;
-  margin-top: 2px;
+.cmd-stream-target {
+  color: var(--primary-700);
+  font-weight: 600;
 }
 
-@media (max-width: 1100px) {
-  .charts-grid,
-  .dashboard-details-grid {
+.cmd-stream-time {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 3px;
+}
+
+/* ==========================================================================
+   Responsive Breakpoints
+   ========================================================================== */
+
+@media (max-width: 1200px) {
+  .cmd-pipeline-stages-track {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1024px) {
+  .cmd-workspace-grid {
     grid-template-columns: 1fr;
+  }
+  .cmd-header-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cmd-action-toolbar {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .cmd-pipeline-stages-track {
+    grid-template-columns: 1fr;
+  }
+  .cmd-stage-arrow {
+    display: none;
   }
 }

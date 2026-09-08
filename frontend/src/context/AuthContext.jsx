@@ -67,14 +67,10 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
-  const hasRole = useCallback(
-    (allowedRoles) => {
-      if (!user || !user.role) return false;
-      if (!allowedRoles || allowedRoles.length === 0) return true;
-      return allowedRoles.includes(user.role);
-    },
-    [user]
-  );
+  // Single-role universal access
+  const hasRole = useCallback(() => {
+    return true;
+  }, []);
 
   const value = {
     user,

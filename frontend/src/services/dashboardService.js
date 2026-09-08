@@ -66,8 +66,8 @@ export const dashboardService = {
         leadDistribution: [
           { stage: 'New', count: 12, color: '#3b82f6' },
           { stage: 'Contacted', count: 18, color: '#f59e0b' },
-          { stage: 'Qualified', count: 15, color: '#10b981' },
-          { stage: 'Proposal', count: 8, color: '#6366f1' },
+          { stage: 'Qualified', count: 15, color: '#059669' },
+          { stage: 'Proposal', count: 8, color: '#10b981' },
         ],
       };
     }
@@ -105,5 +105,13 @@ export const dashboardService = {
       return initialFollowUps.filter((f) => f.status === 'Pending').slice(0, 4);
     }
     return await api.get('/dashboard/pending-follow-ups');
+  },
+
+  getRecentOpportunities: async () => {
+    if (isMockEnabled) {
+      await mockDelay(null, 200);
+      return initialOpportunities.slice(0, 5);
+    }
+    return await api.get('/dashboard/recent-opportunities');
   },
 };

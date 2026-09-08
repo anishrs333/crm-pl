@@ -34,7 +34,7 @@ export const UserModal = ({
         username: initialData.username || '',
         email: initialData.email || '',
         phone: initialData.phone || '',
-        role: initialData.role || 'Employee',
+        role: 'Admin',
         department: initialData.department || 'Sales',
         status: initialData.status || 'Active',
       });
@@ -156,17 +156,16 @@ export const UserModal = ({
           />
 
           <FormField
-            label="Role"
+            label="Role (Universal Single Role)"
             name="role"
             type="select"
-            value={formData.role}
+            value="Admin"
             onChange={handleChange}
+            disabled
             required
             icon={ShieldCheck}
             options={[
-              { value: 'Admin', label: 'Admin (Full access)' },
-              { value: 'Manager', label: 'Manager (Team & reports)' },
-              { value: 'Employee', label: 'Employee (Standard user)' },
+              { value: 'Admin', label: 'Admin (Full System Access)' },
             ]}
           />
 
