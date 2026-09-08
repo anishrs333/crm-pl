@@ -1,0 +1,91 @@
+/* ==========================================================================
+   FormField & Control Styling
+   ========================================================================== */
+
+.crm-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.crm-form-label {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+.crm-form-required {
+  color: var(--danger-solid);
+  margin-left: 3px;
+}
+
+.crm-form-control-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.crm-input-icon-left {
+  position: absolute;
+  left: 12px;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.crm-input,
+.crm-select,
+.crm-textarea {
+  width: 100%;
+  padding: 9px 13px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.92rem;
+  color: var(--text-primary);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.crm-input.has-icon-left {
+  padding-left: 38px;
+}
+
+.crm-input:focus,
+.crm-select:focus,
+.crm-textarea:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14);
+}
+
+.crm-input.has-error,
+.crm-select.has-error,
+.crm-textarea.has-error {
+  border-color: var(--danger-solid);
+}
+
+.crm-input.has-error:focus,
+.crm-select.has-error:focus,
+.crm-textarea.has-error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.14);
+}
+
+.crm-textarea {
+  min-height: 80px;
+  resize: vertical;
+}
+
+.crm-form-error-msg {
+  font-size: 0.78rem;
+  color: var(--danger-solid);
+  margin-top: 3px;
+}
+
+.crm-form-helper-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 3px;
+}

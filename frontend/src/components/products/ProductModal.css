@@ -1,0 +1,15 @@
+/* ==========================================================================
+   Product Modal Styling
+   ========================================================================== */
+
+.product-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+}
+
+@media (max-width: 600px) {
+  .product-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

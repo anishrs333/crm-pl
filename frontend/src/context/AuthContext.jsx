@@ -1,95 +1,90 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useState, useEffect, useCallback } from 'react';
+import { storage } from '../utils/storage';
+import { authService } from '../services/authService';
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
-export function AuthProvider({children}){
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-    const [user, setUser] = useState(null);
+  // Initialize session from LocalStorage on mount
+  useEffect(() => {
+    const initializeAuth = () => {
+      try {
+        const savedToken = storage.getAccessToken();
+        const savedUser = storage.getUser();
 
-    const [loading, setLoading] = useState(true);
-
-    useEffect(()=>{
-
-        const savedUser = localStorage.getItem("user");
-
-        const accessToken = localStorage.getItem("access_token");
-
-        if(savedUser && accessToken){
-
-            try{
-
-                const parsedUser =
-                   JSON.parse(savedUser);
-
-                   setUser(parsedUser);
-            }
-            catch(error){
-
-                console.error(
-                       "Invalid saved user",
-                       error
-                );
-
-                localStorage.removeItem("user");
-                localStorage.removeItem("access_token");
-                localStorage.removeItem("refresh_token");
-            }
+        if (savedToken && savedUser) {
+          setToken(savedToken);
+          setUser(savedUser);
         }
-
-        setLoading(false);
-    }, []);
-
-    const login = ({
-        user,
-        accessToken,
-        refreshToken
-    }) => {
-        localStorage.setItem(
-            "user",
-            JSON.stringify(user)
-        );
-
-        localStorage.setItem(
-            "access_token",
-            accessToken
-        );
-
-        if(refreshToken){
-            localStorage.setItem(
-                "refresh_token",
-                refreshToken
-            );
-        }
-
-        setUser(user);
-    };
-       
-
-    const logout = ()=>{
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        localStorage.removeItem("user");
-
-        setUser(null);
+      } catch (err) {
+        console.error('Failed to restore authentication session:', err);
+        storage.clearSession();
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    const value = {
-        user,
-        loading,
-        login,
-        logout,
-        isAuthenticated: !!user
+    initializeAuth();
+
+    // Listen for 401 Unauthorized events emitted by api.js
+    const handleUnauthorized = () => {
+      setUser(null);
+      setToken(null);
+      storage.clearSession();
     };
 
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    };
+  }, []);
 
-    return(
-        <AuthContext.Provider
-              value={value}>
-            {children}
-         </AuthContext.Provider>
-    );
-}
+  const login = useCallback(async (username, password) => {
+    setIsLoading(true);
+    try {
+      const response = await authService.login({ username, password });
+      setUser(response.user);
+      setToken(response.accessToken);
+      return response;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-export function useAuth(){
-    return useContext(AuthContext); 
-}
+  const logout = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await authService.logout();
+    } finally {
+      setUser(null);
+      setToken(null);
+      storage.clearSession();
+      setIsLoading(false);
+    }
+  }, []);
+
+  const hasRole = useCallback(
+    (allowedRoles) => {
+      if (!user || !user.role) return false;
+      if (!allowedRoles || allowedRoles.length === 0) return true;
+      return allowedRoles.includes(user.role);
+    },
+    [user]
+  );
+
+  const value = {
+    user,
+    token,
+    isAuthenticated: !!token && !!user,
+    isLoading,
+    login,
+    logout,
+    hasRole,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};

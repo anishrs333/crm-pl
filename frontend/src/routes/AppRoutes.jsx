@@ -1,183 +1,57 @@
-import {
-    BrowserRouter,
-    Routes,
-    Route,
-    Navigate,
-} from "react-router-dom";
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { ProtectedRoute } from './ProtectedRoute';
+import { MainLayout } from '../components/layouts/MainLayout';
 
-import MainLayout from "../components/layouts/MainLayout";
+// Pages
+import { LoginPage } from '../pages/auth/LoginPage';
+import { DashboardPage } from '../pages/dashboard/DashboardPage';
+import { UserListPage } from '../pages/users/UserListPage';
+import { CustomerListPage } from '../pages/customers/CustomerListPage';
+import { LeadListPage } from '../pages/leads/LeadListPage';
+import { OpportunityListPage } from '../pages/opportunities/OpportunityListPage';
+import { FollowUpListPage } from '../pages/followups/FollowUpListPage';
+import { QuotationListPage } from '../pages/quotations/QuotationListPage';
+import { ProductListPage } from '../pages/products/ProductListPage';
+import { TaskListPage } from '../pages/tasks/TaskListPage';
+import { ReportsPage } from '../pages/reports/ReportsPage';
+import { RolePermissionPage } from '../pages/permissions/RolePermissionPage';
+import { SettingsPage } from '../pages/settings/SettingsPage';
+import { NotFoundPage } from '../pages/common/NotFoundPage';
 
-import Dashboard from "../pages/dashboard/Dashboard";
+export const AppRoutes = () => {
+  return (
+    <Routes>
+      {/* Public Route: Login */}
+      <Route path="/login" element={<LoginPage />} />
 
-import Leads from "../pages/leads/Leads";
+      {/* Protected Routes inside Main CRM Layout */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="leads" element={<LeadListPage />} />
+        <Route path="follow-ups" element={<FollowUpListPage />} />
+        <Route path="opportunities" element={<OpportunityListPage />} />
+        <Route path="quotations" element={<QuotationListPage />} />
+        <Route path="customers" element={<CustomerListPage />} />
+        <Route path="products" element={<ProductListPage />} />
+        <Route path="tasks" element={<TaskListPage />} />
+        <Route path="reports" element={<ReportsPage />} />
+        <Route path="users" element={<UserListPage />} />
+        <Route path="permissions" element={<RolePermissionPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
 
-
-function PlaceholderPage({ title }) {
-
-    return (
-        <div className="page-container">
-
-            <div className="page-header">
-
-                <div>
-                    <h1 className="page-title">
-                        {title}
-                    </h1>
-
-                    <p className="page-description">
-                        This module is being developed.
-                    </p>
-                </div>
-
-            </div>
-
-        </div>
-    );
-}
-
-
-function AppRoutes() {
-
-    return (
-
-        <BrowserRouter>
-
-            <Routes>
-
-                <Route
-                    path="/"
-                    element={
-                        <Navigate
-                            to="/dashboard"
-                            replace
-                        />
-                    }
-                />
-
-
-                <Route
-                    path="/dashboard"
-                    element={
-                        <MainLayout>
-                            <Dashboard />
-                        </MainLayout>
-                    }
-                />
-
-
-                <Route
-                    path="/leads"
-                    element={
-                        <MainLayout>
-                           <Leads />
-                        </MainLayout>
-                    }
-                />
-
-
-                <Route
-                    path="/customers"
-                    element={
-                        <MainLayout>
-                            <PlaceholderPage title="Customers" />
-                        </MainLayout>
-                    }
-                />
-
-
-                <Route
-                    path="/opportunities"
-                    element={
-                        <MainLayout>
-                            <PlaceholderPage title="Opportunities" />
-                        </MainLayout>
-                    }
-                />
-
-
-                <Route
-                    path="/activities"
-                    element={
-                        <MainLayout>
-                            <PlaceholderPage title="Activities" />
-                        </MainLayout>
-                    }
-                />
-
-
-                <Route
-                    path="/tasks"
-                    element={
-                        <MainLayout>
-                            <PlaceholderPage title="Tasks" />
-                        </MainLayout>
-                    }
-                />
-
-
-                <Route
-                    path="/quotations"
-                    element={
-                        <MainLayout>
-                            <PlaceholderPage title="Quotations" />
-                        </MainLayout>
-                    }
-                />
-
-
-                <Route
-                    path="/products"
-                    element={
-                        <MainLayout>
-                            <PlaceholderPage title="Products" />
-                        </MainLayout>
-                    }
-                />
-
-
-                <Route
-                    path="/employees"
-                    element={
-                        <MainLayout>
-                            <PlaceholderPage title="Employees" />
-                        </MainLayout>
-                    }
-                />
-
-
-                <Route
-                    path="/reports"
-                    element={
-                        <MainLayout>
-                            <PlaceholderPage title="Reports" />
-                        </MainLayout>
-                    }
-                />
-
-
-                <Route
-                    path="/notifications"
-                    element={
-                        <MainLayout>
-                            <PlaceholderPage title="Notifications" />
-                        </MainLayout>
-                    }
-                />
-
-
-                <Route
-                    path="/settings"
-                    element={
-                        <MainLayout>
-                            <PlaceholderPage title="Settings" />
-                        </MainLayout>
-                    }
-                />
-
-            </Routes>
-
-        </BrowserRouter>
-    );
-}
-
-export default AppRoutes;
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  );
+};
