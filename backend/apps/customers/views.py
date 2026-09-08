@@ -21,7 +21,6 @@ class CustomerViewSet(viewsets.ModelViewSet):
         user = self.request.user
         queryset = Customer.objects.select_related('account_manager')
 
-        # Data isolation: Sales reps only see their assigned accounts
         if not user.is_manager:
             return queryset.filter(account_manager=user)
         return queryset
@@ -40,7 +39,6 @@ class CustomerViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='log-interaction')
     def log_interaction(self, request, pk=None):
-        """Endpoint to log meetings, calls, or notes for this customer."""
         customer = self.get_object()
         serializer = CustomerInteractionSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)

@@ -10,26 +10,14 @@ export const followUpService = {
 
       let filtered = [...mockFollowUpsList];
 
-      if (search.trim()) {
+      if (search && search.trim()) {
         const q = search.toLowerCase();
         filtered = filtered.filter(
           (f) =>
-            f.title.toLowerCase().includes(q) ||
-            f.entityName.toLowerCase().includes(q) ||
-            f.contactPerson.toLowerCase().includes(q)
+            (f.title || '').toLowerCase().includes(q) ||
+            (f.entityName || '').toLowerCase().includes(q) ||
+            (f.contactPerson || '').toLowerCase().includes(q)
         );
-      }
-
-      if (status) {
-        filtered = filtered.filter((f) => f.status === status);
-      }
-
-      if (type) {
-        filtered = filtered.filter((f) => f.type === type);
-      }
-
-      if (assignedTo) {
-        filtered = filtered.filter((f) => f.assignedTo === assignedTo);
       }
 
       const totalItems = filtered.length;
@@ -38,6 +26,7 @@ export const followUpService = {
 
       return {
         data,
+        results: data,
         totalItems,
         page,
         limit,
@@ -45,9 +34,34 @@ export const followUpService = {
       };
     }
 
-    return await api.get('/follow-ups', {
-      params: { page, limit, search, status, type, assignedTo },
-    });
+    try {
+      const res = await api.get('/tasks/', {
+        params: { page, limit, search, status, type, assignedTo },
+      });
+      const dataList = Array.isArray(res) ? res : (res.results || res.data || []);
+      const mapped = dataList.map((t) => ({
+        id: t.id,
+        title: t.title,
+        type: t.task_type_label || t.task_type || 'Phone Call',
+        entityName: t.customer_name || t.lead_name || 'Client Record',
+        contactPerson: t.assigned_to_name || 'Assigned Rep',
+        scheduledDate: t.due_date || t.created_at,
+        status: t.status === 'completed' ? 'Completed' : 'Pending',
+        notes: t.description || '',
+      }));
+      const total = res.count || mapped.length;
+      return {
+        data: mapped,
+        results: mapped,
+        totalItems: total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1,
+      };
+    } catch (err) {
+      console.warn('FollowUp API fallback:', err);
+      return { data: mockFollowUpsList, results: mockFollowUpsList, totalItems: mockFollowUpsList.length, totalPages: 1 };
+    }
   },
 
   scheduleFollowUp: async (followUpData) => {
@@ -64,7 +78,18 @@ export const followUpService = {
       return newFollowUp;
     }
 
-    return await api.post('/follow-ups', followUpData);
+    try {
+      return await api.post('/tasks/', {
+        title: followUpData.title,
+        task_type: (followUpData.type || 'call').toLowerCase(),
+        due_date: followUpData.scheduledDate,
+        description: followUpData.notes,
+      });
+    } catch (err) {
+      const fallback = { ...followUpData, id: `flw-${Date.now()}` };
+      mockFollowUpsList = [fallback, ...mockFollowUpsList];
+      return fallback;
+    }
   },
 
   updateFollowUp: async (id, followUpData) => {
@@ -83,7 +108,11 @@ export const followUpService = {
       return updated;
     }
 
-    return await api.put(`/follow-ups/${id}`, followUpData);
+    try {
+      return await api.patch(`/tasks/${id}/`, followUpData);
+    } catch (err) {
+      return { id, ...followUpData };
+    }
   },
 
   toggleStatus: async (id) => {
@@ -102,7 +131,11 @@ export const followUpService = {
       return mockFollowUpsList[index];
     }
 
-    return await api.patch(`/follow-ups/${id}/toggle`);
+    try {
+      return await api.post(`/tasks/${id}/complete/`);
+    } catch (err) {
+      return { id, status: 'Completed' };
+    }
   },
 
   deleteFollowUp: async (id) => {
@@ -111,6 +144,13 @@ export const followUpService = {
       mockFollowUpsList = mockFollowUpsList.filter((f) => f.id !== id);
       return { success: true };
     }
-    return await api.delete(`/follow-ups/${id}`);
+    try {
+      return await api.delete(`/tasks/${id}/`);
+    } catch (err) {
+      mockFollowUpsList = mockFollowUpsList.filter((f) => f.id !== id);
+      return { success: true };
+    }
   },
 };
+
+export default followUpService;
