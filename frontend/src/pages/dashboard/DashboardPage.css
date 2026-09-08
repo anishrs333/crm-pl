@@ -1,19 +1,19 @@
 ﻿/* ==========================================================================
-   Executive Command Center Dashboard Styling
+   Bento Grid Operational Cockpit Styling
    Emerald & Forest Teal Palette Theme
    ========================================================================== */
 
-.dashboard-container {
+.bento-dashboard-container {
   display: flex;
   flex-direction: column;
-  gap: 24px;
-  animation: fadeIn 0.3s ease-in-out;
+  gap: 20px;
+  animation: bentoFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes fadeIn {
+@keyframes bentoFadeIn {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -22,158 +22,128 @@
 }
 
 /* ==========================================================================
-   1. EXECUTIVE COMMAND BAR
+   1. TOP EXECUTIVE TELEMETRY BAR
    ========================================================================== */
 
-.cmd-header-card {
-  background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+.bento-telemetry-bar {
+  background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-xl);
-  padding: 24px 28px;
+  padding: 18px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  box-shadow: var(--shadow-sm);
-  position: relative;
-  overflow: hidden;
+  gap: 20px;
+  box-shadow: var(--shadow-xs);
+  flex-wrap: wrap;
 }
 
-.cmd-header-card::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: linear-gradient(180deg, var(--primary-500), var(--primary-700));
-}
-
-.cmd-header-main {
+.bento-user-welcome {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
-.cmd-header-status-pill {
-  display: inline-flex;
+.bento-greeting-row {
+  display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 0.76rem;
-  font-weight: 700;
-  color: var(--primary-700);
-  background-color: var(--primary-50);
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
-  width: fit-content;
-  border: 1px solid var(--primary-200);
-  letter-spacing: 0.02em;
+  gap: 10px;
 }
 
-.cmd-pulse-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: var(--primary-500);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
-  animation: cmdPulse 1.8s infinite;
-}
-
-@keyframes cmdPulse {
-  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
-  70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
-}
-
-.cmd-header-title {
-  font-size: 1.75rem;
+.bento-greeting-text {
+  font-size: 1.5rem;
   font-weight: 800;
   color: var(--text-primary);
   line-height: 1.2;
   letter-spacing: -0.02em;
 }
 
-.cmd-header-subtitle {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  max-width: 680px;
-  line-height: 1.5;
-}
-
-.cmd-meta-tags {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-top: 4px;
-  flex-wrap: wrap;
-}
-
-.cmd-date-pill {
+.bento-role-pill {
   display: inline-flex;
   align-items: center;
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  padding: 3px 10px;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--primary-700);
+  background-color: var(--primary-50);
+  border: 1px solid var(--primary-200);
+  padding: 2px 8px;
   border-radius: var(--radius-full);
-  font-weight: 500;
-}
-
-.cmd-action-toolbar {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-/* ==========================================================================
-   2. HERO KPI VELOCITY CARDS
-   ========================================================================== */
-
-.cmd-kpi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 18px;
-}
-
-.cmd-kpi-card {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 22px;
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
-  position: relative;
-  overflow: hidden;
-}
-
-.cmd-kpi-card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-  border-color: var(--primary-300);
-}
-
-.cmd-kpi-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.cmd-kpi-label {
-  font-size: 0.84rem;
-  font-weight: 600;
-  color: var(--text-secondary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.cmd-kpi-icon-box {
-  width: 42px;
-  height: 42px;
+.bento-subtitle-text {
+  font-size: 0.84rem;
+  color: var(--text-secondary);
+}
+
+/* Timeframe Segmented Control */
+.bento-timeframe-controls {
+  display: inline-flex;
+  align-items: center;
+  background-color: var(--bg-app);
+  padding: 3px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.bento-tf-btn {
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+}
+
+.bento-tf-btn:hover {
+  color: var(--text-primary);
+}
+
+.bento-tf-btn.active {
+  background-color: var(--bg-surface);
+  color: var(--primary-700);
+  box-shadow: var(--shadow-xs);
+  border: 1px solid var(--border-color);
+}
+
+.bento-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ==========================================================================
+   2. INLINE TELEMETRY STATS RIBBON
+   ========================================================================== */
+
+.bento-telemetry-ribbon {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.bento-ribbon-pill {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.bento-ribbon-pill:hover {
+  border-color: var(--primary-300);
+  transform: translateY(-1px);
+}
+
+.bento-ribbon-icon {
+  width: 36px;
+  height: 36px;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
@@ -181,194 +151,432 @@
   flex-shrink: 0;
 }
 
-.cmd-kpi-icon-box.emerald {
+.bento-ribbon-icon.green {
   background-color: #ecfdf5;
   color: #059669;
 }
 
-.cmd-kpi-icon-box.amber {
-  background-color: #fffbeb;
-  color: #d97706;
+.bento-ribbon-icon.emerald {
+  background-color: #f0fdf4;
+  color: #10b981;
 }
 
-.cmd-kpi-icon-box.teal {
+.bento-ribbon-icon.teal {
   background-color: #f0fdfa;
   color: #0d9488;
 }
 
-.cmd-kpi-icon-box.cyan {
+.bento-ribbon-icon.cyan {
   background-color: #ecfeff;
   color: #0891b2;
 }
 
-.cmd-kpi-metric-row {
+.bento-ribbon-info {
+  flex: 1;
+  min-width: 0;
   display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
+  flex-direction: column;
 }
 
-.cmd-kpi-metric-value {
-  font-size: 1.9rem;
+.bento-ribbon-label {
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.bento-ribbon-val {
+  font-size: 1.15rem;
   font-weight: 800;
   color: var(--text-primary);
-  line-height: 1;
+  line-height: 1.2;
 }
 
-.cmd-trend-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.74rem;
+.bento-ribbon-trend {
+  font-size: 0.72rem;
   font-weight: 700;
-  padding: 3px 8px;
+  padding: 2px 7px;
   border-radius: var(--radius-full);
 }
 
-.cmd-trend-chip.positive {
+.bento-ribbon-trend.pos {
   background-color: #ecfdf5;
   color: #065f46;
 }
 
-.cmd-trend-chip.warning {
+.bento-ribbon-trend.neu {
+  background-color: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+
+.bento-ribbon-trend.warn {
   background-color: #fffbeb;
   color: #92400e;
 }
 
-.cmd-kpi-progress-bar {
-  width: 100%;
-  height: 6px;
-  background-color: var(--bg-subtle);
-  border-radius: var(--radius-full);
-  overflow: hidden;
-  margin-top: 2px;
-}
-
-.cmd-kpi-progress-fill {
-  height: 100%;
-  border-radius: var(--radius-full);
-  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.cmd-kpi-progress-fill.emerald {
-  background: linear-gradient(90deg, #10b981, #059669);
-}
-
-.cmd-kpi-progress-fill.amber {
-  background: linear-gradient(90deg, #f59e0b, #d97706);
-}
-
-.cmd-kpi-progress-fill.teal {
-  background: linear-gradient(90deg, #14b8a6, #0d9488);
-}
-
-.cmd-kpi-progress-fill.cyan {
-  background: linear-gradient(90deg, #06b6d4, #0891b2);
-}
-
-.cmd-kpi-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.76rem;
-  color: var(--text-muted);
-}
-
-.cmd-kpi-goal {
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
 /* ==========================================================================
-   3. HORIZONTAL PIPELINE VISUALIZER
+   3. ASYMMETRICAL BENTO GRID LAYOUT
    ========================================================================== */
 
-.cmd-pipeline-flow-card {
+.bento-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  grid-gap: 20px;
+}
+
+.bento-card {
   background-color: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 24px;
+  border-radius: var(--radius-xl);
+  padding: 22px;
   box-shadow: var(--shadow-sm);
-}
-
-.cmd-pipeline-flow-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 20px;
+  flex-direction: column;
+  position: relative;
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 
-.cmd-pipeline-flow-title {
-  font-size: 1.15rem;
+.bento-card:hover {
+  border-color: #cbd5e1;
+  box-shadow: var(--shadow-md);
+}
+
+.bento-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  gap: 12px;
+}
+
+.bento-card-title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.bento-tag {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--primary-700);
+  background-color: var(--primary-50);
+  width: fit-content;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+}
+
+.bento-tag.warn {
+  color: #b45309;
+  background-color: #fffbeb;
+}
+
+.bento-card-title {
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--text-primary);
 }
 
-.cmd-pipeline-flow-subtitle {
-  font-size: 0.84rem;
-  color: var(--text-secondary);
-  margin-top: 2px;
+/* ==========================================================================
+   BENTO 1: DEAL RADAR & MATRIX DECK
+   ========================================================================== */
+
+.bento-hero-deal-deck {
+  grid-column: 1 / 2;
 }
 
-.cmd-pipeline-stages-track {
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  gap: 12px;
-}
-
-.cmd-stage-step {
-  background-color: var(--bg-app);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 14px 16px;
+.bento-stage-chips {
   display: flex;
   align-items: center;
-  gap: 12px;
-  cursor: pointer;
-  position: relative;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.bento-chip {
+  font-size: 0.76rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-app);
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
   transition: all var(--transition-fast);
 }
 
-.cmd-stage-step:hover {
-  background-color: #ecfdf5;
+.bento-chip:hover {
+  color: var(--text-primary);
   border-color: var(--primary-300);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-xs);
 }
 
-.cmd-stage-step.highlight {
-  background: linear-gradient(135deg, #ecfdf5, #d1fae5);
-  border-color: var(--primary-400);
+.bento-chip.active {
+  background-color: var(--primary-50);
+  color: var(--primary-700);
+  border-color: var(--primary-300);
 }
 
-.cmd-stage-index {
-  font-size: 0.8rem;
+.bento-matrix-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bento-matrix-card {
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display: grid;
+  grid-template-columns: 1.8fr 1.6fr auto;
+  align-items: center;
+  gap: 16px;
+  transition: all var(--transition-fast);
+}
+
+.bento-matrix-card:hover {
+  background-color: #ffffff;
+  border-color: var(--primary-300);
+  box-shadow: var(--shadow-sm);
+  transform: translateX(2px);
+}
+
+.bento-matrix-col-main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bento-matrix-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--primary-100), var(--primary-200));
+  color: var(--primary-800);
   font-weight: 800;
-  color: var(--text-muted);
-  background-color: var(--bg-surface);
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
+  font-size: 0.85rem;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 1px solid var(--border-color);
+  border: 1px solid var(--primary-300);
 }
 
-.cmd-stage-index.won {
+.bento-matrix-deal-title {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.25;
+}
+
+.bento-matrix-customer-sub {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.bento-dot-sep {
+  color: var(--border-color);
+}
+
+.bento-matrix-col-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.bento-matrix-val-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.bento-matrix-val {
+  font-size: 0.96rem;
+  font-weight: 800;
+  color: var(--primary-700);
+}
+
+.bento-matrix-prob-line {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.74rem;
+  color: var(--text-muted);
+}
+
+.bento-prob-bar {
+  width: 46px;
+  height: 5px;
+  background-color: #e2e8f0;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.bento-prob-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #34d399, #059669);
+  border-radius: var(--radius-full);
+}
+
+.bento-prob-num {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.bento-date-text {
+  font-size: 0.74rem;
+}
+
+.bento-matrix-col-action {
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* ==========================================================================
+   BENTO 2: ACTION RADAR WITH CIRCULAR SLA DIAL
+   ========================================================================== */
+
+.bento-action-radar {
+  grid-column: 2 / 3;
+}
+
+.bento-due-count {
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background-color: #fffbeb;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.bento-radial-sla-box {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 16px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--primary-200);
+  margin-bottom: 16px;
+}
+
+.bento-circle-dial-container {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  flex-shrink: 0;
+}
+
+.bento-circle-svg {
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.bento-circle-bg {
+  fill: none;
+  stroke: #d1fae5;
+}
+
+.bento-circle-fg {
+  fill: none;
+  stroke: #059669;
+  stroke-linecap: round;
+  transition: stroke-dashoffset 0.8s ease;
+}
+
+.bento-circle-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+}
+
+.bento-circle-pct {
+  font-size: 0.95rem;
+  font-weight: 800;
   color: #065f46;
-  background-color: #a7f3d0;
-  border-color: #34d399;
 }
 
-.cmd-stage-content {
+.bento-circle-sub {
+  font-size: 0.64rem;
+  font-weight: 600;
+  color: #059669;
+  text-transform: uppercase;
+}
+
+.bento-radial-sla-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bento-sla-item {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.bento-sla-item-num {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.bento-sla-item-desc {
+  font-size: 0.76rem;
+  color: var(--text-secondary);
+}
+
+.bento-action-items {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bento-action-row {
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: border-color var(--transition-fast);
+}
+
+.bento-action-row:hover {
+  border-color: var(--primary-300);
+}
+
+.bento-action-type-bubble {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background-color: #ecfdf5;
+  color: #059669;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid #a7f3d0;
+}
+
+.bento-action-content {
   flex: 1;
   min-width: 0;
 }
 
-.cmd-stage-name {
-  display: block;
+.bento-action-title {
   font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-primary);
@@ -377,146 +585,119 @@
   text-overflow: ellipsis;
 }
 
-.cmd-stage-metric {
-  display: block;
-  font-size: 0.74rem;
+.bento-action-meta {
+  font-size: 0.72rem;
   color: var(--text-muted);
-  margin-top: 2px;
-  font-weight: 500;
 }
 
-.cmd-stage-badge {
-  font-size: 0.68rem;
-  font-weight: 700;
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  background-color: var(--bg-surface);
-  color: var(--text-secondary);
+.bento-check-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
   border: 1px solid var(--border-color);
-}
-
-.cmd-stage-badge.active {
-  background-color: #dbeafe;
-  color: #1e40af;
-  border-color: #bfdbfe;
-}
-
-.cmd-stage-badge.success {
-  background-color: #d1fae5;
-  color: #065f46;
-  border-color: #a7f3d0;
-}
-
-.cmd-stage-arrow {
-  color: var(--border-color);
+  background-color: var(--bg-surface);
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-fast);
   flex-shrink: 0;
 }
 
-/* ==========================================================================
-   4. SPLIT COMMAND WORKSPACE
-   ========================================================================== */
-
-.cmd-workspace-grid {
-  display: grid;
-  grid-template-columns: 1.8fr 1.2fr;
-  gap: 22px;
-  align-items: start;
+.bento-check-btn:hover {
+  background-color: #ecfdf5;
+  color: #059669;
+  border-color: #059669;
+  transform: scale(1.08);
 }
 
-.cmd-workspace-left,
-.cmd-workspace-right {
+.bento-empty-action {
+  text-align: center;
+  padding: 24px 12px;
+  color: var(--text-muted);
+  font-size: 0.84rem;
   display: flex;
   flex-direction: column;
-  gap: 22px;
-}
-
-/* Opportunities Radar Table */
-.cmd-table-row-hover {
-  transition: background-color var(--transition-fast);
-}
-
-.cmd-table-row-hover:hover {
-  background-color: #f0fdf4 !important;
-}
-
-.cmd-opp-title {
-  font-weight: 600;
-  color: var(--text-primary);
-  font-size: 0.88rem;
-}
-
-.cmd-opp-sub {
-  font-size: 0.76rem;
-  color: var(--text-muted);
-}
-
-.cmd-opp-client {
-  font-size: 0.86rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-}
-
-.cmd-opp-value {
-  font-weight: 700;
-  color: var(--primary-700);
-  font-size: 0.92rem;
-}
-
-.cmd-prob-pill-box {
-  display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.cmd-prob-bar-track {
-  width: 50px;
-  height: 5px;
+/* ==========================================================================
+   BENTO ROW 2 (3 EQUAL COLUMNS)
+   ========================================================================== */
+
+.bento-revenue-gauge,
+.bento-conversion-health,
+.bento-live-stream {
+  grid-column: span 1;
+}
+
+/* Bento 3: Financial Quota Visual */
+.bento-quota-tag {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #065f46;
+  background-color: #ecfdf5;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.bento-quota-visual-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.bento-quota-current {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1;
+}
+
+.bento-quota-target {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.bento-segmented-meter {
+  width: 100%;
+  height: 8px;
   background-color: var(--bg-subtle);
   border-radius: var(--radius-full);
   overflow: hidden;
 }
 
-.cmd-prob-bar-fill {
+.bento-segmented-meter-fill {
   height: 100%;
-  background-color: var(--primary-500);
+  background: linear-gradient(90deg, #10b981, #059669);
   border-radius: var(--radius-full);
+  transition: width 0.8s ease;
 }
 
-.cmd-prob-text {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.cmd-opp-date {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-
-/* Monthly Bar Visualizer */
-.cmd-chart-container {
-  width: 100%;
-  height: 220px;
+.bento-spark-columns {
   display: flex;
   align-items: flex-end;
-  gap: 16px;
-  padding: 20px 10px 10px;
+  gap: 10px;
+  height: 90px;
+  padding-top: 10px;
 }
 
-.cmd-bar-column {
+.bento-spark-col {
   flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   height: 100%;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 4px;
 }
 
-.cmd-bar-fill-track {
+.bento-spark-track {
   width: 100%;
-  max-width: 44px;
-  height: 160px;
+  height: 65px;
   background-color: var(--bg-subtle);
   border-radius: var(--radius-sm);
   display: flex;
@@ -524,185 +705,188 @@
   overflow: hidden;
 }
 
-.cmd-bar-fill {
+.bento-spark-fill {
   width: 100%;
   background: linear-gradient(180deg, #34d399, #059669);
   border-radius: var(--radius-sm);
-  transition: height 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: height 0.6s ease;
 }
 
-.cmd-bar-label {
-  font-size: 0.78rem;
+.bento-spark-month {
+  font-size: 0.7rem;
   font-weight: 600;
   color: var(--text-muted);
 }
 
-.cmd-bar-value-tooltip {
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-}
-
-/* Actionable Agenda */
-.cmd-agenda-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.cmd-agenda-card {
-  background-color: var(--bg-app);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.cmd-agenda-card:hover {
-  border-color: var(--primary-300);
-  box-shadow: var(--shadow-xs);
-}
-
-.cmd-agenda-card-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.cmd-agenda-type-chip {
+/* Bento 4: Conversion Funnel */
+.bento-score-badge {
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--primary-700);
-  background-color: var(--primary-50);
-  padding: 2px 8px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--primary-200);
-}
-
-.cmd-agenda-time {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
   font-size: 0.76rem;
-  color: var(--warning-text);
-  background-color: var(--warning-bg);
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  font-weight: 500;
+  font-weight: 700;
+  color: #065f46;
+  background-color: #ecfdf5;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  border: 1px solid #a7f3d0;
 }
 
-.cmd-agenda-title {
-  font-weight: 600;
-  font-size: 0.88rem;
-  color: var(--text-primary);
+.bento-funnel-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
-.cmd-agenda-contact {
+.bento-funnel-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.bento-funnel-meta {
+  display: flex;
+  justify-content: space-between;
   font-size: 0.78rem;
-  color: var(--text-secondary);
-}
-
-.cmd-agenda-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-}
-
-.cmd-empty-agenda {
-  padding: 30px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  color: var(--text-muted);
-  font-size: 0.88rem;
-}
-
-/* Live Audit Stream */
-.cmd-activity-stream {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.cmd-stream-item {
-  display: flex;
-  gap: 12px;
-  align-items: flex-start;
-}
-
-.cmd-stream-icon {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: var(--primary-50);
-  color: var(--primary-600);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-top: 2px;
-  border: 1px solid var(--primary-200);
-}
-
-.cmd-stream-text {
-  font-size: 0.86rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-.cmd-stream-text strong {
-  color: var(--text-primary);
-}
-
-.cmd-stream-target {
-  color: var(--primary-700);
   font-weight: 600;
+  color: var(--text-secondary);
 }
 
-.cmd-stream-time {
+.bento-funnel-bar {
+  width: 100%;
+  height: 6px;
+  background-color: var(--bg-subtle);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.bento-funnel-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.6s ease;
+}
+
+.bento-lead-flow-note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 0.74rem;
   color: var(--text-muted);
-  display: block;
-  margin-top: 3px;
+  margin-top: 14px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* Bento 5: Live Stream */
+.bento-live-dot-pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25);
+  animation: bentoPulse 2s infinite;
+}
+
+@keyframes bentoPulse {
+  0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+  70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+}
+
+.bento-stream-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.bento-stream-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.bento-stream-bullet {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--primary-500);
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.bento-stream-text {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.bento-stream-user {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.bento-stream-target {
+  color: var(--primary-700);
+}
+
+.bento-stream-time {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 2px;
 }
 
 /* ==========================================================================
-   Responsive Breakpoints
+   RESPONSIVE BREAKPOINTS
    ========================================================================== */
 
-@media (max-width: 1200px) {
-  .cmd-pipeline-stages-track {
+@media (min-width: 1100px) {
+  .bento-grid {
     grid-template-columns: repeat(3, 1fr);
+  }
+  .bento-hero-deal-deck {
+    grid-column: 1 / 3;
+  }
+  .bento-action-radar {
+    grid-column: 3 / 4;
   }
 }
 
-@media (max-width: 1024px) {
-  .cmd-workspace-grid {
+@media (max-width: 1099px) {
+  .bento-grid {
     grid-template-columns: 1fr;
   }
-  .cmd-header-card {
-    flex-direction: column;
-    align-items: flex-start;
+  .bento-hero-deal-deck,
+  .bento-action-radar,
+  .bento-revenue-gauge,
+  .bento-conversion-health,
+  .bento-live-stream {
+    grid-column: 1 / -1;
   }
-  .cmd-action-toolbar {
-    width: 100%;
+  .bento-telemetry-ribbon {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 768px) {
-  .cmd-pipeline-stages-track {
+  .bento-telemetry-ribbon {
     grid-template-columns: 1fr;
   }
-  .cmd-stage-arrow {
-    display: none;
+  .bento-matrix-card {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .bento-matrix-col-action {
+    justify-content: flex-start;
+  }
+  .bento-telemetry-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .bento-timeframe-controls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .bento-header-actions {
+    width: 100%;
   }
 }

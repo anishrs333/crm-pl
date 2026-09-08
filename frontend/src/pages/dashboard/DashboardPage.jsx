@@ -4,7 +4,6 @@ import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { dashboardService } from '../../services/dashboardService';
 import { formatCurrency, formatTimeAgo, formatDateTime, getStatusBadgeVariant } from '../../utils/formatters';
-import { Card, CardHeader, CardBody } from '../../components/common/Card';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { Skeleton } from '../../components/common/Skeleton';
@@ -13,7 +12,6 @@ import {
   Users, 
   Briefcase, 
   Flame, 
-  CheckSquare, 
   DollarSign, 
   Plus, 
   ArrowRight, 
@@ -31,7 +29,11 @@ import {
   Phone,
   Mail,
   Zap,
-  ArrowUpRight
+  ArrowUpRight,
+  Layers,
+  Award,
+  Check,
+  Percent
 } from 'lucide-react';
 import './DashboardPage.css';
 
@@ -40,6 +42,8 @@ export const DashboardPage = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
 
+  const [timeframe, setTimeframe] = useState('month'); // 'today' | 'week' | 'month' | 'quarter'
+  const [activeStageFilter, setActiveStageFilter] = useState('All');
   const [summary, setSummary] = useState(null);
   const [activities, setActivities] = useState([]);
   const [recentOpportunities, setRecentOpportunities] = useState([]);
@@ -65,7 +69,7 @@ export const DashboardPage = () => {
       setPendingFollowUps(followData);
     } catch (err) {
       console.error('Error loading dashboard data:', err);
-      setError(err.message || 'Unable to load CRM executive command center.');
+      setError(err.message || 'Unable to load CRM Bento cockpit.');
     } finally {
       setIsLoading(false);
     }
@@ -75,16 +79,16 @@ export const DashboardPage = () => {
     fetchDashboardData();
   }, [fetchDashboardData]);
 
-  const handleQuickCompleteFollowUp = (id, title) => {
+  const handleCompleteFollowUp = (id, title) => {
     setCompletedFollowUpIds((prev) => [...prev, id]);
-    showToast(`Follow-up marked as completed: "${title}"`, 'success', 2500);
+    showToast(`Task completed: "${title}"`, 'success', 2200);
   };
 
   if (error) {
     return (
-      <div className="dashboard-container">
+      <div className="bento-dashboard-container">
         <ErrorState
-          title="Command Center Unavailable"
+          title="Bento Cockpit Unavailable"
           message={error}
           onRetry={fetchDashboardData}
         />
@@ -92,52 +96,77 @@ export const DashboardPage = () => {
     );
   }
 
+  // Active follow-ups
+  const activeFollowUps = pendingFollowUps.filter(
+    (f) => !completedFollowUpIds.includes(f.id)
+  );
+  const totalFollowUps = pendingFollowUps.length || 4;
+  const completedCount = completedFollowUpIds.length;
+  const followUpCompletionPct = Math.round((completedCount / (totalFollowUps || 1)) * 100);
+
+  // Target calculations ($500,000 Quota)
+  const targetQuota = 500000;
+  const currentPipeline = summary?.opportunityPipelineValue || 424000;
+  const quotaPct = Math.min(100, Math.round((currentPipeline / targetQuota) * 100));
+
+  // Opportunities filtered
+  const filteredOpportunities = recentOpportunities.filter((opp) => {
+    if (activeStageFilter === 'All') return true;
+    return opp.stage.toLowerCase().includes(activeStageFilter.toLowerCase());
+  });
+
+  // Max revenue for sparklines
   const maxRevenue = summary?.monthlyPipeline?.reduce(
     (max, item) => Math.max(max, item.revenue),
     1
   ) || 1;
 
-  const activeFollowUps = pendingFollowUps.filter(
-    (f) => !completedFollowUpIds.includes(f.id)
-  );
-
   return (
-    <div className="dashboard-container">
-      {/* 1. EXECUTIVE COMMAND BAR */}
-      <header className="cmd-header-card">
-        <div className="cmd-header-main">
-          <div className="cmd-header-status-pill">
-            <span className="cmd-pulse-dot" />
-            <span>Core Active • Operational</span>
-          </div>
-          <h1 className="cmd-header-title">
-            Welcome back, {user?.name || 'Administrator'} 👋
-          </h1>
-          <p className="cmd-header-subtitle">
-            Executive Command Center — End-to-end pipeline management from lead acquisition to quotation closure.
-          </p>
-          <div className="cmd-meta-tags">
-            <Badge variant="primary">
-              <ShieldCheck size={12} style={{ marginRight: '4px' }} />
-              Single Role • Full Access
-            </Badge>
-            <span className="cmd-date-pill">
-              <Calendar size={13} style={{ marginRight: '5px' }} />
-              {new Date().toLocaleDateString('en-US', {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric'
-              })}
+    <div className="bento-dashboard-container">
+      {/* 1. TOP EXECUTIVE TELEMETRY & CONTEXT BAR */}
+      <header className="bento-telemetry-bar">
+        <div className="bento-user-welcome">
+          <div className="bento-greeting-row">
+            <h1 className="bento-greeting-text">
+              Welcome, {user?.name || 'Administrator'}
+            </h1>
+            <span className="bento-role-pill">
+              <ShieldCheck size={13} />
+              Admin
             </span>
           </div>
+          <p className="bento-subtitle-text">
+            Enterprise Operations Cockpit • Real-time telemetry across revenue, deals, and execution.
+          </p>
         </div>
 
-        {/* Fast Action Launchpad */}
-        <div className="cmd-action-toolbar">
+        {/* Center: Timeframe Segmented Control */}
+        <div className="bento-timeframe-controls" role="group" aria-label="Timeframe Selection">
+          {[
+            { id: 'today', label: 'Today' },
+            { id: 'week', label: 'This Week' },
+            { id: 'month', label: 'This Month' },
+            { id: 'quarter', label: 'Q3 2026' },
+          ].map((tf) => (
+            <button
+              key={tf.id}
+              type="button"
+              className={`bento-tf-btn ${timeframe === tf.id ? 'active' : ''}`}
+              onClick={() => {
+                setTimeframe(tf.id);
+                showToast(`Switched view to ${tf.label}`, 'info', 1200);
+              }}
+            >
+              {tf.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Right: Modern Quick Actions */}
+        <div className="bento-header-actions">
           <Button
             variant="primary"
-            size="md"
+            size="sm"
             icon={Flame}
             onClick={() => navigate('/leads')}
           >
@@ -145,448 +174,367 @@ export const DashboardPage = () => {
           </Button>
           <Button
             variant="outline"
-            size="md"
-            icon={PhoneCall}
-            onClick={() => navigate('/follow-ups')}
-          >
-            Schedule Call
-          </Button>
-          <Button
-            variant="outline"
-            size="md"
+            size="sm"
             icon={FileText}
             onClick={() => navigate('/quotations')}
           >
-            Create Quote
-          </Button>
-          <Button
-            variant="secondary"
-            size="md"
-            icon={Briefcase}
-            onClick={() => navigate('/customers')}
-          >
-            Add Customer
+            New Quote
           </Button>
         </div>
       </header>
 
-      {/* 2. HERO KPI VELOCITY CARDS (4 Grid) */}
-      <section className="cmd-kpi-grid" aria-label="Key Performance Indicators">
-        {isLoading ? (
-          Array.from({ length: 4 }).map((_, i) => (
-            <div key={i} className="cmd-kpi-card" style={{ padding: '22px' }}>
-              <Skeleton width="40%" height="16px" style={{ marginBottom: '14px' }} />
-              <Skeleton width="70%" height="32px" style={{ marginBottom: '10px' }} />
-              <Skeleton width="50%" height="14px" />
-            </div>
-          ))
-        ) : (
-          <>
-            {/* KPI 1: Pipeline Revenue */}
-            <div className="cmd-kpi-card">
-              <div className="cmd-kpi-header">
-                <span className="cmd-kpi-label">Pipeline Value</span>
-                <div className="cmd-kpi-icon-box emerald">
-                  <DollarSign size={20} />
-                </div>
-              </div>
-              <div className="cmd-kpi-metric-row">
-                <span className="cmd-kpi-metric-value">
-                  {formatCurrency(summary?.opportunityPipelineValue)}
-                </span>
-                <span className="cmd-trend-chip positive">
-                  <ArrowUpRight size={13} />
-                  +14.5%
-                </span>
-              </div>
-              <div className="cmd-kpi-progress-bar">
-                <div className="cmd-kpi-progress-fill emerald" style={{ width: '78%' }} />
-              </div>
-              <div className="cmd-kpi-footer">
-                <span>{summary?.openOpportunities} active sales opportunities</span>
-                <span className="cmd-kpi-goal">Target: $500k</span>
-              </div>
-            </div>
-
-            {/* KPI 2: Total Leads & Conversion */}
-            <div className="cmd-kpi-card">
-              <div className="cmd-kpi-header">
-                <span className="cmd-kpi-label">Lead Velocity</span>
-                <div className="cmd-kpi-icon-box amber">
-                  <Flame size={20} />
-                </div>
-              </div>
-              <div className="cmd-kpi-metric-row">
-                <span className="cmd-kpi-metric-value">
-                  {summary?.totalLeads}
-                </span>
-                <span className="cmd-trend-chip positive">
-                  <ArrowUpRight size={13} />
-                  {summary?.conversionRate}% Win
-                </span>
-              </div>
-              <div className="cmd-kpi-progress-bar">
-                <div
-                  className="cmd-kpi-progress-fill amber"
-                  style={{ width: `${Math.min(summary?.conversionRate || 35, 100)}%` }}
-                />
-              </div>
-              <div className="cmd-kpi-footer">
-                <span>{summary?.newLeads} fresh • {summary?.convertedLeads} won</span>
-                <span className="cmd-kpi-goal">Goal: 65%</span>
-              </div>
-            </div>
-
-            {/* KPI 3: Actionable Follow-ups */}
-            <div className="cmd-kpi-card">
-              <div className="cmd-kpi-header">
-                <span className="cmd-kpi-label">Follow-ups Queue</span>
-                <div className="cmd-kpi-icon-box teal">
-                  <PhoneCall size={20} />
-                </div>
-              </div>
-              <div className="cmd-kpi-metric-row">
-                <span className="cmd-kpi-metric-value">
-                  {activeFollowUps.length}
-                </span>
-                <span className="cmd-trend-chip warning">
-                  <Clock size={13} />
-                  Action Today
-                </span>
-              </div>
-              <div className="cmd-kpi-progress-bar">
-                <div
-                  className="cmd-kpi-progress-fill teal"
-                  style={{
-                    width: `${Math.max(20, Math.min(activeFollowUps.length * 25, 100))}%`,
-                  }}
-                />
-              </div>
-              <div className="cmd-kpi-footer">
-                <span>Scheduled calls & client meetings</span>
-                <span className="cmd-kpi-goal">100% SLA</span>
-              </div>
-            </div>
-
-            {/* KPI 4: Quotation Status */}
-            <div className="cmd-kpi-card">
-              <div className="cmd-kpi-header">
-                <span className="cmd-kpi-label">Quotation Volume</span>
-                <div className="cmd-kpi-icon-box cyan">
-                  <FileText size={20} />
-                </div>
-              </div>
-              <div className="cmd-kpi-metric-row">
-                <span className="cmd-kpi-metric-value">
-                  {formatCurrency(summary?.quotationStats?.totalValue)}
-                </span>
-                <span className="cmd-trend-chip positive">
-                  <CheckCircle2 size={13} />
-                  {summary?.quotationStats?.accepted} Won
-                </span>
-              </div>
-              <div className="cmd-kpi-progress-bar">
-                <div className="cmd-kpi-progress-fill cyan" style={{ width: '84%' }} />
-              </div>
-              <div className="cmd-kpi-footer">
-                <span>{summary?.quotationStats?.sent} delivered to prospects</span>
-                <span className="cmd-kpi-goal">92% Acceptance</span>
-              </div>
-            </div>
-          </>
-        )}
-      </section>
-
-      {/* 3. INTERACTIVE HORIZONTAL PIPELINE FLOW VISUALIZER */}
-      <section className="cmd-pipeline-flow-card">
-        <div className="cmd-pipeline-flow-header">
-          <div>
-            <h2 className="cmd-pipeline-flow-title">Sales Conversion Pipeline</h2>
-            <p className="cmd-pipeline-flow-subtitle">
-              Interactive stage progression across lead generation, qualification, proposal, and client onboarding.
-            </p>
+      {/* 2. TELEMETRY STATS RIBBON (Modern Inline Glass Pills) */}
+      <section className="bento-telemetry-ribbon" aria-label="Executive Telemetry">
+        <div className="bento-ribbon-pill">
+          <div className="bento-ribbon-icon green">
+            <DollarSign size={16} />
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            rightIcon={ArrowRight}
-            onClick={() => navigate('/opportunities')}
-          >
-            Pipeline Board
-          </Button>
+          <div className="bento-ribbon-info">
+            <span className="bento-ribbon-label">Pipeline Value</span>
+            <span className="bento-ribbon-val">{formatCurrency(currentPipeline)}</span>
+          </div>
+          <span className="bento-ribbon-trend pos">+14.2%</span>
         </div>
 
-        <div className="cmd-pipeline-stages-track">
-          {/* Stage 1 */}
-          <div className="cmd-stage-step" onClick={() => navigate('/leads')}>
-            <div className="cmd-stage-index">01</div>
-            <div className="cmd-stage-content">
-              <span className="cmd-stage-name">Inbound Leads</span>
-              <span className="cmd-stage-metric">{summary?.totalLeads || 24} Leads</span>
-            </div>
-            <span className="cmd-stage-badge">Intake</span>
-            <ChevronRight size={18} className="cmd-stage-arrow" />
+        <div className="bento-ribbon-pill">
+          <div className="bento-ribbon-icon emerald">
+            <Flame size={16} />
           </div>
+          <div className="bento-ribbon-info">
+            <span className="bento-ribbon-label">Total Leads</span>
+            <span className="bento-ribbon-val">{summary?.totalLeads || 24} Leads</span>
+          </div>
+          <span className="bento-ribbon-trend neu">{summary?.newLeads || 12} new</span>
+        </div>
 
-          {/* Stage 2 */}
-          <div className="cmd-stage-step" onClick={() => navigate('/follow-ups')}>
-            <div className="cmd-stage-index">02</div>
-            <div className="cmd-stage-content">
-              <span className="cmd-stage-name">Contacted & Follow-up</span>
-              <span className="cmd-stage-metric">18 Engaged</span>
-            </div>
-            <span className="cmd-stage-badge">Engaged</span>
-            <ChevronRight size={18} className="cmd-stage-arrow" />
+        <div className="bento-ribbon-pill">
+          <div className="bento-ribbon-icon teal">
+            <Target size={16} />
           </div>
+          <div className="bento-ribbon-info">
+            <span className="bento-ribbon-label">Conversion Rate</span>
+            <span className="bento-ribbon-val">{summary?.conversionRate || 68}% Win</span>
+          </div>
+          <span className="bento-ribbon-trend pos">Optimal</span>
+        </div>
 
-          {/* Stage 3 */}
-          <div className="cmd-stage-step" onClick={() => navigate('/opportunities')}>
-            <div className="cmd-stage-index">03</div>
-            <div className="cmd-stage-content">
-              <span className="cmd-stage-name">Qualified Opportunities</span>
-              <span className="cmd-stage-metric">{summary?.openOpportunities || 15} Deals</span>
-            </div>
-            <span className="cmd-stage-badge active">In Play</span>
-            <ChevronRight size={18} className="cmd-stage-arrow" />
+        <div className="bento-ribbon-pill">
+          <div className="bento-ribbon-icon cyan">
+            <Clock size={16} />
           </div>
-
-          {/* Stage 4 */}
-          <div className="cmd-stage-step" onClick={() => navigate('/quotations')}>
-            <div className="cmd-stage-index">04</div>
-            <div className="cmd-stage-content">
-              <span className="cmd-stage-name">Formal Quotations</span>
-              <span className="cmd-stage-metric">{summary?.quotationStats?.total || 8} Quotes</span>
-            </div>
-            <span className="cmd-stage-badge">Review</span>
-            <ChevronRight size={18} className="cmd-stage-arrow" />
+          <div className="bento-ribbon-info">
+            <span className="bento-ribbon-label">Active Tasks</span>
+            <span className="bento-ribbon-val">{activeFollowUps.length} Pending</span>
           </div>
-
-          {/* Stage 5 */}
-          <div className="cmd-stage-step highlight" onClick={() => navigate('/customers')}>
-            <div className="cmd-stage-index won">05</div>
-            <div className="cmd-stage-content">
-              <span className="cmd-stage-name">Won Customers</span>
-              <span className="cmd-stage-metric">{summary?.totalCustomers || 12} Accounts</span>
-            </div>
-            <span className="cmd-stage-badge success">Converted</span>
-          </div>
+          <span className="bento-ribbon-trend warn">Priority</span>
         </div>
       </section>
 
-      {/* 4. SPLIT COMMAND WORKSPACE (65% Deals & Chart / 35% Follow-ups & Stream) */}
-      <section className="cmd-workspace-grid">
-        {/* Left Column (65%) */}
-        <div className="cmd-workspace-left">
-          {/* Active Opportunities Radar Table */}
-          <Card>
-            <CardHeader
-              title="Active Sales Opportunities Radar"
-              subtitle="High-probability deals currently advancing through final stages"
-              action={
-                <Button
-                  variant="outline"
-                  size="sm"
-                  rightIcon={ArrowRight}
-                  onClick={() => navigate('/opportunities')}
+      {/* 3. ASYMMETRICAL BENTO GRID WORKSPACE */}
+      <section className="bento-grid">
+        {/* =================================================================
+            BENTO 1: DEAL MATRIX DECK (HERO WIDE - 2 COLUMNS)
+           ================================================================= */}
+        <div className="bento-card bento-hero-deal-deck">
+          <div className="bento-card-header">
+            <div className="bento-card-title-group">
+              <div className="bento-tag">Deal Radar</div>
+              <h2 className="bento-card-title">Active Opportunities & Revenue Deck</h2>
+            </div>
+
+            {/* Stage Filter Chips */}
+            <div className="bento-stage-chips">
+              {['All', 'Proposal', 'Negotiation', 'Qualification'].map((stage) => (
+                <button
+                  key={stage}
+                  type="button"
+                  className={`bento-chip ${activeStageFilter === stage ? 'active' : ''}`}
+                  onClick={() => setActiveStageFilter(stage)}
                 >
-                  All Deals
-                </Button>
-              }
-            />
-            <CardBody noPadding>
-              {isLoading ? (
-                <div style={{ padding: '24px' }}>
-                  <Skeleton width="100%" height="150px" />
-                </div>
-              ) : (
-                <div className="crm-table-responsive">
-                  <table className="crm-table">
-                    <thead>
-                      <tr>
-                        <th>Opportunity Name</th>
-                        <th>Client / Account</th>
-                        <th>Deal Value</th>
-                        <th>Probability</th>
-                        <th>Stage</th>
-                        <th>Target Date</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {recentOpportunities.map((opp) => (
-                        <tr key={opp.id} className="cmd-table-row-hover">
-                          <td>
-                            <div className="cmd-opp-title">{opp.title}</div>
-                            <div className="cmd-opp-sub">Owner: {opp.assignedTo}</div>
-                          </td>
-                          <td>
-                            <span className="cmd-opp-client">{opp.customerName}</span>
-                          </td>
-                          <td>
-                            <span className="cmd-opp-value">{formatCurrency(opp.dealValue)}</span>
-                          </td>
-                          <td>
-                            <div className="cmd-prob-pill-box">
-                              <div className="cmd-prob-bar-track">
-                                <div 
-                                  className="cmd-prob-bar-fill" 
-                                  style={{ width: `${opp.probability}%` }}
-                                />
-                              </div>
-                              <span className="cmd-prob-text">{opp.probability}%</span>
-                            </div>
-                          </td>
-                          <td>
-                            <Badge variant={getStatusBadgeVariant(opp.stage)}>
-                              {opp.stage}
-                            </Badge>
-                          </td>
-                          <td>
-                            <span className="cmd-opp-date">{opp.expectedCloseDate}</span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </CardBody>
-          </Card>
+                  {stage}
+                </button>
+              ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                rightIcon={ArrowRight}
+                onClick={() => navigate('/opportunities')}
+              >
+                All Deals
+              </Button>
+            </div>
+          </div>
 
-          {/* Monthly Revenue & Pipeline Growth Chart */}
-          <Card>
-            <CardHeader
-              title="Monthly Sales Trajectory & Revenue Velocity"
-              subtitle="Closed revenue tracking against monthly quotas"
-            />
-            <CardBody>
-              {isLoading ? (
-                <div style={{ height: '220px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Skeleton width="100%" height="180px" />
-                </div>
-              ) : (
-                <div className="cmd-chart-container">
-                  {summary?.monthlyPipeline?.map((bar) => {
-                    const heightPercent = Math.round((bar.revenue / maxRevenue) * 100);
-                    return (
-                      <div key={bar.month} className="cmd-bar-column">
-                        <span className="cmd-bar-value-tooltip">
-                          ${Math.round(bar.revenue / 1000)}k
-                        </span>
-                        <div className="cmd-bar-fill-track">
-                          <div
-                            className="cmd-bar-fill"
-                            style={{ height: `${heightPercent}%` }}
-                            title={`${bar.month}: $${bar.revenue.toLocaleString()} (${bar.leads} leads)`}
-                          />
-                        </div>
-                        <span className="cmd-bar-label">{bar.month}</span>
+          {/* Matrix Card List */}
+          {isLoading ? (
+            <div style={{ display: 'grid', gap: '12px', marginTop: '16px' }}>
+              <Skeleton width="100%" height="68px" />
+              <Skeleton width="100%" height="68px" />
+              <Skeleton width="100%" height="68px" />
+            </div>
+          ) : (
+            <div className="bento-matrix-cards">
+              {filteredOpportunities.map((opp) => (
+                <div key={opp.id} className="bento-matrix-card">
+                  <div className="bento-matrix-col-main">
+                    <div className="bento-matrix-avatar">
+                      {opp.customerName.slice(0, 2).toUpperCase()}
+                    </div>
+                    <div>
+                      <div className="bento-matrix-deal-title">{opp.title}</div>
+                      <div className="bento-matrix-customer-sub">
+                        <span>{opp.customerName}</span>
+                        <span className="bento-dot-sep">•</span>
+                        <span>Owner: {opp.assignedTo}</span>
                       </div>
-                    );
-                  })}
+                    </div>
+                  </div>
+
+                  <div className="bento-matrix-col-meta">
+                    <div className="bento-matrix-val-row">
+                      <span className="bento-matrix-val">{formatCurrency(opp.dealValue)}</span>
+                      <Badge variant={getStatusBadgeVariant(opp.stage)}>
+                        {opp.stage}
+                      </Badge>
+                    </div>
+
+                    <div className="bento-matrix-prob-line">
+                      <div className="bento-prob-bar">
+                        <div
+                          className="bento-prob-fill"
+                          style={{ width: `${opp.probability}%` }}
+                        />
+                      </div>
+                      <span className="bento-prob-num">{opp.probability}% Probability</span>
+                      <span className="bento-dot-sep">•</span>
+                      <span className="bento-date-text">Target: {opp.expectedCloseDate}</span>
+                    </div>
+                  </div>
+
+                  <div className="bento-matrix-col-action">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => navigate('/opportunities')}
+                    >
+                      Inspect
+                    </Button>
+                  </div>
                 </div>
-              )}
-            </CardBody>
-          </Card>
+              ))}
+            </div>
+          )}
         </div>
 
-        {/* Right Column (35%) */}
-        <div className="cmd-workspace-right">
-          {/* Actionable Follow-up Queue */}
-          <Card>
-            <CardHeader
-              title="Today's Actionable Agenda"
-              subtitle="High-priority callbacks & meetings"
-              action={
-                <Badge variant="warning">
-                  {activeFollowUps.length} Due
-                </Badge>
-              }
-            />
-            <CardBody>
-              {isLoading ? (
-                <Skeleton width="100%" height="200px" />
-              ) : activeFollowUps.length === 0 ? (
-                <div className="cmd-empty-agenda">
-                  <CheckCircle2 size={36} color="var(--primary-600)" />
-                  <p>All follow-ups completed for today!</p>
-                </div>
-              ) : (
-                <div className="cmd-agenda-list">
-                  {activeFollowUps.map((flw) => (
-                    <div key={flw.id} className="cmd-agenda-card">
-                      <div className="cmd-agenda-card-top">
-                        <div className="cmd-agenda-type-chip">
-                          {flw.type === 'Call' && <Phone size={13} />}
-                          {flw.type === 'Email' && <Mail size={13} />}
-                          {flw.type !== 'Call' && flw.type !== 'Email' && <Clock size={13} />}
-                          <span>{flw.type}</span>
-                        </div>
-                        <div className="cmd-agenda-time">
-                          <Clock size={12} />
-                          <span>{formatDateTime(flw.scheduledDate)}</span>
-                        </div>
-                      </div>
+        {/* =================================================================
+            BENTO 2: TODAY'S ACTION RADAR & CIRCULAR SLA DIAL (1 COLUMN)
+           ================================================================= */}
+        <div className="bento-card bento-action-radar">
+          <div className="bento-card-header">
+            <div className="bento-card-title-group">
+              <div className="bento-tag warn">Execution Radar</div>
+              <h2 className="bento-card-title">Daily Client Touchpoints</h2>
+            </div>
+            <span className="bento-due-count">{activeFollowUps.length} Pending</span>
+          </div>
 
-                      <div className="cmd-agenda-title">{flw.title}</div>
-                      <div className="cmd-agenda-contact">
-                        <strong>{flw.entityName}</strong> • {flw.contactPerson}
-                      </div>
+          {/* Circular Progress Gauge Component */}
+          <div className="bento-radial-sla-box">
+            <div className="bento-circle-dial-container">
+              <svg className="bento-circle-svg" viewBox="0 0 100 100">
+                <circle
+                  className="bento-circle-bg"
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  strokeWidth="8"
+                />
+                <circle
+                  className="bento-circle-fg"
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  strokeWidth="8"
+                  strokeDasharray={251.2}
+                  strokeDashoffset={251.2 - (251.2 * (completedCount / (totalFollowUps || 1)))}
+                />
+              </svg>
+              <div className="bento-circle-text">
+                <span className="bento-circle-pct">{followUpCompletionPct}%</span>
+                <span className="bento-circle-sub">Done</span>
+              </div>
+            </div>
 
-                      <div className="cmd-agenda-actions">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          icon={CheckCircle2}
-                          onClick={() => handleQuickCompleteFollowUp(flw.id, flw.title)}
-                        >
-                          Mark Done
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => navigate('/follow-ups')}
-                        >
-                          Details
-                        </Button>
-                      </div>
+            <div className="bento-radial-sla-stats">
+              <div className="bento-sla-item">
+                <span className="bento-sla-item-num">{completedCount}</span>
+                <span className="bento-sla-item-desc">Completed Today</span>
+              </div>
+              <div className="bento-sla-item">
+                <span className="bento-sla-item-num">{activeFollowUps.length}</span>
+                <span className="bento-sla-item-desc">Pending Action</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Actionable Follow-up Micro-Deck */}
+          <div className="bento-action-items">
+            {activeFollowUps.length === 0 ? (
+              <div className="bento-empty-action">
+                <CheckCircle2 size={32} color="var(--primary-600)" />
+                <p>All client callbacks completed for today!</p>
+              </div>
+            ) : (
+              activeFollowUps.slice(0, 3).map((flw) => (
+                <div key={flw.id} className="bento-action-row">
+                  <div className="bento-action-type-bubble">
+                    {flw.type === 'Call' && <Phone size={14} />}
+                    {flw.type === 'Email' && <Mail size={14} />}
+                    {flw.type !== 'Call' && flw.type !== 'Email' && <Clock size={14} />}
+                  </div>
+                  <div className="bento-action-content">
+                    <div className="bento-action-title">{flw.title}</div>
+                    <div className="bento-action-meta">
+                      <strong>{flw.entityName}</strong> • {flw.contactPerson}
                     </div>
-                  ))}
+                  </div>
+                  <button
+                    type="button"
+                    className="bento-check-btn"
+                    title="Mark Done"
+                    onClick={() => handleCompleteFollowUp(flw.id, flw.title)}
+                  >
+                    <Check size={14} />
+                  </button>
                 </div>
-              )}
-            </CardBody>
-          </Card>
+              ))
+            )}
+          </div>
+        </div>
 
-          {/* Live System Activity Feed */}
-          <Card>
-            <CardHeader
-              title="Live Audit Stream"
-              subtitle="Real-time actions in CRM"
-            />
-            <CardBody>
-              {isLoading ? (
-                <Skeleton width="100%" height="180px" />
-              ) : (
-                <div className="cmd-activity-stream">
-                  {activities.map((act) => (
-                    <div key={act.id} className="cmd-stream-item">
-                      <div className="cmd-stream-icon">
-                        <Activity size={15} />
-                      </div>
-                      <div className="cmd-stream-body">
-                        <p className="cmd-stream-text">
-                          <strong>{act.user}</strong> {act.action}{' '}
-                          <span className="cmd-stream-target">{act.target}</span>
-                        </p>
-                        <span className="cmd-stream-time">
-                          {formatTimeAgo(act.timestamp)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
+        {/* =================================================================
+            BENTO 3: REVENUE TARGET RADIAL GAUGE & SPARKLINE (1 COLUMN)
+           ================================================================= */}
+        <div className="bento-card bento-revenue-gauge">
+          <div className="bento-card-header">
+            <div className="bento-card-title-group">
+              <div className="bento-tag">Financial Run-Rate</div>
+              <h2 className="bento-card-title">Monthly Quota Progress</h2>
+            </div>
+            <span className="bento-quota-tag">{quotaPct}% Target</span>
+          </div>
+
+          {/* Target Gauge Visual */}
+          <div className="bento-quota-visual-box">
+            <div className="bento-quota-metric-display">
+              <div className="bento-quota-current">
+                {formatCurrency(currentPipeline)}
+              </div>
+              <div className="bento-quota-target">
+                of {formatCurrency(targetQuota)} Annual Milestone
+              </div>
+            </div>
+
+            <div className="bento-segmented-meter">
+              <div
+                className="bento-segmented-meter-fill"
+                style={{ width: `${quotaPct}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Monthly Sparkline Columns */}
+          <div className="bento-spark-columns">
+            {summary?.monthlyPipeline?.map((bar) => {
+              const heightPct = Math.round((bar.revenue / maxRevenue) * 100);
+              return (
+                <div key={bar.month} className="bento-spark-col">
+                  <div className="bento-spark-track">
+                    <div
+                      className="bento-spark-fill"
+                      style={{ height: `${heightPct}%` }}
+                      title={`${bar.month}: $${bar.revenue.toLocaleString()}`}
+                    />
+                  </div>
+                  <span className="bento-spark-month">{bar.month}</span>
                 </div>
-              )}
-            </CardBody>
-          </Card>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* =================================================================
+            BENTO 4: CONVERSION HEALTH & VELOCITY (1 COLUMN)
+           ================================================================= */}
+        <div className="bento-card bento-conversion-health">
+          <div className="bento-card-header">
+            <div className="bento-card-title-group">
+              <div className="bento-tag">Health Score</div>
+              <h2 className="bento-card-title">Pipeline Conversion Velocity</h2>
+            </div>
+            <div className="bento-score-badge">
+              <Sparkles size={13} />
+              88 / 100
+            </div>
+          </div>
+
+          {/* Stage Conversion Horizontal Metrics */}
+          <div className="bento-funnel-breakdown">
+            {summary?.leadDistribution?.map((stageItem) => {
+              const total = summary.leadDistribution.reduce((a, b) => a + b.count, 0) || 1;
+              const pct = Math.round((stageItem.count / total) * 100);
+              return (
+                <div key={stageItem.stage} className="bento-funnel-row">
+                  <div className="bento-funnel-meta">
+                    <span className="bento-funnel-name">{stageItem.stage}</span>
+                    <span className="bento-funnel-val">{stageItem.count} ({pct}%)</span>
+                  </div>
+                  <div className="bento-funnel-bar">
+                    <div
+                      className="bento-funnel-fill"
+                      style={{
+                        width: `${pct}%`,
+                        backgroundColor: stageItem.color || 'var(--primary-500)',
+                      }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="bento-lead-flow-note">
+            <Flame size={14} color="var(--primary-600)" />
+            <span>Lead intake rate: +14 inquiries scheduled this month</span>
+          </div>
+        </div>
+
+        {/* =================================================================
+            BENTO 5: LIVE AUDIT & TEAM PULSE (1 COLUMN)
+           ================================================================= */}
+        <div className="bento-card bento-live-stream">
+          <div className="bento-card-header">
+            <div className="bento-card-title-group">
+              <div className="bento-tag">Audit Ticker</div>
+              <h2 className="bento-card-title">System Live Stream</h2>
+            </div>
+            <span className="bento-live-dot-pulse" />
+          </div>
+
+          {/* Activity Stream */}
+          <div className="bento-stream-list">
+            {activities.slice(0, 4).map((act) => (
+              <div key={act.id} className="bento-stream-row">
+                <div className="bento-stream-bullet" />
+                <div className="bento-stream-text">
+                  <span className="bento-stream-user">{act.user}</span>{' '}
+                  <span className="bento-stream-action">{act.action}</span>{' '}
+                  <strong className="bento-stream-target">{act.target}</strong>
+                  <div className="bento-stream-time">{formatTimeAgo(act.timestamp)}</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </div>
