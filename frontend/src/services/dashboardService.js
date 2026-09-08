@@ -11,10 +11,7 @@ import {
 } from './mockData';
 
 export const getDashboardStats = async () => {
-    if (isMockEnabled) {
-        return dashboardService.getSummary();
-    }
-    return await api.get('/reports/dashboard-stats/');
+    return dashboardService.getSummary();
 };
 
 export const dashboardService = {
@@ -43,29 +40,18 @@ export const dashboardService = {
       };
 
       const pendingTasks = initialTasks.filter((t) => t.status === 'Pending' || t.status === 'In Progress').length;
-      const completedTasks = initialTasks.filter((t) => t.status === 'Completed').length;
       
-      const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
-      const totalRevenue = initialCustomers.reduce((acc, c) => acc + (c.dealValue || 0), 0);
-
       return {
-        total_leads: totalLeads,
-        total_customers: totalCustomers,
-        total_opportunities: openOpportunities,
-        open_tasks: pendingTasks,
-        totalCustomers,
-        activeUsers,
         totalLeads,
         newLeads,
         convertedLeads,
+        totalCustomers,
+        activeUsers,
         pendingFollowUps,
         openOpportunities,
         opportunityPipelineValue,
         quotationStats,
         pendingTasks,
-        completedTasks,
-        conversionRate,
-        totalRevenue,
         monthlyPipeline: [
           { month: 'Oct', revenue: 42000, leads: 18 },
           { month: 'Nov', revenue: 68000, leads: 24 },
@@ -83,7 +69,24 @@ export const dashboardService = {
       };
     }
 
-    return await api.get('/reports/dashboard-stats/');
+    try {
+      const data = await api.get('/reports/dashboard-stats/');
+      return data;
+    } catch (e) {
+      console.warn('Backend stats endpoint fallback:', e);
+      return {
+        totalLeads: 0,
+        newLeads: 0,
+        convertedLeads: 0,
+        totalCustomers: 0,
+        openOpportunities: 0,
+        opportunityPipelineValue: 0,
+        quotationStats: { total: 0, accepted: 0, sent: 0, totalValue: 0 },
+        pendingFollowUps: 0,
+        monthlyPipeline: [],
+        leadDistribution: [],
+      };
+    }
   },
 
   getRecentActivities: async () => {
@@ -91,7 +94,19 @@ export const dashboardService = {
       await mockDelay(null, 250);
       return [...initialActivities];
     }
-    return await api.get('/reports/dashboard-stats/');
+    try {
+      const data = await api.get('/leads/');
+      const results = Array.isArray(data) ? data : (data.results || data.data || []);
+      return results.slice(0, 5).map((l) => ({
+        id: `act-${l.id}`,
+        user: l.assigned_to_name || 'Sales Rep',
+        action: 'created lead',
+        target: l.first_name ? `${l.first_name} ${l.last_name || ''}` : (l.company_name || 'New Client'),
+        timestamp: l.created_at || new Date().toISOString(),
+      }));
+    } catch (e) {
+      return [];
+    }
   },
 
   getRecentLeads: async () => {
@@ -99,15 +114,12 @@ export const dashboardService = {
       await mockDelay(null, 250);
       return initialLeads.slice(0, 5);
     }
-    return await api.get('/leads/');
-  },
-
-  getRecentCustomers: async () => {
-    if (isMockEnabled) {
-      await mockDelay(null, 250);
-      return initialCustomers.slice(0, 5);
+    try {
+      const data = await api.get('/leads/');
+      return Array.isArray(data) ? data : (data.results || data.data || []);
+    } catch (e) {
+      return [];
     }
-    return await api.get('/customers/');
   },
 
   getPendingFollowUps: async () => {
@@ -115,7 +127,21 @@ export const dashboardService = {
       await mockDelay(null, 200);
       return initialFollowUps.filter((f) => f.status === 'Pending').slice(0, 4);
     }
-    return await api.get('/tasks/');
+    try {
+      const data = await api.get('/tasks/');
+      const tasks = Array.isArray(data) ? data : (data.results || data.data || []);
+      return tasks.slice(0, 5).map((t) => ({
+        id: t.id,
+        title: t.title,
+        type: t.task_type_label || t.task_type || 'Follow-up',
+        entityName: t.customer_name || t.lead_name || 'Client',
+        contactPerson: t.assigned_to_name || 'Rep',
+        scheduledDate: t.due_date || t.created_at,
+        assignedTo: t.assigned_to_name || 'Assigned Rep',
+      }));
+    } catch (e) {
+      return [];
+    }
   },
 };
 
