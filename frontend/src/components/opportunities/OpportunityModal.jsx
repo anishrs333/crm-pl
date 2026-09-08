@@ -3,7 +3,7 @@ import { Modal } from '../modals/Modal';
 import { FormField } from '../forms/FormField';
 import { Button } from '../common/Button';
 import { validators } from '../../utils/validators';
-import { TrendingUp, Building2, User, DollarSign, Calendar, Percent } from 'lucide-react';
+import { TrendingUp,  Building2, User, DollarSign, Calendar, Percent, Building, Building2Icon } from 'lucide-react';
 import './OpportunityModal.css';
 
 export const OpportunityModal = ({
@@ -154,6 +154,7 @@ export const OpportunityModal = ({
               { value: 'Closed Won', label: '4. Closed / Won 🎉' },
               { value: 'Closed Lost', label: '5. Closed / Lost ❌' },
             ]}
+            
           />
 
           <FormField

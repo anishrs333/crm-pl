@@ -159,7 +159,11 @@ export const UserListPage = () => {
     {
       key: 'role',
       label: 'Role',
-      render: (val) => <Badge variant="purple">{val}</Badge>,
+      render: (val) => (
+        <Badge variant={val === 'Admin' ? 'primary' : 'info'}>
+          {val || 'Manager'}
+        </Badge>
+      ),
     },
     {
       key: 'department',
@@ -217,7 +221,6 @@ export const UserListPage = () => {
               { value: '', label: 'All Roles' },
               { value: 'Admin', label: 'Admin' },
               { value: 'Manager', label: 'Manager' },
-              { value: 'Employee', label: 'Employee' },
             ]}
           />
 

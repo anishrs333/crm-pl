@@ -92,16 +92,15 @@ export const Sidebar = ({
     {
       title: 'Administration',
       items: [
-        {
-          label: 'Employee Management',
-          path: '/users',
-          icon: Users,
-        },
-        {
-          label: 'Role Permissions',
-          path: '/permissions',
-          icon: ShieldCheck,
-        },
+        ...(user?.role === 'Admin'
+          ? [
+              {
+                label: 'Employee Management',
+                path: '/users',
+                icon: Users,
+              },
+            ]
+          : []),
         {
           label: 'System Settings',
           path: '/settings',
@@ -206,7 +205,7 @@ export const Sidebar = ({
                 {user?.name || 'User'}
               </div>
               <div className="sidebar-user-role">
-                {user?.role || 'Member'} • {user?.department || 'Sales'}
+                {user?.role === 'Admin' ? 'Administrator' : 'Sales Manager'} • {user?.department || 'Operations'}
               </div>
             </div>
           </div>

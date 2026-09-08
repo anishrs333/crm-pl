@@ -67,14 +67,27 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // Role authorization: Admin has global access; Manager has operational access
   const hasRole = useCallback(
     (allowedRoles) => {
       if (!user || !user.role) return false;
       if (!allowedRoles || allowedRoles.length === 0) return true;
+      if (user.role === 'Admin') return true;
       return allowedRoles.includes(user.role);
     },
     [user]
   );
+
+  // Quick switch for previewing Admin vs Manager role
+  const switchRole = useCallback((newRole) => {
+    if (newRole !== 'Admin' && newRole !== 'Manager') return;
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, role: newRole };
+      storage.setUser(updated);
+      return updated;
+    });
+  }, []);
 
   const value = {
     user,
@@ -84,6 +97,9 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     hasRole,
+    isAdmin: user?.role === 'Admin',
+    isManager: user?.role === 'Manager',
+    switchRole,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
