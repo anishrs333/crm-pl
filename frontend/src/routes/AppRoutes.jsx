@@ -44,7 +44,14 @@ export const AppRoutes = () => {
         <Route path="products" element={<ProductListPage />} />
         <Route path="tasks" element={<TaskListPage />} />
         <Route path="reports" element={<ReportsPage />} />
-        <Route path="users" element={<UserListPage />} />
+        <Route
+          path="users"
+          element={
+            <ProtectedRoute allowedRoles={['Admin']}>
+              <UserListPage />
+            </ProtectedRoute>
+          }
+        />
         <Route path="permissions" element={<Navigate to="/users" replace />} />
         <Route path="settings" element={<SettingsPage />} />
         <Route path="*" element={<NotFoundPage />} />

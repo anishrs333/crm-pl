@@ -40,6 +40,43 @@ export const ProtectedRoute = ({ children, allowedRoles }) => {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Single-role universal access: All authenticated users have full access
+  // Role-based authorization check
+  if (allowedRoles && allowedRoles.length > 0 && !hasRole(allowedRoles)) {
+    return (
+      <div
+        style={{
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          minHeight: '70vh',
+          padding: '24px',
+          textAlign: 'center',
+        }}
+      >
+        <ShieldAlert size={48} color="#ef4444" style={{ marginBottom: '16px' }} />
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '8px', color: 'var(--text-primary)' }}>
+          Access Restricted
+        </h2>
+        <p style={{ color: '#64748b', maxWidth: '420px', marginBottom: '20px', fontSize: '0.92rem' }}>
+          This administrative module is restricted to <strong>Administrator</strong> accounts. Your current role is <strong>{user?.role || 'Manager'}</strong>.
+        </p>
+        <a
+          href="/dashboard"
+          style={{
+            padding: '10px 22px',
+            background: 'var(--primary-600, #059669)',
+            color: '#fff',
+            borderRadius: '8px',
+            fontWeight: 600,
+            textDecoration: 'none',
+          }}
+        >
+          Return to Dashboard
+        </a>
+      </div>
+    );
+  }
+
   return children;
 };

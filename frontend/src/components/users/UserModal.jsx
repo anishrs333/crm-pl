@@ -156,16 +156,16 @@ export const UserModal = ({
           />
 
           <FormField
-            label="Role (Universal Single Role)"
+            label="User Role"
             name="role"
             type="select"
-            value="Admin"
+            value={formData.role}
             onChange={handleChange}
-            disabled
             required
             icon={ShieldCheck}
             options={[
-              { value: 'Admin', label: 'Admin (Full System Access)' },
+              { value: 'Admin', label: 'Admin (Full System & User Management)' },
+              { value: 'Manager', label: 'Manager (Sales & Operational Access)' },
             ]}
           />
 

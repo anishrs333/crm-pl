@@ -204,21 +204,14 @@ export const LoginPage = () => {
               className="demo-btn"
               onClick={() => handleDemoFill('sarah_admin', 'Admin')}
             >
-              🔑 Admin
+              🔑 Admin (Full Access)
             </button>
             <button
               type="button"
               className="demo-btn"
               onClick={() => handleDemoFill('alex_manager', 'Manager')}
             >
-              👔 Manager
-            </button>
-            <button
-              type="button"
-              className="demo-btn"
-              onClick={() => handleDemoFill('jessica_sales', 'Employee')}
-            >
-              💼 Employee
+              👔 Manager (Operations & Sales)
             </button>
           </div>
         </div>
