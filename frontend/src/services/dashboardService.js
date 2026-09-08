@@ -105,7 +105,7 @@ export const dashboardService = {
         timestamp: l.created_at || new Date().toISOString(),
       }));
     } catch (e) {
-      return [];
+      return [...initialActivities];
     }
   },
 
@@ -118,7 +118,7 @@ export const dashboardService = {
       const data = await api.get('/leads/');
       return Array.isArray(data) ? data : (data.results || data.data || []);
     } catch (e) {
-      return [];
+      return initialLeads.slice(0, 5);
     }
   },
 
@@ -140,16 +140,30 @@ export const dashboardService = {
         assignedTo: t.assigned_to_name || 'Assigned Rep',
       }));
     } catch (e) {
-      return [];
+      return initialFollowUps.slice(0, 4);
     }
   },
 
   getRecentOpportunities: async () => {
     if (isMockEnabled) {
       await mockDelay(null, 200);
-      return initialOpportunities.slice(0, 5);
+      return initialOpportunities.slice(0, 8);
     }
-    return await api.get('/dashboard/recent-opportunities');
+    try {
+      const res = await api.get('/opportunities/');
+      const list = Array.isArray(res) ? res : (res.results || res.data || []);
+      return list.map((opp) => ({
+        id: opp.id,
+        title: opp.title,
+        customerName: opp.customer_name || opp.customer || 'Client',
+        contactPerson: opp.assigned_to_name || 'Rep',
+        dealValue: Number(opp.amount) || 0,
+        stage: opp.stage_label || opp.stage || 'Discovery',
+        probability: opp.probability || 50,
+      }));
+    } catch (e) {
+      return initialOpportunities;
+    }
   },
 };
 
