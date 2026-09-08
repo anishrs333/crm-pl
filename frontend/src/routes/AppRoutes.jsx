@@ -1,209 +1,59 @@
-import {
-    BrowserRouter,
-    Routes,
-    Route,
-    Navigate,
-} from "react-router-dom";
+import React from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { ProtectedRoute } from './ProtectedRoute';
+import { MainLayout } from '../components/layouts/MainLayout';
 
-import { useAuth } from "../context/AuthContext";
-import MainLayout from "../components/layouts/MainLayout";
-import Login from "../pages/auth/Login";
-import Dashboard from "../pages/dashboard/Dashboard";
-import Leads from "../pages/leads/Leads";
+// Pages
+import { LoginPage } from '../pages/auth/LoginPage';
+import { DashboardPage } from '../pages/dashboard/DashboardPage';
+import { UserListPage } from '../pages/users/UserListPage';
+import { CustomerListPage } from '../pages/customers/CustomerListPage';
+import { LeadListPage } from '../pages/leads/LeadListPage';
+import { OpportunityListPage } from '../pages/opportunities/OpportunityListPage';
+import { FollowUpListPage } from '../pages/followups/FollowUpListPage';
+import { QuotationListPage } from '../pages/quotations/QuotationListPage';
+import { ProductListPage } from '../pages/products/ProductListPage';
+import { TaskListPage } from '../pages/tasks/TaskListPage';
+import { ReportsPage } from '../pages/reports/ReportsPage';
+import { RolePermissionPage } from '../pages/permissions/RolePermissionPage';
+import { SettingsPage } from '../pages/settings/SettingsPage';
+import { NotFoundPage } from '../pages/common/NotFoundPage';
 
-function ProtectedRoute({ children }) {
-    const { isAuthenticated, loading } = useAuth();
+export const AppRoutes = () => {
+  return (
+    <Routes>
+      {/* Public Route: Login */}
+      <Route path="/login" element={<LoginPage />} />
 
-    if (loading) {
-        return <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>;
-    }
+      {/* Protected Routes inside Main CRM Layout */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            <MainLayout />
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="leads" element={<LeadListPage />} />
+        <Route path="follow-ups" element={<FollowUpListPage />} />
+        <Route path="opportunities" element={<OpportunityListPage />} />
+        <Route path="quotations" element={<QuotationListPage />} />
+        <Route path="customers" element={<CustomerListPage />} />
+        <Route path="products" element={<ProductListPage />} />
+        <Route path="tasks" element={<TaskListPage />} />
+        <Route path="reports" element={<ReportsPage />} />
+        <Route path="users" element={<UserListPage />} />
+        <Route path="permissions" element={<RolePermissionPage />} />
+        <Route path="settings" element={<SettingsPage />} />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
 
-    if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
-    }
-
-    return children;
-}
-
-function PublicOnlyRoute({ children }) {
-    const { isAuthenticated, loading } = useAuth();
-
-    if (loading) {
-        return <div style={{ display: 'flex', height: '100vh', alignItems: 'center', justifyContent: 'center' }}>Loading...</div>;
-    }
-
-    if (isAuthenticated) {
-        return <Navigate to="/dashboard" replace />;
-    }
-
-    return children;
-}
-
-function PlaceholderPage({ title }) {
-    return (
-        <div className="page-container">
-            <div className="page-header">
-                <div>
-                    <h1 className="page-title">{title}</h1>
-                    <p className="page-description">This module is being developed.</p>
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function AppRoutes() {
-    return (
-        <BrowserRouter>
-            <Routes>
-                <Route
-                    path="/login"
-                    element={
-                        <PublicOnlyRoute>
-                            <Login />
-                        </PublicOnlyRoute>
-                    }
-                />
-
-                <Route
-                    path="/"
-                    element={<Navigate to="/dashboard" replace />}
-                />
-
-                <Route
-                    path="/dashboard"
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <Dashboard />
-                            </MainLayout>
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/leads"
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <Leads />
-                            </MainLayout>
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/customers"
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <PlaceholderPage title="Customers" />
-                            </MainLayout>
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/opportunities"
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <PlaceholderPage title="Opportunities" />
-                            </MainLayout>
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/activities"
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <PlaceholderPage title="Activities" />
-                            </MainLayout>
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/tasks"
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <PlaceholderPage title="Tasks" />
-                            </MainLayout>
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/quotations"
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <PlaceholderPage title="Quotations" />
-                            </MainLayout>
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/products"
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <PlaceholderPage title="Products" />
-                            </MainLayout>
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/employees"
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <PlaceholderPage title="Employees" />
-                            </MainLayout>
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/reports"
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <PlaceholderPage title="Reports" />
-                            </MainLayout>
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/notifications"
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <PlaceholderPage title="Notifications" />
-                            </MainLayout>
-                        </ProtectedRoute>
-                    }
-                />
-
-                <Route
-                    path="/settings"
-                    element={
-                        <ProtectedRoute>
-                            <MainLayout>
-                                <PlaceholderPage title="Settings" />
-                            </MainLayout>
-                        </ProtectedRoute>
-                    }
-                />
-            </Routes>
-        </BrowserRouter>
-    );
-}
+      {/* Fallback */}
+      <Route path="*" element={<Navigate to="/login" replace />} />
+    </Routes>
+  );
+};
 
 export default AppRoutes;

@@ -1,201 +1,217 @@
-import { NavLink } from "react-router-dom";
-import "./Sidebar.css";
+import React from 'react';
+import { NavLink, useLocation, Link } from 'react-router-dom';
+import { useAuth } from '../../hooks/useAuth';
+import { getInitials } from '../../utils/formatters';
+import { 
+  Building2, 
+  LayoutDashboard, 
+  Users, 
+  Briefcase, 
+  Flame, 
+  TrendingUp, 
+  PhoneCall, 
+  FileText, 
+  Package, 
+  CheckSquare, 
+  BarChart3, 
+  ShieldCheck, 
+  Settings,
+  X
+} from 'lucide-react';
+import './Sidebar.css';
 
-const menuSections = [
+export const Sidebar = ({ 
+  isCollapsed, 
+  isMobileOpen, 
+  onCloseMobile 
+}) => {
+  const { user } = useAuth();
+  const location = useLocation();
+
+  const navigationSections = [
     {
-        title: "WORKSPACE",
-        items: [
-            {
-                label: "Overview",
-                path: "/dashboard",
-                icon: "⌂",
-            },
-            {
-                label: "Leads",
-                path: "/leads",
-                icon: "◌",
-            },
-            {
-                label: "Customers",
-                path: "/customers",
-                icon: "◉",
-            },
-            {
-                label: "Opportunities",
-                path: "/opportunities",
-                icon: "◇",
-            },
-        ],
+      title: 'Main Menu',
+      items: [
+        {
+          label: 'Dashboard',
+          path: '/dashboard',
+          icon: LayoutDashboard,
+          exact: true,
+        },
+        {
+          label: 'Leads',
+          path: '/leads',
+          icon: Flame,
+          badge: 'Hot',
+          badgeClass: 'badge-primary',
+        },
+        {
+          label: 'Follow-ups',
+          path: '/follow-ups',
+          icon: PhoneCall,
+        },
+        {
+          label: 'Opportunities',
+          path: '/opportunities',
+          icon: TrendingUp,
+        },
+        {
+          label: 'Quotations',
+          path: '/quotations',
+          icon: FileText,
+          badge: 'PDF',
+          badgeClass: 'badge-primary',
+        },
+        {
+          label: 'Customers',
+          path: '/customers',
+          icon: Briefcase,
+        },
+      ],
     },
-
     {
-        title: "OPERATIONS",
-        items: [
-            {
-                label: "Activities",
-                path: "/activities",
-                icon: "◷",
-            },
-            {
-                label: "Tasks",
-                path: "/tasks",
-                icon: "✓",
-            },
-            {
-                label: "Quotations",
-                path: "/quotations",
-                icon: "▤",
-            },
-        ],
+      title: 'Operations',
+      items: [
+        {
+          label: 'Products & Services',
+          path: '/products',
+          icon: Package,
+        },
+        {
+          label: 'Tasks',
+          path: '/tasks',
+          icon: CheckSquare,
+        },
+        {
+          label: 'Reports & Analytics',
+          path: '/reports',
+          icon: BarChart3,
+        },
+      ],
     },
-
     {
-        title: "MANAGEMENT",
-        items: [
-            {
-                label: "Products",
-                path: "/products",
-                icon: "▦",
-            },
-            {
-                label: "Employees",
-                path: "/employees",
-                icon: "♙",
-            },
-            {
-                label: "Reports",
-                path: "/reports",
-                icon: "▥",
-            },
-        ],
+      title: 'Administration',
+      items: [
+        {
+          label: 'Employee Management',
+          path: '/users',
+          icon: Users,
+        },
+        {
+          label: 'Role Permissions',
+          path: '/permissions',
+          icon: ShieldCheck,
+        },
+        {
+          label: 'System Settings',
+          path: '/settings',
+          icon: Settings,
+        },
+      ],
     },
+  ];
 
-    {
-        title: "SYSTEM",
-        items: [
-            {
-                label: "Notifications",
-                path: "/notifications",
-                icon: "♢",
-            },
-            {
-                label: "Settings",
-                path: "/settings",
-                icon: "⚙",
-            },
-        ],
-    },
-];
+  const isRouteActive = (item) => {
+    const current = location.pathname;
+    if (item.exact) {
+      return current === item.path || current === '/';
+    }
+    return current.startsWith(item.path);
+  };
 
-function Sidebar({ isOpen, onClose }) {
-    return (
-        <>
-            {isOpen && (
-                <div
-                    className="sidebar-overlay"
-                    onClick={onClose}
-                />
+  return (
+    <>
+      {/* Mobile Backdrop Overlay */}
+      {isMobileOpen && (
+        <div 
+          className="sidebar-backdrop" 
+          onClick={onCloseMobile}
+          aria-hidden="true"
+        />
+      )}
+
+      <aside
+        className={`crm-sidebar ${isCollapsed ? 'collapsed' : ''} ${
+          isMobileOpen ? 'mobile-open' : ''
+        }`}
+        aria-label="Sidebar Navigation"
+      >
+        {/* Brand Header */}
+        <div className="sidebar-header">
+          <Link to="/dashboard" className="sidebar-brand-link" onClick={onCloseMobile}>
+            <div className="sidebar-logo">
+              <Building2 size={22} />
+            </div>
+            {!isCollapsed && (
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <span className="sidebar-brand-name">PL SOFT CRM</span>
+                <span className="sidebar-brand-badge">2026</span>
+              </div>
             )}
+          </Link>
 
-            <aside className={`crm-sidebar ${isOpen ? "sidebar-open" : ""}`}>
+          {/* Close button on mobile */}
+          {isMobileOpen && (
+            <button
+              type="button"
+              className="sidebar-toggle-btn"
+              onClick={onCloseMobile}
+              aria-label="Close sidebar"
+            >
+              <X size={20} />
+            </button>
+          )}
+        </div>
 
-                {/* Brand */}
-                <div className="sidebar-brand">
+        {/* Navigation Links Grouped */}
+        <nav className="sidebar-nav">
+          {navigationSections.map((section) => (
+            <div key={section.title} style={{ marginBottom: '12px' }}>
+              <span className="nav-section-title">{section.title}</span>
 
-                    <div className="brand-mark">
-                        A
-                    </div>
+              {section.items.map((item) => {
+                const Icon = item.icon;
+                const active = isRouteActive(item);
 
-                    <div className="brand-text">
-                        <strong>AURORA</strong>
-                        <span>CRM</span>
-                    </div>
+                return (
+                  <NavLink
+                    key={item.path}
+                    to={item.path}
+                    className={`nav-item ${active ? 'active' : ''}`}
+                    onClick={onCloseMobile}
+                    title={isCollapsed ? item.label : undefined}
+                  >
+                    <Icon size={19} className="nav-icon" />
+                    <span className="nav-label">{item.label}</span>
+                    {item.badge && !isCollapsed && (
+                      <span className={`nav-badge ${item.badgeClass || ''}`}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </NavLink>
+                );
+              })}
+            </div>
+          ))}
+        </nav>
 
-                    <button
-                        className="sidebar-close"
-                        onClick={onClose}
-                        aria-label="Close sidebar"
-                    >
-                        ×
-                    </button>
-
-                </div>
-
-
-                {/* Navigation */}
-                <nav className="sidebar-navigation">
-
-                    {menuSections.map((section) => (
-
-                        <div
-                            className="sidebar-section"
-                            key={section.title}
-                        >
-
-                            <span className="sidebar-section-title">
-                                {section.title}
-                            </span>
-
-
-                            <div className="sidebar-menu">
-
-                                {section.items.map((item) => (
-
-                                    <NavLink
-                                        key={item.path}
-                                        to={item.path}
-                                        onClick={onClose}
-                                        className={({ isActive }) =>
-                                            `sidebar-link ${
-                                                isActive
-                                                    ? "sidebar-link-active"
-                                                    : ""
-                                            }`
-                                        }
-                                    >
-
-                                        <span className="sidebar-icon">
-                                            {item.icon}
-                                        </span>
-
-                                        <span className="sidebar-label">
-                                            {item.label}
-                                        </span>
-
-                                    </NavLink>
-
-                                ))}
-
-                            </div>
-
-                        </div>
-
-                    ))}
-
-                </nav>
-
-
-                {/* User */}
-                <div className="sidebar-user">
-
-                    <div className="user-avatar">
-                        AS
-                    </div>
-
-                    <div className="user-details">
-                        <strong>Abishek</strong>
-                        <span>Software Developer</span>
-                    </div>
-
-                    <button className="user-menu-button">
-                        •••
-                    </button>
-
-                </div>
-
-            </aside>
-        </>
-    );
-}
-
-export default Sidebar;
+        {/* User Card at bottom */}
+        <div className="sidebar-footer">
+          <div className="sidebar-user-card">
+            <div className="sidebar-user-avatar">
+              {getInitials(user?.name)}
+            </div>
+            <div className="sidebar-user-details">
+              <div className="sidebar-user-name text-truncate">
+                {user?.name || 'User'}
+              </div>
+              <div className="sidebar-user-role">
+                {user?.role || 'Member'} • {user?.department || 'Sales'}
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </>
+  );
+};

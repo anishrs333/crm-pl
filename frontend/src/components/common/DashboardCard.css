@@ -1,0 +1,116 @@
+/* ==========================================================================
+   Dashboard Metric Card Styling
+   ========================================================================== */
+
+.metric-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+  position: relative;
+  overflow: hidden;
+}
+
+.metric-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: #cbd5e1;
+}
+
+.metric-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.metric-title {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.metric-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+/* Icon Box Color Variants */
+.metric-icon-primary {
+  background-color: var(--primary-50);
+  color: var(--primary-600);
+}
+
+.metric-icon-success {
+  background-color: var(--success-bg);
+  color: var(--success-solid);
+}
+
+.metric-icon-warning {
+  background-color: var(--warning-bg);
+  color: var(--warning-solid);
+}
+
+.metric-icon-danger {
+  background-color: var(--danger-bg);
+  color: var(--danger-solid);
+}
+
+.metric-icon-info {
+  background-color: var(--info-bg);
+  color: var(--info-solid);
+}
+
+.metric-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.metric-value {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.1;
+}
+
+.metric-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+}
+
+.trend-positive {
+  background-color: var(--success-bg);
+  color: var(--success-text);
+}
+
+.trend-negative {
+  background-color: var(--danger-bg);
+  color: var(--danger-text);
+}
+
+.trend-neutral {
+  background-color: var(--bg-subtle);
+  color: var(--text-secondary);
+}
+
+.metric-subtitle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}

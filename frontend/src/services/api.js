@@ -1,36 +1,102 @@
-import axios from "axios";
+import axios from 'axios';
+import { storage } from '../utils/storage';
 
+// Base API URL from environment variables
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
+
+// Check if Mock API fallback is active
+export const isMockEnabled = import.meta.env.VITE_USE_MOCK === 'true';
+
+// Helper to simulate network latency for mock services
+export const mockDelay = (result, delayMs = 350) => {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+      if (result && result.__error) {
+        reject(new Error(result.__error));
+      } else {
+        resolve(result);
+      }
+    }, delayMs);
+  });
+};
+
+// Create Central Axios Instance
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000/api",
-    headers: {
-        "Content-Type": "application/json"
-    },
+  baseURL: API_BASE_URL,
+  timeout: 15000,
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+  },
 });
 
+// Request Interceptor: Attach Access Token
 api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem("access_token");
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
+  (config) => {
+    const token = storage.getAccessToken();
+    if (token && config.headers) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
 );
 
+// Response Interceptor: Standardized Error Handling
 api.interceptors.response.use(
-    (response) => response,
-    (error) => {
-        if (error.response && error.response.status === 401) {
-            // Unauthenticated - clear token
-            localStorage.removeItem("access_token");
-            localStorage.removeItem("refresh_token");
-            localStorage.removeItem("user");
-        }
-        return Promise.reject(error);
+  (response) => {
+    return response.data;
+  },
+  (error) => {
+    let errorMessage = 'An unexpected error occurred. Please try again.';
+    let status = null;
+
+    if (error.response) {
+      status = error.response.status;
+      const data = error.response.data;
+
+      switch (status) {
+        case 400:
+          errorMessage = data?.message || (data?.errors ? Object.values(data.errors).flat().join(', ') : 'Invalid request data.');
+          break;
+
+        case 401:
+          errorMessage = data?.message || 'Session expired. Please log in again.';
+          storage.clearSession();
+          window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+          break;
+
+        case 403:
+          errorMessage = data?.message || 'You do not have permission to perform this action.';
+          break;
+
+        case 404:
+          errorMessage = data?.message || 'Requested resource was not found.';
+          break;
+
+        case 500:
+        case 502:
+        case 503:
+          errorMessage = data?.message || 'Internal server error. Please contact system admin.';
+          break;
+
+        default:
+          errorMessage = data?.message || `Server responded with status ${status}`;
+      }
+    } else if (error.request) {
+      errorMessage = 'Unable to connect to the CRM server. Please check your internet connection.';
+    } else {
+      errorMessage = error.message;
     }
+
+    const enhancedError = new Error(errorMessage);
+    enhancedError.status = status;
+    enhancedError.originalError = error;
+
+    return Promise.reject(enhancedError);
+  }
 );
 
 export default api;

@@ -1,0 +1,19 @@
+/* ==========================================================================
+   User Modal Component Styling
+   ========================================================================== */
+
+.user-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+}
+
+.user-form-full-width {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 600px) {
+  .user-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

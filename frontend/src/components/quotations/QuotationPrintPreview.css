@@ -1,0 +1,229 @@
+/* ==========================================================================
+   Quotation Print & PDF Document Styling
+   ========================================================================== */
+
+.quot-preview-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 2500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto;
+  padding: 30px 16px;
+}
+
+.quot-preview-toolbar {
+  width: 100%;
+  max-width: 850px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  background: var(--bg-surface);
+  padding: 12px 20px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+}
+
+.quot-paper {
+  width: 100%;
+  max-width: 850px;
+  background: #ffffff;
+  color: #0f172a;
+  padding: 48px;
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  margin-bottom: 40px;
+}
+
+/* Header */
+.quot-doc-header {
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 3px solid #4f46e5;
+  padding-bottom: 24px;
+}
+
+.quot-company-brand h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #1e1b4b;
+  letter-spacing: -0.02em;
+}
+
+.quot-company-brand p {
+  font-size: 0.85rem;
+  color: #64748b;
+  line-height: 1.4;
+  margin-top: 4px;
+}
+
+.quot-doc-title {
+  text-align: right;
+}
+
+.quot-doc-title h1 {
+  font-size: 1.7rem;
+  font-weight: 800;
+  color: #4f46e5;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.quot-meta-list {
+  font-size: 0.85rem;
+  color: #475569;
+  margin-top: 6px;
+  line-height: 1.6;
+}
+
+/* Parties Info Grid */
+.quot-parties-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  background-color: #f8fafc;
+  padding: 18px 24px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+}
+
+.party-box h4 {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+
+.party-box h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.party-box p {
+  font-size: 0.86rem;
+  color: #475569;
+  line-height: 1.4;
+}
+
+/* Document Table */
+.quot-doc-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.quot-doc-table th {
+  background-color: #1e1b4b;
+  color: #ffffff;
+  padding: 10px 14px;
+  text-align: left;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.quot-doc-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #334155;
+}
+
+/* Totals Area */
+.quot-doc-totals {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.totals-table {
+  width: 320px;
+  font-size: 0.9rem;
+}
+
+.totals-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  color: #475569;
+}
+
+.totals-row.grand-total {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #1e1b4b;
+  border-top: 2px solid #0f172a;
+  padding-top: 10px;
+  margin-top: 6px;
+}
+
+/* Terms & Signatures */
+.quot-doc-terms {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 16px;
+}
+
+.quot-doc-terms h4 {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+}
+
+.quot-doc-terms p {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.quot-signature-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 40px;
+  padding-top: 12px;
+}
+
+.signature-block {
+  text-align: center;
+  width: 200px;
+  border-top: 1px dashed #94a3b8;
+  padding-top: 8px;
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+/* Print Rules */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .quot-preview-overlay,
+  .quot-paper,
+  .quot-paper * {
+    visibility: visible;
+  }
+  .quot-preview-overlay {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    padding: 0;
+    background: transparent;
+  }
+  .quot-preview-toolbar {
+    display: none !important;
+  }
+  .quot-paper {
+    box-shadow: none;
+    max-width: 100%;
+    padding: 24px 0;
+  }
+}
