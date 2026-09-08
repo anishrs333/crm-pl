@@ -3,9 +3,9 @@ import { storage } from '../utils/storage';
 import { initialUsers } from './mockData';
 
 export const authService = {
-  login: async (credentials) => {
-    const username = typeof credentials === 'string' ? credentials : credentials?.username;
-    const password = arguments.length > 1 ? arguments[1] : credentials?.password;
+  login: async (credentials, passwordArg) => {
+    let username = typeof credentials === 'string' ? credentials : credentials?.username;
+    let password = passwordArg || credentials?.password;
 
     if (isMockEnabled) {
       await mockDelay(null, 500);
