@@ -1,98 +1,63 @@
-import api, { isMockEnabled, mockDelay } from './api';
-import { initialOpportunities } from './mockData';
+﻿import api from './api';
 
-let mockOpportunitiesList = [...initialOpportunities];
+const mapOpportunity = (o) => ({
+  ...o,
+  id: o.id,
+  title: o.title || 'Untitled Deal',
+  customerName: o.customer_name || (o.customer ? `Customer #${o.customer}` : 'Prospect Account'),
+  contactPerson: o.contact_person || 'Deal Lead',
+  dealValue: parseFloat(o.amount || o.dealValue || 0),
+  stage: o.stage ? (o.stage.charAt(0).toUpperCase() + o.stage.slice(1)) : 'Discovery',
+  probability: Number(o.probability || 10),
+  expectedCloseDate: o.expected_close_date || o.expectedCloseDate,
+  assignedTo: o.assigned_to_name || 'Account Exec',
+  createdAt: o.created_at || new Date().toISOString(),
+});
 
 export const opportunityService = {
   getOpportunities: async ({ page = 1, limit = 10, search = '', stage = '', assignedTo = '' } = {}) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 250);
+    const params = { page, page_size: limit };
+    if (search) params.search = search;
+    if (stage) params.stage = stage.toLowerCase();
 
-      let filtered = [...mockOpportunitiesList];
+    const response = await api.get('/opportunities/', { params });
 
-      if (search.trim()) {
-        const q = search.toLowerCase();
-        filtered = filtered.filter(
-          (o) =>
-            o.title.toLowerCase().includes(q) ||
-            o.customerName.toLowerCase().includes(q) ||
-            o.contactPerson.toLowerCase().includes(q)
-        );
-      }
+    const rawList = Array.isArray(response) ? response : (response?.results || response?.data || []);
+    const totalItems = response?.count ?? rawList.length;
 
-      if (stage) {
-        filtered = filtered.filter((o) => o.stage === stage);
-      }
-
-      if (assignedTo) {
-        filtered = filtered.filter((o) => o.assignedTo === assignedTo);
-      }
-
-      const totalItems = filtered.length;
-      const startIndex = (page - 1) * limit;
-      const data = filtered.slice(startIndex, startIndex + limit);
-
-      return {
-        data,
-        totalItems,
-        page,
-        limit,
-        totalPages: Math.ceil(totalItems / limit),
-      };
-    }
-
-    return await api.get('/opportunities', {
-      params: { page, limit, search, stage, assignedTo },
-    });
+    return {
+      data: rawList.map(mapOpportunity),
+      totalItems,
+      page,
+      limit,
+      totalPages: Math.ceil(totalItems / limit) || 1,
+    };
   },
 
   createOpportunity: async (oppData) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 350);
+    const payload = {
+      title: oppData.title,
+      amount: parseFloat(oppData.dealValue || oppData.amount || 0),
+      stage: (oppData.stage || 'discovery').toLowerCase(),
+      probability: parseInt(oppData.probability || 10, 10),
+      expected_close_date: oppData.expectedCloseDate || null,
+    };
 
-      const newOpp = {
-        ...oppData,
-        id: `opp-${Date.now().toString().slice(-4)}`,
-        dealValue: Number(oppData.dealValue) || 0,
-        probability: Number(oppData.probability) || 50,
-        status: oppData.stage === 'Closed Won' ? 'Won' : oppData.stage === 'Closed Lost' ? 'Lost' : 'Open',
-      };
-
-      mockOpportunitiesList = [newOpp, ...mockOpportunitiesList];
-      return newOpp;
-    }
-
-    return await api.post('/opportunities', oppData);
+    const created = await api.post('/opportunities/', payload);
+    return mapOpportunity(created);
   },
 
   updateOpportunity: async (id, oppData) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 350);
+    const payload = { ...oppData };
+    if (oppData.dealValue !== undefined) payload.amount = parseFloat(oppData.dealValue);
+    if (oppData.stage) payload.stage = oppData.stage.toLowerCase();
 
-      const index = mockOpportunitiesList.findIndex((o) => o.id === id);
-      if (index === -1) throw new Error('Opportunity not found.');
-
-      const updated = {
-        ...mockOpportunitiesList[index],
-        ...oppData,
-        dealValue: Number(oppData.dealValue) || 0,
-        probability: Number(oppData.probability) || 50,
-        status: oppData.stage === 'Closed Won' ? 'Won' : oppData.stage === 'Closed Lost' ? 'Lost' : 'Open',
-      };
-
-      mockOpportunitiesList[index] = updated;
-      return updated;
-    }
-
-    return await api.put(`/opportunities/${id}`, oppData);
+    const updated = await api.patch(`/opportunities/${id}/`, payload);
+    return mapOpportunity(updated);
   },
 
   deleteOpportunity: async (id) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 250);
-      mockOpportunitiesList = mockOpportunitiesList.filter((o) => o.id !== id);
-      return { success: true };
-    }
-    return await api.delete(`/opportunities/${id}`);
+    await api.delete(`/opportunities/${id}/`);
+    return { success: true };
   },
 };

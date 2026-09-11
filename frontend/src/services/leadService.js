@@ -1,107 +1,76 @@
-import api, { isMockEnabled, mockDelay } from './api';
-import { initialLeads } from './mockData';
+﻿import api from './api';
 
-let mockLeadsList = [...initialLeads];
+const mapLead = (l) => ({
+  ...l,
+  id: l.id,
+  name: l.company || `${l.first_name || ''} ${l.last_name || ''}`.trim() || 'Untitled Lead',
+  contactName: `${l.first_name || ''} ${l.last_name || ''}`.trim() || l.company || 'Contact',
+  email: l.email || '',
+  phone: l.phone || '',
+  company: l.company || '',
+  status: l.status ? (l.status.charAt(0).toUpperCase() + l.status.slice(1)) : 'New',
+  source: l.source || 'Website',
+  estimatedValue: Number(l.estimated_value || l.estimatedValue || 0),
+  score: Number(l.score || 50),
+  createdAt: l.created_at || new Date().toISOString(),
+  assignedTo: l.assigned_to_name || 'Unassigned',
+});
 
 export const leadService = {
   getLeads: async ({ page = 1, limit = 10, search = '', status = '', source = '' } = {}) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 250);
+    const params = { page, page_size: limit };
+    if (search) params.search = search;
+    if (status) params.status = status.toLowerCase();
+    if (source) params.source = source;
 
-      let filtered = [...mockLeadsList];
+    const response = await api.get('/leads/', { params });
 
-      if (search.trim()) {
-        const q = search.toLowerCase();
-        filtered = filtered.filter(
-          (l) =>
-            l.name.toLowerCase().includes(q) ||
-            l.contactName.toLowerCase().includes(q) ||
-            l.email.toLowerCase().includes(q)
-        );
-      }
+    const rawList = Array.isArray(response) ? response : (response?.results || response?.data || []);
+    const totalItems = response?.count ?? rawList.length;
 
-      if (status) {
-        filtered = filtered.filter((l) => l.status === status);
-      }
-
-      if (source) {
-        filtered = filtered.filter((l) => l.source === source);
-      }
-
-      const totalItems = filtered.length;
-      const startIndex = (page - 1) * limit;
-      const data = filtered.slice(startIndex, startIndex + limit);
-
-      return {
-        data,
-        totalItems,
-        page,
-        limit,
-        totalPages: Math.ceil(totalItems / limit),
-      };
-    }
-
-    return await api.get('/leads', {
-      params: { page, limit, search, status, source },
-    });
+    return {
+      data: rawList.map(mapLead),
+      totalItems,
+      page,
+      limit,
+      totalPages: Math.ceil(totalItems / limit) || 1,
+    };
   },
 
   getLeadById: async (id) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 200);
-      const found = mockLeadsList.find((l) => l.id === id);
-      if (!found) throw new Error('Lead not found.');
-      return found;
-    }
-    return await api.get(`/leads/${id}`);
+    const lead = await api.get(`/leads/${id}/`);
+    return mapLead(lead);
   },
 
   createLead: async (leadData) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 350);
+    const nameParts = (leadData.contactName || leadData.name || '').trim().split(' ');
+    const firstName = leadData.first_name || nameParts[0] || 'Lead';
+    const lastName = leadData.last_name || (nameParts.slice(1).join(' ') || 'Contact');
 
-      const newLead = {
-        ...leadData,
-        id: `lead-${Date.now().toString().slice(-4)}`,
-        estimatedValue: Number(leadData.estimatedValue) || 0,
-        score: Number(leadData.score) || 50,
-        createdAt: new Date().toISOString(),
-      };
+    const payload = {
+      first_name: firstName,
+      last_name: lastName,
+      company: leadData.company || leadData.name || '',
+      email: leadData.email || '',
+      phone: leadData.phone || '',
+      status: (leadData.status || 'new').toLowerCase(),
+      source: leadData.source || 'Inquiry',
+    };
 
-      mockLeadsList = [newLead, ...mockLeadsList];
-      return newLead;
-    }
-
-    return await api.post('/leads', leadData);
+    const created = await api.post('/leads/', payload);
+    return mapLead(created);
   },
 
   updateLead: async (id, leadData) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 350);
+    const payload = { ...leadData };
+    if (payload.status) payload.status = payload.status.toLowerCase();
 
-      const index = mockLeadsList.findIndex((l) => l.id === id);
-      if (index === -1) throw new Error('Lead not found.');
-
-      const updated = {
-        ...mockLeadsList[index],
-        ...leadData,
-        estimatedValue: Number(leadData.estimatedValue) || 0,
-        score: Number(leadData.score) || 50,
-      };
-
-      mockLeadsList[index] = updated;
-      return updated;
-    }
-
-    return await api.put(`/leads/${id}`, leadData);
+    const updated = await api.patch(`/leads/${id}/`, payload);
+    return mapLead(updated);
   },
 
   deleteLead: async (id) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 300);
-      mockLeadsList = mockLeadsList.filter((l) => l.id !== id);
-      return { success: true };
-    }
-    return await api.delete(`/leads/${id}`);
+    await api.delete(`/leads/${id}/`);
+    return { success: true };
   },
 };

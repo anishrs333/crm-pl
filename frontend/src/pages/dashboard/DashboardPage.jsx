@@ -145,11 +145,14 @@ export const DashboardPage = () => {
 
   const totalPipelineVal = pipelineDeals
     .filter((d) => d.kanbanStage !== 'Won')
-    .reduce((sum, d) => sum + (d.dealValue || 0), 0) || 424000;
+    .reduce((sum, d) => sum + (d.dealValue || 0), 0);
 
   const wonDealsVal = pipelineDeals
     .filter((d) => d.kanbanStage === 'Won')
-    .reduce((sum, d) => sum + (d.dealValue || 0), 0) || 155000;
+    .reduce((sum, d) => sum + (d.dealValue || 0), 0);
+
+  const quotaTarget = 500000;
+  const quotaPercent = quotaTarget > 0 ? Math.min(Math.round((wonDealsVal / quotaTarget) * 100), 100) : 0;
 
   if (error) {
     return (
@@ -476,14 +479,14 @@ export const DashboardPage = () => {
           <div className="deck-quota-box">
             <div className="deck-quota-top">
               <span className="deck-quota-label">Annual Sales Target Progress</span>
-              <span className="deck-quota-percent">85% to Target</span>
+              <span className="deck-quota-percent">{quotaPercent}% to Target</span>
             </div>
             <div className="deck-quota-track">
-              <div className="deck-quota-fill" style={{ width: '85%' }} />
+              <div className="deck-quota-fill" style={{ width: `${quotaPercent}%` }} />
             </div>
             <div className="deck-quota-bottom">
-              <span>{formatCurrency(totalPipelineVal)} Current</span>
-              <span>Target: $500,000</span>
+              <span>{formatCurrency(wonDealsVal)} Closed</span>
+              <span>Target: {formatCurrency(quotaTarget)}</span>
             </div>
           </div>
 
@@ -514,16 +517,25 @@ export const DashboardPage = () => {
           <div className="deck-live-ticker">
             <span className="deck-ticker-header">Real-time System Audit:</span>
             <div className="deck-ticker-stream">
-              {activities.slice(0, 3).map((act) => (
-                <div key={act.id} className="deck-ticker-item">
+              {activities.length === 0 ? (
+                <div className="deck-ticker-item">
                   <div className="deck-ticker-dot" />
-                  <div className="deck-ticker-text">
-                    <strong>{act.user}</strong> {act.action}{' '}
-                    <span className="deck-ticker-target">{act.target}</span>
-                    <span className="deck-ticker-time">{formatTimeAgo(act.timestamp)}</span>
+                  <div className="deck-ticker-text" style={{ color: 'var(--text-muted)' }}>
+                    System ready. Connected to live. 
                   </div>
                 </div>
-              ))}
+              ) : (
+                activities.slice(0, 3).map((act) => (
+                  <div key={act.id} className="deck-ticker-item">
+                    <div className="deck-ticker-dot" />
+                    <div className="deck-ticker-text">
+                      <strong>{act.user}</strong> {act.action}{' '}
+                      <span className="deck-ticker-target">{act.target}</span>
+                      <span className="deck-ticker-time">{formatTimeAgo(act.timestamp)}</span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>

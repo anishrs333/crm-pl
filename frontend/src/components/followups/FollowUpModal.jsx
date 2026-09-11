@@ -43,17 +43,17 @@ export const FollowUpModal = ({
         notes: initialData.notes || '',
       });
     } else {
-      setFormData({
-        title: '',
-        entityType: 'Customer',
-        entityName: '',
-        contactPerson: '',
-        type: 'Call',
-        scheduledDate: new Date(Date.now() + 86400000).toISOString().slice(0, 16),
-        assignedTo: 'Alex Rivera',
-        status: 'Pending',
-        notes: '',
-      });
+      // setFormData({
+      //   title: '',
+      //   entityType: 'Customer',
+      //   entityName: '',
+      //   contactPerson: '',
+      //   type: 'Call',
+      //   scheduledDate: new Date(Date.now() + 86400000).toISOString().slice(0, 16),
+      //   assignedTo: 'Alex Rivera',
+      //   status: 'Pending',
+      //   notes: '',
+      // });
     }
     setErrors({});
   }, [initialData, isOpen]);

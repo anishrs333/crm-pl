@@ -1,106 +1,128 @@
-import api, { isMockEnabled, mockDelay } from './api';
+﻿import api from './api';
 import { storage } from '../utils/storage';
-import { initialUsers } from './mockData';
 
 export const authService = {
   /**
-   * Log in user with username and password
+   * Log in user using Django SimpleJWT token endpoint
    */
   login: async ({ username, password }) => {
-    if (isMockEnabled) {
-      // Realistic mock login validation
-      await mockDelay(null, 500);
+    // 1. Authenticate with Django REST Framework SimpleJWT
+    const tokenResponse = await api.post('/auth/token/', {
+      username: username.trim(),
+      password,
+    });
 
-      // Check against mock users
-      const normalizedUser = username.trim().toLowerCase();
-      const matchedUser = initialUsers.find(
-        (u) =>
-          u.username.toLowerCase() === normalizedUser ||
-          u.email.toLowerCase() === normalizedUser
-      );
+    const accessToken = tokenResponse.access;
+    const refreshToken = tokenResponse.refresh;
 
-      // In mock mode, allow any matching user with password length >= 4
-      if (!matchedUser) {
-        throw new Error('User not found. Try "sarah_admin", "alex_manager", or "jessica_sales".');
-      }
-
-      if (!password || password.length < 4) {
-        throw new Error('Invalid password. Must be at least 4 characters.');
-      }
-
-      const mockResponse = {
-        accessToken: `mock_access_jwt_${Date.now()}_${matchedUser.id}`,
-        refreshToken: `mock_refresh_jwt_${Date.now()}_${matchedUser.id}`,
-        user: {
-          id: matchedUser.id,
-          name: matchedUser.name,
-          email: matchedUser.email,
-          username: matchedUser.username,
-          role: matchedUser.role,
-          department: matchedUser.department,
-          avatar: matchedUser.avatar,
-        },
-      };
-
-      storage.setAccessToken(mockResponse.accessToken);
-      storage.setRefreshToken(mockResponse.refreshToken);
-      storage.setUser(mockResponse.user);
-
-      return mockResponse;
+    if (!accessToken) {
+      throw new Error('Authentication succeeded but no access token was returned.');
     }
 
-    // Real REST API Call
-    const response = await api.post('/auth/login', { username, password });
-    if (response.accessToken) {
-      storage.setAccessToken(response.accessToken);
-      if (response.refreshToken) storage.setRefreshToken(response.refreshToken);
-      if (response.user) storage.setUser(response.user);
+    storage.setAccessToken(accessToken);
+    if (refreshToken) {
+      storage.setRefreshToken(refreshToken);
     }
-    return response;
+
+    // 2. Extract user_id from JWT payload
+    let userId = null;
+    try {
+      const payloadBase64 = accessToken.split('.')[1];
+      const decodedJson = atob(payloadBase64);
+      const payload = JSON.parse(decodedJson);
+      userId = payload.user_id;
+    } catch (err) {
+      console.warn('Could not decode JWT payload:', err);
+    }
+
+    // 3. Fetch user details from Django UserViewSet
+    let userDetails = null;
+    try {
+      if (userId) {
+        userDetails = await api.get(`/users/${userId}/`);
+      } else {
+        const usersList = await api.get('/users/');
+        const list = Array.isArray(usersList) ? usersList : (usersList?.results || []);
+        userDetails = list.find((u) => u.username.toLowerCase() === username.trim().toLowerCase());
+      }
+    } catch (err) {
+      console.warn('Could not retrieve full user profile from /users/:', err.message);
+    }
+
+    // 4. Normalize user role and profile
+    const rawRole = (userDetails?.role || '').toLowerCase();
+    const mappedRole = rawRole === 'manager' ? 'Manager' : 'Admin';
+    const fullName = (userDetails?.first_name || userDetails?.last_name)
+      ? `${userDetails.first_name || ''} ${userDetails.last_name || ''}`.trim()
+      : (userDetails?.username || username.trim());
+
+    const userProfile = {
+      id: userDetails?.id || userId || 1,
+      name: fullName,
+      username: userDetails?.username || username.trim(),
+      email: userDetails?.email || '',
+      role: mappedRole,
+      department: userDetails?.department || (mappedRole === 'Admin' ? 'Management' : 'Sales'),
+      phone: userDetails?.phone || '',
+      isActive: userDetails?.is_active ?? true,
+    };
+
+    storage.setUser(userProfile);
+
+    return {
+      accessToken,
+      refreshToken,
+      user: userProfile,
+    };
   },
 
   /**
-   * Log out user
+   * Log out user and clear storage
    */
   logout: async () => {
-    try {
-      if (!isMockEnabled) {
-        await api.post('/auth/logout');
-      }
-    } catch (e) {
-      console.warn('Logout API warning:', e.message);
-    } finally {
-      storage.clearSession();
-    }
+    storage.clearSession();
   },
 
   /**
    * Fetch current authenticated user profile
    */
   getCurrentUser: async () => {
-    if (isMockEnabled) {
-      const user = storage.getUser();
-      return mockDelay(user);
+    const cachedUser = storage.getUser();
+    if (cachedUser?.id) {
+      try {
+        const freshUser = await api.get(`/users/${cachedUser.id}/`);
+        const rawRole = (freshUser.role || '').toLowerCase();
+        const mappedRole = rawRole === 'manager' ? 'Manager' : 'Admin';
+        const fullName = (freshUser.first_name || freshUser.last_name)
+          ? `${freshUser.first_name || ''} ${freshUser.last_name || ''}`.trim()
+          : freshUser.username;
+
+        const updatedProfile = {
+          ...cachedUser,
+          ...freshUser,
+          name: fullName,
+          role: mappedRole,
+        };
+        storage.setUser(updatedProfile);
+        return updatedProfile;
+      } catch {
+        return cachedUser;
+      }
     }
-    return await api.get('/auth/me');
+    return cachedUser;
   },
 
   /**
-   * Refresh JWT token
+   * Refresh JWT token with Django SimpleJWT refresh endpoint
    */
   refreshToken: async () => {
     const refreshToken = storage.getRefreshToken();
     if (!refreshToken) throw new Error('No refresh token available');
 
-    if (isMockEnabled) {
-      const newAccessToken = `mock_refreshed_access_${Date.now()}`;
-      storage.setAccessToken(newAccessToken);
-      return { accessToken: newAccessToken };
-    }
-
-    const response = await api.post('/auth/refresh', { refreshToken });
-    if (response.accessToken) {
-      storage.setAccessToken(response.accessToken);
+    const response = await api.post('/auth/token/refresh/', { refresh: refreshToken });
+    if (response?.access) {
+      storage.setAccessToken(response.access);
+      return { accessToken: response.access };
     }
     return response;
   },

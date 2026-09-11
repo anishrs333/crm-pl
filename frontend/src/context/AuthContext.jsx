@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect, useCallback } from 'react';
+﻿import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { storage } from '../utils/storage';
 import { authService } from '../services/authService';
 
@@ -70,10 +70,11 @@ export const AuthProvider = ({ children }) => {
   // Role authorization: Admin has global access; Manager has operational access
   const hasRole = useCallback(
     (allowedRoles) => {
-      if (!user || !user.role) return false;
+      if (!user) return false;
       if (!allowedRoles || allowedRoles.length === 0) return true;
-      if (user.role === 'Admin') return true;
-      return allowedRoles.includes(user.role);
+      const userRole = (user.role || '').toLowerCase();
+      if (userRole === 'admin' || user.is_superuser) return true;
+      return allowedRoles.map((r) => r.toLowerCase()).includes(userRole);
     },
     [user]
   );
@@ -89,6 +90,9 @@ export const AuthProvider = ({ children }) => {
     });
   }, []);
 
+  const isAdmin = (user?.role || '').toLowerCase() === 'admin' || !!user?.is_superuser;
+  const isManager = (user?.role || '').toLowerCase() === 'manager';
+
   const value = {
     user,
     token,
@@ -97,8 +101,8 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     hasRole,
-    isAdmin: user?.role === 'Admin',
-    isManager: user?.role === 'Manager',
+    isAdmin,
+    isManager,
     switchRole,
   };
 

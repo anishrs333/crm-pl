@@ -1,117 +1,70 @@
-import api, { isMockEnabled, mockDelay } from './api';
-import { initialCustomers } from './mockData';
+﻿import api from './api';
 
-let mockCustomersList = [...initialCustomers];
+const mapCustomer = (c) => ({
+  ...c,
+  id: c.id,
+  companyName: c.name || c.companyName || 'Enterprise Client',
+  contactPerson: c.contact_person || c.name || 'Account Lead',
+  email: c.email || '',
+  phone: c.phone || '',
+  city: c.city || '',
+  country: c.country || '',
+  stage: c.customer_type === 'individual' ? 'Active' : 'Contract Signed',
+  dealValue: Number(c.deal_value || c.dealValue || 0),
+  assignedTo: c.account_manager_name || 'Direct Rep',
+  createdAt: c.created_at || new Date().toISOString(),
+});
 
 export const customerService = {
-  /**
-   * Get paginated and filtered customers
-   */
   getCustomers: async ({ page = 1, limit = 10, search = '', stage = '' } = {}) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 250);
+    const params = { page, page_size: limit };
+    if (search) params.search = search;
 
-      let filtered = [...mockCustomersList];
+    const response = await api.get('/customers/', { params });
 
-      if (search.trim()) {
-        const q = search.toLowerCase();
-        filtered = filtered.filter(
-          (c) =>
-            c.companyName.toLowerCase().includes(q) ||
-            c.contactPerson.toLowerCase().includes(q) ||
-            c.email.toLowerCase().includes(q) ||
-            (c.city && c.city.toLowerCase().includes(q))
-        );
-      }
+    const rawList = Array.isArray(response) ? response : (response?.results || response?.data || []);
+    const totalItems = response?.count ?? rawList.length;
 
-      if (stage) {
-        filtered = filtered.filter((c) => c.stage === stage);
-      }
-
-      const totalItems = filtered.length;
-      const startIndex = (page - 1) * limit;
-      const data = filtered.slice(startIndex, startIndex + limit);
-
-      return {
-        data,
-        totalItems,
-        page,
-        limit,
-        totalPages: Math.ceil(totalItems / limit),
-      };
-    }
-
-    return await api.get('/customers', {
-      params: { page, limit, search, stage },
-    });
+    return {
+      data: rawList.map(mapCustomer),
+      totalItems,
+      page,
+      limit,
+      totalPages: Math.ceil(totalItems / limit) || 1,
+    };
   },
 
-  /**
-   * Get customer by ID
-   */
   getCustomerById: async (id) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 200);
-      const found = mockCustomersList.find((c) => c.id === id);
-      if (!found) throw new Error('Customer record not found.');
-      return found;
-    }
-    return await api.get(`/customers/${id}`);
+    const customer = await api.get(`/customers/${id}/`);
+    return mapCustomer(customer);
   },
 
-  /**
-   * Create new customer
-   */
   createCustomer: async (customerData) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 350);
+    const payload = {
+      name: customerData.companyName || customerData.name,
+      customer_type: customerData.customer_type || 'company',
+      email: customerData.email || '',
+      phone: customerData.phone || '',
+      city: customerData.city || '',
+      country: customerData.country || '',
+      address: customerData.address || '',
+      website: customerData.website || '',
+    };
 
-      const newCustomer = {
-        ...customerData,
-        id: `cust-${Date.now().toString().slice(-4)}`,
-        dealValue: Number(customerData.dealValue) || 0,
-        createdAt: new Date().toISOString(),
-      };
-
-      mockCustomersList = [newCustomer, ...mockCustomersList];
-      return newCustomer;
-    }
-
-    return await api.post('/customers', customerData);
+    const created = await api.post('/customers/', payload);
+    return mapCustomer(created);
   },
 
-  /**
-   * Update customer
-   */
   updateCustomer: async (id, customerData) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 350);
+    const payload = { ...customerData };
+    if (customerData.companyName) payload.name = customerData.companyName;
 
-      const index = mockCustomersList.findIndex((c) => c.id === id);
-      if (index === -1) throw new Error('Customer not found.');
-
-      const updated = {
-        ...mockCustomersList[index],
-        ...customerData,
-        dealValue: Number(customerData.dealValue) || 0,
-      };
-
-      mockCustomersList[index] = updated;
-      return updated;
-    }
-
-    return await api.put(`/customers/${id}`, customerData);
+    const updated = await api.patch(`/customers/${id}/`, payload);
+    return mapCustomer(updated);
   },
 
-  /**
-   * Delete customer
-   */
   deleteCustomer: async (id) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 300);
-      mockCustomersList = mockCustomersList.filter((c) => c.id !== id);
-      return { success: true };
-    }
-    return await api.delete(`/customers/${id}`);
+    await api.delete(`/customers/${id}/`);
+    return { success: true };
   },
 };

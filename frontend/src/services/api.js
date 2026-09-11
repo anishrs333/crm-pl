@@ -1,25 +1,11 @@
-import axios from 'axios';
+﻿import axios from 'axios';
 import { storage } from '../utils/storage';
 
-// Base API URL from environment variables
+// Base API URL pointing to the live Django REST Framework backend
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
 
-// Check if Mock API fallback is active
-export const isMockEnabled = import.meta.env.VITE_USE_MOCK !== 'false';
-
-// Helper to simulate network latency for mock services
-export const mockDelay = (result, delayMs = 350) => {
-  return new Promise((resolve, reject) => {
-    setTimeout(() => {
-      // Allow throwing simulated errors if result has __error
-      if (result && result.__error) {
-        reject(new Error(result.__error));
-      } else {
-        resolve(result);
-      }
-    }, delayMs);
-  });
-};
+// Live mode active: Mock engine is completely disabled
+export const isMockEnabled = false;
 
 // Create Central Axios Instance
 const api = axios.create({
@@ -31,9 +17,19 @@ const api = axios.create({
   },
 });
 
-// Request Interceptor: Attach Access Token
+// Request Interceptor: Ensure trailing slash for DRF and attach Access Token
 api.interceptors.request.use(
   (config) => {
+    // Django REST Framework routers require trailing slashes on endpoints
+    if (config.url) {
+      if (!config.url.endsWith('/') && !config.url.includes('?')) {
+        config.url = `${config.url}/`;
+      } else if (config.url.includes('?') && !config.url.split('?')[0].endsWith('/')) {
+        const [path, query] = config.url.split('?');
+        config.url = `${path}/?${query}`;
+      }
+    }
+
     const token = storage.getAccessToken();
     if (token && config.headers) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -61,40 +57,53 @@ api.interceptors.response.use(
 
       switch (status) {
         case 400:
-          // Validation errors
-          errorMessage = data?.message || (data?.errors ? Object.values(data.errors).flat().join(', ') : 'Invalid request data.');
+          // Validation errors from DRF
+          if (data?.detail) {
+            errorMessage = data.detail;
+          } else if (typeof data === 'object') {
+            const messages = Object.entries(data).map(([field, errs]) => {
+              const errText = Array.isArray(errs) ? errs.join(' ') : String(errs);
+              return `${field}: ${errText}`;
+            });
+            errorMessage = messages.join(' | ') || 'Invalid request data.';
+          } else {
+            errorMessage = 'Invalid request data.';
+          }
           break;
 
         case 401:
-          // Unauthorized / Token expired
-          errorMessage = data?.message || 'Session expired. Please log in again.';
-          storage.clearSession();
-          window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+          // Unauthorized / Token expired or invalid credentials
+          if (data?.detail) {
+            errorMessage = data.detail;
+          } else {
+            errorMessage = 'Invalid credentials or session expired. Please sign in.';
+          }
+          // Only emit unauthorized event if not already on the login endpoint
+          if (!error.config?.url?.includes('/auth/token')) {
+            storage.clearSession();
+            window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+          }
           break;
 
         case 403:
-          // Forbidden
-          errorMessage = data?.message || 'You do not have permission to perform this action.';
+          errorMessage = data?.detail || 'You do not have permission to perform this action.';
           break;
 
         case 404:
-          // Not Found
-          errorMessage = data?.message || 'Requested resource was not found.';
+          errorMessage = data?.detail || 'Requested resource was not found.';
           break;
 
         case 500:
         case 502:
         case 503:
-          // Server Errors
-          errorMessage = data?.message || 'Internal server error. Please contact system admin.';
+          errorMessage = 'Backend server error. Please ensure the Django server is running on port 8000.';
           break;
 
         default:
-          errorMessage = data?.message || `Server responded with status ${status}`;
+          errorMessage = data?.detail || data?.message || `Server responded with status ${status}`;
       }
     } else if (error.request) {
-      // Network failure / Server down
-      errorMessage = 'Unable to connect to the CRM server. Please check your internet connection.';
+      errorMessage = 'Unable to connect to the backend server at ' + API_BASE_URL + '. Please verify the backend is running.';
     } else {
       errorMessage = error.message;
     }

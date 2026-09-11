@@ -1,117 +1,154 @@
-import api, { isMockEnabled, mockDelay } from './api';
-import { 
-  initialUsers, 
-  initialCustomers, 
-  initialLeads, 
-  initialTasks, 
-  initialActivities,
-  initialFollowUps,
-  initialOpportunities,
-  initialQuotations 
-} from './mockData';
+﻿import api from './api';
 
 export const dashboardService = {
+  /**
+   * Fetch aggregate summary metrics from backend
+   */
   getSummary: async () => {
-    if (isMockEnabled) {
-      await mockDelay(null, 300);
+    try {
+      const stats = await api.get('/reports/dashboard-stats/');
 
-      const activeUsers = initialUsers.filter((u) => u.status === 'Active').length;
-      const totalCustomers = initialCustomers.length;
-      const totalLeads = initialLeads.length;
-      const newLeads = initialLeads.filter((l) => l.status === 'New').length;
-      const convertedLeads = initialLeads.filter((l) => l.status === 'Won' || l.status === 'Qualified').length;
-      
-      const pendingFollowUps = initialFollowUps.filter((f) => f.status === 'Pending').length;
-      const openOpportunities = initialOpportunities.filter((o) => o.status === 'Open').length;
-      const opportunityPipelineValue = initialOpportunities
-        .filter((o) => o.status === 'Open')
-        .reduce((sum, o) => sum + (o.dealValue || 0), 0);
+      const [oppRes, leadRes, taskRes] = await Promise.allSettled([
+        api.get('/opportunities/'),
+        api.get('/leads/'),
+        api.get('/tasks/'),
+      ]);
 
-      const quotationStats = {
-        total: initialQuotations.length,
-        accepted: initialQuotations.filter((q) => q.status === 'Accepted').length,
-        sent: initialQuotations.filter((q) => q.status === 'Sent').length,
-        draft: initialQuotations.filter((q) => q.status === 'Draft').length,
-        totalValue: initialQuotations.reduce((sum, q) => sum + (q.grandTotal || 0), 0),
-      };
+      const opps = oppRes.status === 'fulfilled' ? (oppRes.value?.results || oppRes.value || []) : [];
+      const leads = leadRes.status === 'fulfilled' ? (leadRes.value?.results || leadRes.value || []) : [];
+      const tasks = taskRes.status === 'fulfilled' ? (taskRes.value?.results || taskRes.value || []) : [];
 
-      const pendingTasks = initialTasks.filter((t) => t.status === 'Pending' || t.status === 'In Progress').length;
-      const completedTasks = initialTasks.filter((t) => t.status === 'Completed').length;
-      
+      const totalLeads = stats.total_leads ?? leads.length;
+      const totalCustomers = stats.total_customers ?? 0;
+      const openOpportunities = stats.total_opportunities ?? opps.length;
+      const pendingTasks = stats.open_tasks ?? tasks.filter((t) => (t.status || '').toLowerCase() !== 'completed').length;
+
+      const newLeads = leads.filter((l) => (l.status || '').toLowerCase() === 'new').length;
+      const convertedLeads = leads.filter((l) => {
+        const st = (l.status || '').toLowerCase();
+        return st === 'converted' || st === 'qualified';
+      }).length;
+
+      const opportunityPipelineValue = opps.reduce((sum, o) => sum + (parseFloat(o.amount) || 0), 0);
       const conversionRate = totalLeads > 0 ? Math.round((convertedLeads / totalLeads) * 100) : 0;
-      const totalRevenue = initialCustomers.reduce((acc, c) => acc + (c.dealValue || 0), 0);
 
       return {
         totalCustomers,
-        activeUsers,
         totalLeads,
         newLeads,
         convertedLeads,
-        pendingFollowUps,
         openOpportunities,
         opportunityPipelineValue,
-        quotationStats,
         pendingTasks,
-        completedTasks,
         conversionRate,
-        totalRevenue,
-        monthlyPipeline: [
-          { month: 'Oct', revenue: 42000, leads: 18 },
-          { month: 'Nov', revenue: 68000, leads: 24 },
-          { month: 'Dec', revenue: 95000, leads: 32 },
-          { month: 'Jan', revenue: 78000, leads: 28 },
-          { month: 'Feb', revenue: 112000, leads: 38 },
-          { month: 'Mar', revenue: 145000, leads: 46 },
-        ],
-        leadDistribution: [
-          { stage: 'New', count: 12, color: '#3b82f6' },
-          { stage: 'Contacted', count: 18, color: '#f59e0b' },
-          { stage: 'Qualified', count: 15, color: '#059669' },
-          { stage: 'Proposal', count: 8, color: '#10b981' },
-        ],
+        totalRevenue: opportunityPipelineValue,
+        quotationStats: {
+          total: 0,
+          accepted: 0,
+          sent: 0,
+          draft: 0,
+          totalValue: 0,
+        },
+      };
+    } catch (err) {
+      console.warn('Unable to load backend dashboard stats, using zero defaults:', err.message);
+      return {
+        totalCustomers: 0,
+        totalLeads: 0,
+        newLeads: 0,
+        convertedLeads: 0,
+        openOpportunities: 0,
+        opportunityPipelineValue: 0,
+        pendingTasks: 0,
+        conversionRate: 0,
+        totalRevenue: 0,
+        quotationStats: { total: 0, accepted: 0, sent: 0, draft: 0, totalValue: 0 },
       };
     }
-
-    return await api.get('/dashboard/summary');
   },
 
+  /**
+   * Fetch recent audit activities from backend tasks/events
+   */
   getRecentActivities: async () => {
-    if (isMockEnabled) {
-      await mockDelay(null, 250);
-      return [...initialActivities];
+    try {
+      const res = await api.get('/tasks/');
+      const tasks = res?.results || res || [];
+      return tasks.slice(0, 5).map((t) => ({
+        id: t.id,
+        user: t.assigned_to_name || 'System User',
+        action: 'scheduled task',
+        target: t.title,
+        timestamp: t.created_at || t.updated_at || new Date().toISOString(),
+      }));
+    } catch {
+      return [];
     }
-    return await api.get('/dashboard/activities');
   },
 
+  /**
+   * Fetch recent leads from backend
+   */
   getRecentLeads: async () => {
-    if (isMockEnabled) {
-      await mockDelay(null, 250);
-      return initialLeads.slice(0, 5);
+    try {
+      const res = await api.get('/leads/');
+      const leads = res?.results || res || [];
+      return leads.slice(0, 5).map((l) => ({
+        id: l.id,
+        name: l.company || `${l.first_name || ''} ${l.last_name || ''}`.trim() || 'Untitled Lead',
+        contactName: `${l.first_name || ''} ${l.last_name || ''}`.trim(),
+        email: l.email,
+        status: l.status,
+      }));
+    } catch {
+      return [];
     }
-    return await api.get('/dashboard/recent-leads');
   },
 
-  getRecentCustomers: async () => {
-    if (isMockEnabled) {
-      await mockDelay(null, 250);
-      return initialCustomers.slice(0, 5);
-    }
-    return await api.get('/dashboard/recent-customers');
-  },
-
-  getPendingFollowUps: async () => {
-    if (isMockEnabled) {
-      await mockDelay(null, 200);
-      return initialFollowUps.filter((f) => f.status === 'Pending').slice(0, 4);
-    }
-    return await api.get('/dashboard/pending-follow-ups');
-  },
-
+  /**
+   * Fetch recent opportunities from backend
+   */
   getRecentOpportunities: async () => {
-    if (isMockEnabled) {
-      await mockDelay(null, 200);
-      return initialOpportunities.slice(0, 5);
+    try {
+      const res = await api.get('/opportunities/');
+      const opps = res?.results || res || [];
+      return opps.slice(0, 10).map((o) => ({
+        id: o.id,
+        title: o.title,
+        customerName: o.customer_name || (o.customer ? `Customer #${o.customer}` : 'Prospect'),
+        dealValue: parseFloat(o.amount) || 0,
+        stage: o.stage || 'discovery',
+        probability: o.probability || 10,
+        expectedCloseDate: o.expected_close_date,
+        assignedTo: o.assigned_to_name || 'Direct Rep',
+      }));
+    } catch {
+      return [];
     }
-    return await api.get('/dashboard/recent-opportunities');
+  },
+
+  /**
+   * Fetch pending follow-ups / tasks from backend
+   */
+  getPendingFollowUps: async () => {
+    try {
+      const res = await api.get('/tasks/');
+      const tasks = res?.results || res || [];
+      return tasks
+        .filter((t) => (t.status || '').toLowerCase() !== 'completed')
+        .slice(0, 6)
+        .map((t) => ({
+          id: t.id,
+          title: t.title,
+          entityName: t.description || t.title,
+          contactPerson: 'Account Contact',
+          type: (t.title || '').toLowerCase().includes('call') ? 'Call' : 'Email',
+          scheduledDate: t.due_date || t.created_at || new Date().toISOString(),
+          assignedTo: t.assigned_to_name || 'Staff',
+          status: 'Pending',
+        }));
+    } catch {
+      return [];
+    }
   },
 };

@@ -28,17 +28,17 @@ const defaultPermissions = {
     Reports: { view: true, create: false, edit: false, delete: false, export: true },
     Users: { view: true, create: false, edit: false, delete: false, export: false },
   },
-  Employee: {
-    Leads: { view: true, create: true, edit: true, delete: false, export: false },
-    Customers: { view: true, create: false, edit: false, delete: false, export: false },
-    Opportunities: { view: true, create: true, edit: true, delete: false, export: false },
-    FollowUps: { view: true, create: true, edit: true, delete: false, export: false },
-    Quotations: { view: true, create: true, edit: false, delete: false, export: false },
-    Products: { view: true, create: false, edit: false, delete: false, export: false },
-    Tasks: { view: true, create: true, edit: true, delete: false, export: false },
-    Reports: { view: false, create: false, edit: false, delete: false, export: false },
-    Users: { view: false, create: false, edit: false, delete: false, export: false },
-  },
+  // Employee: {
+  //   Leads: { view: true, create: true, edit: true, delete: false, export: false },
+  //   Customers: { view: true, create: false, edit: false, delete: false, export: false },
+  //   Opportunities: { view: true, create: true, edit: true, delete: false, export: false },
+  //   FollowUps: { view: true, create: true, edit: true, delete: false, export: false },
+  //   Quotations: { view: true, create: true, edit: false, delete: false, export: false },
+  //   Products: { view: true, create: false, edit: false, delete: false, export: false },
+  //   Tasks: { view: true, create: true, edit: true, delete: false, export: false },
+  //   Reports: { view: false, create: false, edit: false, delete: false, export: false },
+  //   Users: { view: false, create: false, edit: false, delete: false, export: false },
+  // },
 };
 
 export const RolePermissionPage = () => {

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import { useNavigate, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
@@ -11,7 +11,8 @@ import {
   EyeOff, 
   Loader2, 
   ArrowRight, 
-  AlertCircle 
+  AlertCircle,
+  ShieldCheck
 } from 'lucide-react';
 import './LoginPage.css';
 
@@ -50,14 +51,12 @@ export const LoginPage = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    const usernameErr = validators.required(formData.username, 'Username or Email');
+    const usernameErr = validators.required(formData.username, 'Username');
     if (usernameErr) newErrors.username = usernameErr;
 
     const passwordErr = validators.required(formData.password, 'Password');
     if (passwordErr) {
       newErrors.password = passwordErr;
-    } else if (formData.password.length < 4) {
-      newErrors.password = 'Password must be at least 4 characters.';
     }
 
     setErrors(newErrors);
@@ -76,21 +75,10 @@ export const LoginPage = () => {
       showToast(`Welcome back, ${response.user.name}!`, 'success');
       navigate(redirectPath, { replace: true });
     } catch (err) {
-      setServerError(err.message || 'Failed to authenticate. Please check your credentials.');
+      setServerError(err.message || 'Authentication failed. Please verify your  credentials.');
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // Demo Login Helper
-  const handleDemoFill = (username, roleName) => {
-    setFormData({
-      username,
-      password: 'password123',
-    });
-    setErrors({});
-    setServerError('');
-    showToast(`Filled credentials for ${roleName}`, 'info', 2000);
   };
 
   return (
@@ -99,7 +87,7 @@ export const LoginPage = () => {
         {/* Brand Header */}
         <div className="login-brand">
           <div className="login-logo-icon">
-            {/* <Building2 size={24} /> */}
+            <ShieldCheck size={24} color="#059669" />
           </div>
           <div className="login-brand-text">
             <h1>PL CRM</h1>
@@ -109,7 +97,7 @@ export const LoginPage = () => {
 
         <div className="login-header">
           <h2>Welcome back</h2>
-          <p>Please enter your credentials to access your account.</p>
+          <p>Please enter your  credentials to access the dashboard.</p>
         </div>
 
         {/* Global Server Error Alert */}
@@ -125,7 +113,7 @@ export const LoginPage = () => {
           {/* Username / User ID Field */}
           <div className="form-group">
             <label className="form-label" htmlFor="username">
-              Username or Email <span className="form-required">*</span>
+              Username <span className="form-required">*</span>
             </label>
             <div className="input-wrapper">
               <User className="input-icon" size={18} />
@@ -135,10 +123,11 @@ export const LoginPage = () => {
                 type="text"
                 autoComplete="username"
                 className={`form-input ${errors.username ? 'has-error' : ''}`}
-                placeholder="e.g. sarah_admin or sarah.connor@apexcrm.io"
+                placeholder="e.g. abi or admin"
                 value={formData.username}
                 onChange={handleChange}
                 disabled={isSubmitting}
+                autoFocus
               />
             </div>
             {errors.username && <span className="field-error-text">{errors.username}</span>}
@@ -184,7 +173,7 @@ export const LoginPage = () => {
             {isSubmitting ? (
               <>
                 <Loader2 size={18} className="animate-spin" />
-                <span>Signing in...</span>
+                <span>Signing...</span>
               </>
             ) : (
               <>
@@ -195,28 +184,17 @@ export const LoginPage = () => {
           </button>
         </form>
 
-        {/* Quick Demo Credentials */}
-        <div className="demo-accounts-section">
-          <p className="demo-title">Quick Demo Login (Click to test)</p>
-          <div className="demo-buttons-grid">
-            <button
-              type="button"
-              className="demo-btn"
-              onClick={() => handleDemoFill('sarah_admin', 'Admin')}
-            >
-              🔑 Admin (Full Access)
-            </button>
-            <button
-              type="button"
-              className="demo-btn"
-              onClick={() => handleDemoFill('alex_manager', 'Manager')}
-            >
-              👔 Manager (Operations & Sales)
-            </button>
+        {/* Backend Connected Indicator */}
+        {/* <div style={{ marginTop: '24px', padding: '12px 14px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', textAlign: 'center' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', fontSize: '0.82rem', color: '#059669', fontWeight: 600 }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
+            Connected to Live Django REST API
           </div>
-        </div>
+          <p style={{ margin: '4px 0 0 0', fontSize: '0.78rem', color: '#64748b' }}>
+            Sign in with the superuser created in your Django database
+          </p>
+        </div> */}
       </div>
     </div>
   );
 };
-

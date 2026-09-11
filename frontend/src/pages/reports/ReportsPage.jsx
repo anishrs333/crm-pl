@@ -23,12 +23,12 @@ export const ReportsPage = () => {
     showToast(`Generating and downloading CRM ${format.toUpperCase()} report...`, 'success', 3000);
   };
 
-  const repPerformance = [
-    { name: 'Alex Rivera', role: 'Sales Lead', dealsWon: 14, revenue: 235000, winRate: 72 },
-    { name: 'Jessica Chen', role: 'Account Exec', dealsWon: 11, revenue: 184500, winRate: 68 },
-    { name: 'Sarah Connor', role: 'VP Sales', dealsWon: 8, revenue: 160000, winRate: 80 },
-    { name: 'Marcus Vance', role: 'CS Representative', dealsWon: 5, revenue: 42000, winRate: 50 },
-  ];
+  // const repPerformance = [
+  //   { name: 'Alex Rivera', role: 'Sales Lead', dealsWon: 14, revenue: 235000, winRate: 72 },
+  //   { name: 'Jessica Chen', role: 'Account Exec', dealsWon: 11, revenue: 184500, winRate: 68 },
+  //   { name: 'Sarah Connor', role: 'VP Sales', dealsWon: 8, revenue: 160000, winRate: 80 },
+  //   { name: 'Marcus Vance', role: 'CS Representative', dealsWon: 5, revenue: 42000, winRate: 50 },
+  // ];
 
   return (
     <div className="reports-container">
@@ -57,7 +57,7 @@ export const ReportsPage = () => {
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="reports-metrics-grid">
+      {/* <div className="reports-metrics-grid">
         <DashboardCard
           title="Annual Run Rate (ARR)"
           value="$1,240,000"
@@ -92,7 +92,7 @@ export const ReportsPage = () => {
           trendType="positive"
           subtitle="industry benchmark 2.5%"
         />
-      </div>
+      </div> */}
 
       {/* Sales Rep Performance Leaderboard */}
       <Card>
@@ -100,7 +100,7 @@ export const ReportsPage = () => {
           title="Sales Representative Performance"
           subtitle="Closed deals, total revenue contribution, and conversion efficiency"
         />
-        <CardBody noPadding>
+        {/* <CardBody noPadding>
           <div className="crm-table-responsive">
             <table className="crm-table">
               <thead>
@@ -166,7 +166,7 @@ export const ReportsPage = () => {
               </tbody>
             </table>
           </div>
-        </CardBody>
+        </CardBody> */}
       </Card>
     </div>
   );

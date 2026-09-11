@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
-import { isMockEnabled } from '../../services/api';
 import { Card, CardHeader, CardBody, CardFooter } from '../../components/common/Card';
 import { FormField } from '../../components/forms/FormField';
 import { Button } from '../../components/common/Button';
@@ -39,25 +38,26 @@ export const SettingsPage = () => {
     showToast('Company CRM preferences saved successfully.', 'success');
   };
 
-  const handleTestApiConnection = () => {
+  const handleTestApiConnection = async () => {
     setIsTestingApi(true);
     setApiPingResult(null);
 
-    setTimeout(() => {
+    try {
+      await api.get('/reports/dashboard-stats/');
+      setApiPingResult({
+        status: 'success',
+        message: 'Connected to Django REST Framework backend on port 8000 successfully.',
+      });
+      showToast('Backend connection verified successfully.', 'success', 2500);
+    } catch (err) {
+      setApiPingResult({
+        status: 'error',
+        message: `Backend connection error: ${err.message}`,
+      });
+      showToast('Backend ping failed.', 'error', 2500);
+    } finally {
       setIsTestingApi(false);
-      if (isMockEnabled) {
-        setApiPingResult({
-          status: 'success',
-          message: 'Mock API is active and responsive (0ms latency, simulated backend state).',
-        });
-      } else {
-        setApiPingResult({
-          status: 'error',
-          message: `Backend at ${import.meta.env.VITE_API_BASE_URL} is unreachable or offline.`,
-        });
-      }
-      showToast('API connection test executed.', 'info', 2500);
-    }, 600);
+    }
   };
 
   return (
@@ -141,8 +141,8 @@ export const SettingsPage = () => {
         {/* REST API & Backend Connection Diagnostics */}
         <Card>
           <CardHeader
-            title="REST API Integration Status"
-            subtitle="Backend server configuration and mock engine status"
+            title="REST API Connection"
+            subtitle="Backend server configuration and live Django API status"
           />
           <CardBody>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
@@ -158,12 +158,8 @@ export const SettingsPage = () => {
                   <span style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-secondary)' }}>
                     Current API Mode:
                   </span>
-                  <span
-                    className={`api-status-badge ${
-                      isMockEnabled ? 'api-status-mock' : 'api-status-active'
-                    }`}
-                  >
-                    {isMockEnabled ? '● Mock Engine Active' : '● Live REST API'}
+                  <span className="api-status-badge api-status-active">
+                    ● Live Django REST API
                   </span>
                 </div>
 
@@ -176,9 +172,7 @@ export const SettingsPage = () => {
               </div>
 
               <p style={{ fontSize: '0.88rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
-                When your backend developers deploy the REST API, simply toggle{' '}
-                <code>VITE_USE_MOCK=false</code> in <code>.env</code>. All frontend services
-                (`userService`, `customerService`, etc.) will seamlessly communicate with real endpoints without requiring any component rewrites.
+                The frontend is connected directly to your Django REST Framework backend on port 8000. All authentication, users, leads, customers, opportunities, and tasks communicate directly with real database tables.
               </p>
 
               {apiPingResult && (

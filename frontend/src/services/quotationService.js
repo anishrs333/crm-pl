@@ -1,129 +1,90 @@
-import api, { isMockEnabled, mockDelay } from './api';
-import { initialQuotations } from './mockData';
+﻿import api from './api';
 
-let mockQuotationsList = [...initialQuotations];
+const mapQuotation = (q) => ({
+  ...q,
+  id: q.id,
+  quotationNumber: q.quote_number || q.quotationNumber || `QUOTE-${q.id}`,
+  customerName: q.customer_name || (q.customer ? `Customer #${q.customer}` : 'Client Organization'),
+  contactPerson: q.contact_person || 'Client Contact',
+  grandTotal: parseFloat(q.total_amount || q.grandTotal || 0),
+  subtotal: parseFloat(q.subtotal || 0),
+  taxAmount: parseFloat(q.tax_amount || 0),
+  status: q.status ? (q.status.charAt(0).toUpperCase() + q.status.slice(1)) : 'Draft',
+  version: q.version || 'v1.0',
+  createdDate: q.created_at ? q.created_at.split('T')[0] : new Date().toISOString().split('T')[0],
+  validUntil: q.valid_until,
+});
 
 export const quotationService = {
   getQuotations: async ({ page = 1, limit = 10, search = '', status = '' } = {}) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 250);
+    const params = { page, page_size: limit };
+    if (search) params.search = search;
+    if (status) params.status = status.toLowerCase();
 
-      let filtered = [...mockQuotationsList];
+    const response = await api.get('/quotations/', { params });
 
-      if (search.trim()) {
-        const q = search.toLowerCase();
-        filtered = filtered.filter(
-          (item) =>
-            item.quotationNumber.toLowerCase().includes(q) ||
-            item.customerName.toLowerCase().includes(q) ||
-            item.contactPerson.toLowerCase().includes(q)
-        );
-      }
+    const rawList = Array.isArray(response) ? response : (response?.results || response?.data || []);
+    const totalItems = response?.count ?? rawList.length;
 
-      if (status) {
-        filtered = filtered.filter((item) => item.status === status);
-      }
-
-      const totalItems = filtered.length;
-      const startIndex = (page - 1) * limit;
-      const data = filtered.slice(startIndex, startIndex + limit);
-
-      return {
-        data,
-        totalItems,
-        page,
-        limit,
-        totalPages: Math.ceil(totalItems / limit),
-      };
-    }
-
-    return await api.get('/quotations', {
-      params: { page, limit, search, status },
-    });
+    return {
+      data: rawList.map(mapQuotation),
+      totalItems,
+      page,
+      limit,
+      totalPages: Math.ceil(totalItems / limit) || 1,
+    };
   },
 
   getQuotationById: async (id) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 200);
-      const found = mockQuotationsList.find((q) => q.id === id);
-      if (!found) throw new Error('Quotation not found.');
-      return found;
-    }
-    return await api.get(`/quotations/${id}`);
+    const quotation = await api.get(`/quotations/${id}/`);
+    return mapQuotation(quotation);
   },
 
   createQuotation: async (quotationData) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 400);
+    const quoteNumber = quotationData.quotationNumber || `PLSTS/CRM/${new Date().getFullYear()}/${Date.now().toString().slice(-4)}`;
+    const payload = {
+      quote_number: quoteNumber,
+      customer: quotationData.customerId || quotationData.customer,
+      subtotal: parseFloat(quotationData.subtotal || quotationData.grandTotal || 0),
+      tax_amount: parseFloat(quotationData.taxAmount || 0),
+      discount_amount: parseFloat(quotationData.discountAmount || 0),
+      total_amount: parseFloat(quotationData.grandTotal || 0),
+      status: (quotationData.status || 'draft').toLowerCase(),
+      valid_until: quotationData.validUntil || null,
+      notes: quotationData.notes || '',
+    };
 
-      const nextNumberIndex = String(mockQuotationsList.length + 1).padStart(3, '0');
-      const quotationNumber = quotationData.quotationNumber || `PLSTS/CRM/2026/${nextNumberIndex}`;
-
-      const newQuotation = {
-        ...quotationData,
-        id: `quot-${Date.now().toString().slice(-4)}`,
-        quotationNumber,
-        version: quotationData.version || 'v1.0',
-        createdDate: quotationData.createdDate || new Date().toISOString().split('T')[0],
-      };
-
-      mockQuotationsList = [newQuotation, ...mockQuotationsList];
-      return newQuotation;
-    }
-
-    return await api.post('/quotations', quotationData);
+    const created = await api.post('/quotations/', payload);
+    return mapQuotation(created);
   },
 
   updateQuotation: async (id, quotationData) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 350);
+    const payload = { ...quotationData };
+    if (quotationData.status) payload.status = quotationData.status.toLowerCase();
+    if (quotationData.grandTotal !== undefined) payload.total_amount = parseFloat(quotationData.grandTotal);
 
-      const index = mockQuotationsList.findIndex((q) => q.id === id);
-      if (index === -1) throw new Error('Quotation not found.');
-
-      const updated = {
-        ...mockQuotationsList[index],
-        ...quotationData,
-      };
-
-      mockQuotationsList[index] = updated;
-      return updated;
-    }
-
-    return await api.put(`/quotations/${id}`, quotationData);
+    const updated = await api.patch(`/quotations/${id}/`, payload);
+    return mapQuotation(updated);
   },
 
   createRevision: async (id) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 350);
-
-      const original = mockQuotationsList.find((q) => q.id === id);
-      if (!original) throw new Error('Original quotation not found.');
-
-      const currentVerNum = parseFloat(original.version.replace('v', '')) || 1.0;
-      const nextVer = `v${(currentVerNum + 0.1).toFixed(1)}`;
-
-      const revision = {
-        ...original,
-        id: `quot-${Date.now().toString().slice(-4)}`,
-        version: nextVer,
-        status: 'Draft',
-        createdDate: new Date().toISOString().split('T')[0],
-      };
-
-      mockQuotationsList = [revision, ...mockQuotationsList];
-      return revision;
-    }
-
-    return await api.post(`/quotations/${id}/revision`);
+    // Clone existing quotation as a revised draft
+    const original = await api.get(`/quotations/${id}/`);
+    const newQuoteNumber = `${original.quote_number}-R1`;
+    const payload = {
+      quote_number: newQuoteNumber,
+      customer: original.customer,
+      subtotal: original.subtotal,
+      tax_amount: original.tax_amount,
+      total_amount: original.total_amount,
+      status: 'draft',
+    };
+    const created = await api.post('/quotations/', payload);
+    return mapQuotation(created);
   },
 
   deleteQuotation: async (id) => {
-    if (isMockEnabled) {
-      await mockDelay(null, 250);
-      mockQuotationsList = mockQuotationsList.filter((q) => q.id !== id);
-      return { success: true };
-    }
-    return await api.delete(`/quotations/${id}`);
+    await api.delete(`/quotations/${id}/`);
+    return { success: true };
   },
 };

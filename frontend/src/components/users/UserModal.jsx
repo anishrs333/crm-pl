@@ -20,7 +20,7 @@ export const UserModal = ({
     username: '',
     email: '',
     phone: '',
-    role: 'Employee',
+    role: 'Admin',
     department: 'Sales',
     status: 'Active',
   });
@@ -34,7 +34,7 @@ export const UserModal = ({
         username: initialData.username || '',
         email: initialData.email || '',
         phone: initialData.phone || '',
-        role: 'Admin',
+        role: initialData.role || 'Admin',
         department: initialData.department || 'Sales',
         status: initialData.status || 'Active',
       });
@@ -44,7 +44,7 @@ export const UserModal = ({
         username: '',
         email: '',
         phone: '',
-        role: 'Employee',
+        role: 'Admin',
         department: 'Sales',
         status: 'Active',
       });
