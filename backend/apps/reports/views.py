@@ -85,3 +85,51 @@ class DashboardStatsView(APIView):
             ],
             'leadDistribution': lead_dist,
         }, status=status.HTTP_200_OK)
+
+
+class GlobalSearchView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        query = request.query_params.get('q', '').strip()
+        if not query or len(query) < 2:
+            return Response({
+                'leads': [],
+                'customers': [],
+                'opportunities': [],
+                'quotations': [],
+                'tasks': []
+            })
+
+        user = request.user
+        leads_qs = Lead.objects.filter(
+            Q(first_name__icontains=query) | Q(last_name__icontains=query) | Q(company__icontains=query) | Q(email__icontains=query)
+        )
+        cust_qs = Customer.objects.filter(
+            Q(name__icontains=query) | Q(contact_person__icontains=query) | Q(email__icontains=query)
+        )
+        opp_qs = Opportunity.objects.filter(
+            Q(title__icontains=query) | Q(customer__name__icontains=query)
+        )
+        quote_qs = Quotation.objects.filter(
+            Q(quote_number__icontains=query) | Q(customer__name__icontains=query)
+        )
+        task_qs = Task.objects.filter(
+            Q(title__icontains=query) | Q(description__icontains=query)
+        )
+
+        if not user.is_manager:
+            leads_qs = leads_qs.filter(Q(assigned_to=user) | Q(created_by=user))
+            cust_qs = cust_qs.filter(account_manager=user)
+            opp_qs = opp_qs.filter(Q(assigned_to=user) | Q(created_by=user))
+            quote_qs = quote_qs.filter(created_by=user)
+            task_qs = task_qs.filter(Q(assigned_to=user) | Q(created_by=user))
+
+        return Response({
+            'leads': [{'id': l.id, 'title': f"{l.first_name} {l.last_name}", 'subtitle': l.company or l.email, 'type': 'Lead'} for l in leads_qs[:10]],
+            'customers': [{'id': c.id, 'title': c.name, 'subtitle': c.email or c.phone, 'type': 'Customer'} for c in cust_qs[:10]],
+            'opportunities': [{'id': o.id, 'title': o.title, 'subtitle': f"${o.amount:,.2f} - {o.stage}", 'type': 'Opportunity'} for o in opp_qs[:10]],
+            'quotations': [{'id': q.id, 'title': q.quote_number, 'subtitle': f"{q.customer.name} (${q.grand_total:,.2f})", 'type': 'Quotation'} for q in quote_qs[:10]],
+            'tasks': [{'id': t.id, 'title': t.title, 'subtitle': f"Priority: {t.priority} - Status: {t.status}", 'type': 'Task'} for t in task_qs[:10]],
+        })
+

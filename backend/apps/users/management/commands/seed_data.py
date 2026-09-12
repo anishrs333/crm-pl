@@ -10,6 +10,7 @@ from apps.leads.models import Lead, LeadNote
 from apps.opportunities.models import Opportunity
 from apps.quotations.models import Quotation, QuotationItem
 from apps.tasks.models import Task
+from apps.notifications.models import Notification
 
 
 class Command(BaseCommand):
@@ -299,4 +300,29 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(self.style.SUCCESS('[OK] Phase 6 Tasks seeded successfully.'))
+
+        # ----------------------------------------------------
+        # PHASE 7: Notifications System
+        # ----------------------------------------------------
+        Notification.objects.get_or_create(
+            recipient=admin_user,
+            title='System Alert: Seeding Completed',
+            defaults={
+                'message': 'Database seeding completed for all 17 CRM deliverables.',
+                'notification_type': Notification.NotificationType.SYSTEM,
+                'is_read': False,
+            }
+        )
+        Notification.objects.get_or_create(
+            recipient=manager_user,
+            title='New Lead Assigned: Marcus Vance',
+            defaults={
+                'message': 'You have been assigned to new lead Marcus Vance from Nova Retail Chain.',
+                'notification_type': Notification.NotificationType.LEAD,
+                'is_read': False,
+                'link_url': f'/leads/{lead2.id}',
+            }
+        )
+        self.stdout.write(self.style.SUCCESS('[OK] Phase 7 Notifications seeded successfully.'))
         self.stdout.write(self.style.SUCCESS('[SUCCESS] ALL PHASES SEEDED SUCCESSFULLY IN MYSQL!'))
+

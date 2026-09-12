@@ -120,3 +120,60 @@ class LeadViewSet(viewsets.ModelViewSet):
             "opportunity_title": opportunity.title,
             "deal_amount": opportunity.amount,
         }, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get'], url_path='check-duplicates')
+    def check_duplicates(self, request):
+        email = request.query_params.get('email', '').strip()
+        phone = request.query_params.get('phone', '').strip()
+
+        if not email and not phone:
+            return Response({'duplicates': []})
+
+        query = models.Q()
+        if email:
+            query |= models.Q(email__iexact=email)
+        if phone:
+            query |= models.Q(phone__iexact=phone)
+
+        duplicates = self.get_queryset().filter(query)
+        data = [
+            {
+                'id': d.id,
+                'name': f"{d.first_name} {d.last_name}",
+                'email': d.email,
+                'phone': d.phone,
+                'company': d.company_name,
+                'status': d.status
+            }
+            for d in duplicates
+        ]
+        return Response({'duplicate_count': len(data), 'duplicates': data})
+
+    @action(detail=False, methods=['get'], url_path='export-csv')
+    def export_csv(self, request):
+        import csv
+        from django.http import HttpResponse
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="leads_export.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Company', 'Status', 'Priority', 'Assigned To', 'Created At'])
+
+        for lead in self.get_queryset():
+            assigned_name = lead.assigned_to.get_full_name() if lead.assigned_to else ''
+            writer.writerow([
+                lead.id,
+                lead.first_name,
+                lead.last_name,
+                lead.email,
+                lead.phone,
+                lead.company_name,
+                lead.status,
+                lead.priority,
+                assigned_name,
+                lead.created_at.strftime('%Y-%m-%d %H:%M')
+            ])
+
+        return response
+
