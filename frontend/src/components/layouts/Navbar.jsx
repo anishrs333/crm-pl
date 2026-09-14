@@ -36,9 +36,10 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
     const loadNotifs = async () => {
       try {
         const list = await notificationService.getNotifications();
-        setNotifications(list);
+        setNotifications(Array.isArray(list) ? list : []);
       } catch (e) {
         console.error('Failed to load notifications:', e);
+        setNotifications([]);
       }
     };
     loadNotifs();
@@ -72,16 +73,18 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
     }
   };
 
+  const safeNotifs = Array.isArray(notifications) ? notifications : [];
+
   const handleMarkAllRead = async () => {
     await notificationService.markAllAsRead();
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setNotifications((prev) => (Array.isArray(prev) ? prev : []).map((n) => ({ ...n, read: true, is_read: true })));
     showToast('All notifications marked as read.', 'info', 2000);
   };
 
   const handleNotificationClick = async (notif) => {
     await notificationService.markAsRead(notif.id);
     setNotifications((prev) =>
-      prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
+      (Array.isArray(prev) ? prev : []).map((n) => (n.id === notif.id ? { ...n, read: true, is_read: true } : n))
     );
     setIsNotifOpen(false);
     if (notif.link) {
@@ -89,7 +92,7 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
     }
   };
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = safeNotifs.filter((n) => !n.read && !n.is_read).length;
 
   const getNotifIcon = (type) => {
     switch (type) {
@@ -161,15 +164,15 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
               </div>
 
               <div className="notif-list">
-                {notifications.length === 0 ? (
+                {safeNotifs.length === 0 ? (
                   <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                     No notifications at this time.
                   </div>
                 ) : (
-                  notifications.map((n) => (
+                  safeNotifs.map((n) => (
                     <div
                       key={n.id}
-                      className={`notif-item ${!n.read ? 'unread' : ''}`}
+                      className={`notif-item ${!n.read && !n.is_read ? 'unread' : ''}`}
                       onClick={() => handleNotificationClick(n)}
                     >
                       <div className="notif-icon">
@@ -187,6 +190,7 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
             </div>
           )}
         </div>
+
 
         <div className="user-menu-wrapper" ref={menuRef}>
           <button
