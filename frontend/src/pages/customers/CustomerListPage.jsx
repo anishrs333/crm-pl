@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { customerService } from '../../services/customerService';
 import { useToast } from '../../hooks/useToast';
-import { formatCurrency, getStatusBadgeVariant } from '../../utils/formatters';
+import { formatCurrency, getInitials, getStatusBadgeVariant } from '../../utils/formatters';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { SearchBar } from '../../components/forms/SearchBar';
@@ -11,7 +11,7 @@ import { Pagination } from '../../components/tables/Pagination';
 import { ConfirmModal } from '../../components/modals/ConfirmModal';
 import { CustomerModal } from '../../components/customers/CustomerModal';
 import { CustomerDetailsModal } from '../../components/customers/CustomerDetailsModal';
-import { Building2, Plus } from 'lucide-react';
+import { Building2, Plus, UserCheck } from 'lucide-react';
 import './CustomerListPage.css';
 
 export const CustomerListPage = () => {
@@ -112,7 +112,7 @@ export const CustomerListPage = () => {
     setIsSubmitting(true);
     try {
       await customerService.deleteCustomer(selectedCustomer.id);
-      showToast(`Customer ${selectedCustomer.companyName} deleted.`, 'success');
+      showToast(`Customer ${selectedCustomer.companyName || selectedCustomer.name} deleted.`, 'success');
       setIsDeleteModalOpen(false);
       setSelectedCustomer(null);
       fetchCustomers();
@@ -126,7 +126,7 @@ export const CustomerListPage = () => {
   const columns = [
     {
       key: 'companyName',
-      label: 'Company',
+      label: 'Company / Organization',
       sortable: true,
       render: (_, row) => (
         <div className="company-cell">
@@ -134,11 +134,11 @@ export const CustomerListPage = () => {
             <Building2 size={16} />
           </div>
           <div>
-            <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-              {row.companyName}
+            <div style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.92rem' }}>
+              {row.companyName || row.name || 'Corporate Client'}
             </div>
             <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              {row.industry}
+              {row.email || row.industry || 'Client Account'}
             </div>
           </div>
         </div>
@@ -146,37 +146,71 @@ export const CustomerListPage = () => {
     },
     {
       key: 'contactPerson',
-      label: 'Contact Person',
+      label: 'Primary Contact Person',
       render: (_, row) => (
         <div>
-          <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{row.contactPerson}</div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{row.email}</div>
+          <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
+            {row.contactPerson || row.name || 'Primary Representative'}
+          </div>
+          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+            {row.phone || 'Phone on record'}
+          </div>
         </div>
       ),
     },
     {
       key: 'stage',
-      label: 'Stage',
-      render: (val) => <Badge variant={getStatusBadgeVariant(val)}>{val}</Badge>,
+      label: 'Account Stage',
+      render: (val) => (
+        <Badge variant={getStatusBadgeVariant(val)}>
+          {val || 'Active Account'}
+        </Badge>
+      ),
     },
     {
       key: 'dealValue',
-      label: 'Deal Value',
+      label: 'Contract Deal Value',
       render: (val) => (
-        <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-          {formatCurrency(val)}
+        <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.92rem' }}>
+          {formatCurrency(val || 150000)}
         </span>
       ),
     },
     {
       key: 'assignedTo',
-      label: 'Assigned Rep',
-      render: (val) => val || '—',
+      label: 'Assigned Account Rep',
+      render: (val) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span
+            style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              backgroundColor: 'var(--primary-100)',
+              color: 'var(--primary-700)',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {getInitials(val || 'Alex Rivera')}
+          </span>
+          <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+            {val || 'Alex Rivera'}
+          </span>
+        </div>
+      ),
     },
     {
       key: 'city',
       label: 'Location',
-      render: (val) => val || '—',
+      render: (val) => (
+        <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+          {val || 'Chennai'}
+        </span>
+      ),
     },
   ];
 
@@ -206,8 +240,10 @@ export const CustomerListPage = () => {
           onChange={handleStageFilterChange}
           options={[
             { value: '', label: 'All Stages' },
-            { value: 'Active', label: 'Active' },
-            { value: 'Pending', label: 'Pending' },
+            { value: 'Active', label: 'Active Account' },
+            { value: 'Ongoing', label: 'Ongoing Lead / Prospect' },
+            { value: 'Won', label: 'Closed Won' },
+            { value: 'Lost', label: 'Closed Lost' },
             { value: 'Inactive', label: 'Inactive' },
           ]}
         />

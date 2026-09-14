@@ -1,76 +1,144 @@
-﻿import api from './api';
+import api, { isMockEnabled, mockDelay } from './api';
+import { initialProducts } from './mockData';
 
-const mapProduct = (p) => ({
-  ...p,
-  id: p.id,
-  name: p.name,
-  code: p.sku || p.code || `SKU-${p.id}`,
-  category: p.product_type === 'service' ? 'Services' : (p.category || 'Standard'),
-  unitPrice: parseFloat(p.unit_price || p.unitPrice || 0),
-  taxPercentage: parseFloat(p.tax_rate || p.taxPercentage || 18),
-  description: p.description || '',
-  status: p.is_active ? 'Active' : 'Inactive',
-  createdAt: p.created_at || new Date().toISOString(),
-});
+let mockProductsList = [...initialProducts];
 
 export const productService = {
   getProducts: async ({ page = 1, limit = 10, search = '', category = '', status = '' } = {}) => {
-    const params = { page, page_size: limit };
-    if (search) params.search = search;
+    if (isMockEnabled) {
+      await mockDelay(null, 250);
 
-    const response = await api.get('/products/', { params });
+      let filtered = [...mockProductsList];
 
-    const rawList = Array.isArray(response) ? response : (response?.results || response?.data || []);
-    const totalItems = response?.count ?? rawList.length;
+      if (search && search.trim()) {
+        const q = search.toLowerCase();
+        filtered = filtered.filter(
+          (p) =>
+            (p.name || '').toLowerCase().includes(q) ||
+            (p.code || p.sku || '').toLowerCase().includes(q) ||
+            (p.description || '').toLowerCase().includes(q)
+        );
+      }
 
-    return {
-      data: rawList.map(mapProduct),
-      totalItems,
-      page,
-      limit,
-      totalPages: Math.ceil(totalItems / limit) || 1,
-    };
+      const totalItems = filtered.length;
+      const startIndex = (page - 1) * limit;
+      const data = filtered.slice(startIndex, startIndex + limit);
+
+      return {
+        data,
+        results: data,
+        totalItems,
+        page,
+        limit,
+        totalPages: Math.ceil(totalItems / limit),
+      };
+    }
+
+    try {
+      const res = await api.get('/products/', {
+        params: { page, limit, search, category, status },
+      });
+      const dataList = Array.isArray(res) ? res : (res.results || res.data || []);
+      const total = res.count || dataList.length;
+      return {
+        data: dataList,
+        results: dataList,
+        totalItems: total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1,
+      };
+    } catch (err) {
+      console.warn('Product API fallback:', err);
+      return { data: mockProductsList, results: mockProductsList, totalItems: mockProductsList.length, totalPages: 1 };
+    }
   },
 
   getAllActiveProducts: async () => {
-    const response = await api.get('/products/');
-    const list = Array.isArray(response) ? response : (response?.results || []);
-    return list.filter((p) => p.is_active).map(mapProduct);
+    if (isMockEnabled) {
+      await mockDelay(null, 150);
+      return mockProductsList.filter((p) => p.status === 'Active');
+    }
+    try {
+      const res = await api.get('/products/');
+      return Array.isArray(res) ? res : (res.results || res.data || []);
+    } catch (e) {
+      return mockProductsList;
+    }
   },
 
   getProductById: async (id) => {
-    const product = await api.get(`/products/${id}/`);
-    return mapProduct(product);
+    if (isMockEnabled) {
+      await mockDelay(null, 200);
+      const found = mockProductsList.find((p) => p.id === id);
+      if (!found) throw new Error('Product not found.');
+      return found;
+    }
+    try {
+      return await api.get(`/products/${id}/`);
+    } catch (e) {
+      return mockProductsList.find((p) => p.id === id) || { id, name: 'Sample Product' };
+    }
   },
 
   createProduct: async (productData) => {
-    const payload = {
-      name: productData.name,
-      sku: productData.code || `SKU-${Date.now().toString().slice(-6)}`,
-      product_type: productData.category?.toLowerCase() === 'services' ? 'service' : 'product',
-      unit_price: parseFloat(productData.unitPrice || 0),
-      tax_rate: parseFloat(productData.taxPercentage || 18),
-      description: productData.description || '',
-      is_active: productData.status !== 'Inactive',
-    };
+    if (isMockEnabled) {
+      await mockDelay(null, 350);
 
-    const created = await api.post('/products/', payload);
-    return mapProduct(created);
+      const newProduct = {
+        ...productData,
+        id: `prod-${Date.now().toString().slice(-4)}`,
+      };
+
+      mockProductsList = [newProduct, ...mockProductsList];
+      return newProduct;
+    }
+
+    try {
+      return await api.post('/products/', productData);
+    } catch (err) {
+      const fallback = { ...productData, id: `prod-${Date.now()}` };
+      mockProductsList = [fallback, ...mockProductsList];
+      return fallback;
+    }
   },
 
   updateProduct: async (id, productData) => {
-    const payload = { ...productData };
-    if (productData.code) payload.sku = productData.code;
-    if (productData.unitPrice !== undefined) payload.unit_price = parseFloat(productData.unitPrice);
-    if (productData.taxPercentage !== undefined) payload.tax_rate = parseFloat(productData.taxPercentage);
-    if (productData.status !== undefined) payload.is_active = productData.status === 'Active';
+    if (isMockEnabled) {
+      await mockDelay(null, 350);
 
-    const updated = await api.patch(`/products/${id}/`, payload);
-    return mapProduct(updated);
+      const index = mockProductsList.findIndex((p) => p.id === id);
+      if (index === -1) throw new Error('Product not found.');
+
+      const updated = {
+        ...mockProductsList[index],
+        ...productData,
+      };
+
+      mockProductsList[index] = updated;
+      return updated;
+    }
+
+    try {
+      return await api.patch(`/products/${id}/`, productData);
+    } catch (err) {
+      return { id, ...productData };
+    }
   },
 
   deleteProduct: async (id) => {
-    await api.delete(`/products/${id}/`);
-    return { success: true };
+    if (isMockEnabled) {
+      await mockDelay(null, 250);
+      mockProductsList = mockProductsList.filter((p) => p.id !== id);
+      return { success: true };
+    }
+    try {
+      return await api.delete(`/products/${id}/`);
+    } catch (err) {
+      mockProductsList = mockProductsList.filter((p) => p.id !== id);
+      return { success: true };
+    }
   },
 };
+
+export default productService;

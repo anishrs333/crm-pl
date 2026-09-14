@@ -1,4 +1,4 @@
-﻿import React, { createContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useState, useEffect, useCallback } from 'react';
 import { storage } from '../utils/storage';
 import { authService } from '../services/authService';
 
@@ -70,11 +70,11 @@ export const AuthProvider = ({ children }) => {
   // Role authorization: Admin has global access; Manager has operational access
   const hasRole = useCallback(
     (allowedRoles) => {
-      if (!user) return false;
+      if (!user || !user.role) return false;
       if (!allowedRoles || allowedRoles.length === 0) return true;
-      const userRole = (user.role || '').toLowerCase();
-      if (userRole === 'admin' || user.is_superuser) return true;
-      return allowedRoles.map((r) => r.toLowerCase()).includes(userRole);
+      const normalizedRole = (user.role || '').toLowerCase();
+      if (normalizedRole === 'admin' || user.is_superuser) return true;
+      return allowedRoles.some((r) => r.toLowerCase() === normalizedRole);
     },
     [user]
   );
@@ -90,8 +90,7 @@ export const AuthProvider = ({ children }) => {
     });
   }, []);
 
-  const isAdmin = (user?.role || '').toLowerCase() === 'admin' || !!user?.is_superuser;
-  const isManager = (user?.role || '').toLowerCase() === 'manager';
+  const normalizedUserRole = (user?.role || '').toLowerCase();
 
   const value = {
     user,
@@ -101,10 +100,11 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     hasRole,
-    isAdmin,
-    isManager,
+    isAdmin: normalizedUserRole === 'admin' || user?.is_superuser || false,
+    isManager: normalizedUserRole === 'manager' || normalizedUserRole === 'sales_manager' || normalizedUserRole === 'admin' || user?.is_superuser || false,
     switchRole,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+

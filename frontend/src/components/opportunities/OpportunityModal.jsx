@@ -158,7 +158,7 @@ export const OpportunityModal = ({
           />
 
           <FormField
-            label="Estimated Deal Value ($)"
+            label="Estimated Deal Value (₹)"
             name="dealValue"
             type="number"
             placeholder="120000"

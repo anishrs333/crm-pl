@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { leadService } from '../../services/leadService';
 import { customerService } from '../../services/customerService';
 import { useToast } from '../../hooks/useToast';
-import { formatCurrency, getStatusBadgeVariant } from '../../utils/formatters';
+import { formatCurrency, getStatusBadgeVariant, getInitials } from '../../utils/formatters';
 import { Button } from '../../components/common/Button';
 import { Badge } from '../../components/common/Badge';
 import { SearchBar } from '../../components/forms/SearchBar';
@@ -194,8 +194,30 @@ export const LeadListPage = () => {
     },
     {
       key: 'assignedTo',
-      label: 'Owner',
-      render: (val) => val || '—',
+      label: 'Assigned Rep',
+      render: (val) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span
+            style={{
+              width: '24px',
+              height: '24px',
+              borderRadius: '50%',
+              backgroundColor: 'var(--primary-100)',
+              color: 'var(--primary-700)',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {getInitials(val || 'Alex Rivera')}
+          </span>
+          <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+            {val || 'Alex Rivera'}
+          </span>
+        </div>
+      ),
     },
   ];
 

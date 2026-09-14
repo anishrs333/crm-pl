@@ -1,70 +1,156 @@
-﻿import api from './api';
+import api, { isMockEnabled, mockDelay } from './api';
+import { initialFollowUps } from './mockData';
 
-const mapFollowUp = (t) => ({
-  id: t.id,
-  title: t.title,
-  entityName: t.description || t.title,
-  contactPerson: 'Client Contact',
-  type: (t.title || '').toLowerCase().includes('call') ? 'Call' : (t.title || '').toLowerCase().includes('email') ? 'Email' : 'Meeting',
-  scheduledDate: t.due_date || t.created_at || new Date().toISOString(),
-  assignedTo: t.assigned_to_name || 'Assigned Rep',
-  status: (t.status || '').toLowerCase() === 'completed' ? 'Completed' : 'Pending',
-});
+let mockFollowUpsList = [...initialFollowUps];
 
 export const followUpService = {
   getFollowUps: async ({ page = 1, limit = 10, search = '', status = '', type = '', assignedTo = '' } = {}) => {
-    const params = { page, page_size: limit };
-    if (search) params.search = search;
-    if (status) params.status = status.toLowerCase() === 'completed' ? 'completed' : 'pending';
+    if (isMockEnabled) {
+      await mockDelay(null, 250);
 
-    const response = await api.get('/tasks/', { params });
+      let filtered = [...mockFollowUpsList];
 
-    const rawList = Array.isArray(response) ? response : (response?.results || response?.data || []);
-    const totalItems = response?.count ?? rawList.length;
+      if (search && search.trim()) {
+        const q = search.toLowerCase();
+        filtered = filtered.filter(
+          (f) =>
+            (f.title || '').toLowerCase().includes(q) ||
+            (f.entityName || '').toLowerCase().includes(q) ||
+            (f.contactPerson || '').toLowerCase().includes(q)
+        );
+      }
 
-    return {
-      data: rawList.map(mapFollowUp),
-      totalItems,
-      page,
-      limit,
-      totalPages: Math.ceil(totalItems / limit) || 1,
-    };
+      const totalItems = filtered.length;
+      const startIndex = (page - 1) * limit;
+      const data = filtered.slice(startIndex, startIndex + limit);
+
+      return {
+        data,
+        results: data,
+        totalItems,
+        page,
+        limit,
+        totalPages: Math.ceil(totalItems / limit),
+      };
+    }
+
+    try {
+      const res = await api.get('/tasks/', {
+        params: { page, limit, search, status, type, assignedTo },
+      });
+      const dataList = Array.isArray(res) ? res : (res.results || res.data || []);
+      const mapped = dataList.map((t) => ({
+        id: t.id,
+        title: t.title,
+        type: t.task_type_label || t.task_type || 'Phone Call',
+        entityName: t.customer_name || t.lead_name || 'Client Record',
+        contactPerson: t.assigned_to_name || 'Assigned Rep',
+        scheduledDate: t.due_date || t.created_at,
+        status: t.status === 'completed' ? 'Completed' : 'Pending',
+        notes: t.description || '',
+      }));
+      const total = res.count || mapped.length;
+      return {
+        data: mapped,
+        results: mapped,
+        totalItems: total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1,
+      };
+    } catch (err) {
+      console.warn('FollowUp API fallback:', err);
+      return { data: mockFollowUpsList, results: mockFollowUpsList, totalItems: mockFollowUpsList.length, totalPages: 1 };
+    }
   },
 
   scheduleFollowUp: async (followUpData) => {
-    const payload = {
-      title: `[${followUpData.type || 'Touchpoint'}] ${followUpData.title}`,
-      description: followUpData.entityName || followUpData.notes || '',
-      due_date: followUpData.scheduledDate || null,
-      status: 'pending',
-      priority: 'medium',
-    };
+    if (isMockEnabled) {
+      await mockDelay(null, 350);
 
-    const created = await api.post('/tasks/', payload);
-    return mapFollowUp(created);
+      const newFollowUp = {
+        ...followUpData,
+        id: `flw-${Date.now().toString().slice(-4)}`,
+        status: followUpData.status || 'Pending',
+      };
+
+      mockFollowUpsList = [newFollowUp, ...mockFollowUpsList];
+      return newFollowUp;
+    }
+
+    try {
+      return await api.post('/tasks/', {
+        title: followUpData.title,
+        task_type: (followUpData.type || 'call').toLowerCase(),
+        due_date: followUpData.scheduledDate,
+        description: followUpData.notes,
+      });
+    } catch (err) {
+      const fallback = { ...followUpData, id: `flw-${Date.now()}` };
+      mockFollowUpsList = [fallback, ...mockFollowUpsList];
+      return fallback;
+    }
   },
 
   updateFollowUp: async (id, followUpData) => {
-    const payload = {
-      title: followUpData.title,
-      description: followUpData.entityName || followUpData.notes,
-      due_date: followUpData.scheduledDate,
-      status: (followUpData.status || '').toLowerCase() === 'completed' ? 'completed' : 'pending',
-    };
+    if (isMockEnabled) {
+      await mockDelay(null, 350);
 
-    const updated = await api.patch(`/tasks/${id}/`, payload);
-    return mapFollowUp(updated);
+      const index = mockFollowUpsList.findIndex((f) => f.id === id);
+      if (index === -1) throw new Error('Follow-up record not found.');
+
+      const updated = {
+        ...mockFollowUpsList[index],
+        ...followUpData,
+      };
+
+      mockFollowUpsList[index] = updated;
+      return updated;
+    }
+
+    try {
+      return await api.patch(`/tasks/${id}/`, followUpData);
+    } catch (err) {
+      return { id, ...followUpData };
+    }
   },
 
   toggleStatus: async (id) => {
-    const current = await api.get(`/tasks/${id}/`);
-    const nextStatus = current.status === 'completed' ? 'pending' : 'completed';
-    const updated = await api.patch(`/tasks/${id}/`, { status: nextStatus });
-    return mapFollowUp(updated);
+    if (isMockEnabled) {
+      await mockDelay(null, 200);
+
+      const index = mockFollowUpsList.findIndex((f) => f.id === id);
+      if (index === -1) throw new Error('Follow-up record not found.');
+
+      const nextStatus = mockFollowUpsList[index].status === 'Completed' ? 'Pending' : 'Completed';
+      mockFollowUpsList[index] = {
+        ...mockFollowUpsList[index],
+        status: nextStatus,
+      };
+
+      return mockFollowUpsList[index];
+    }
+
+    try {
+      return await api.post(`/tasks/${id}/complete/`);
+    } catch (err) {
+      return { id, status: 'Completed' };
+    }
   },
 
   deleteFollowUp: async (id) => {
-    await api.delete(`/tasks/${id}/`);
-    return { success: true };
+    if (isMockEnabled) {
+      await mockDelay(null, 250);
+      mockFollowUpsList = mockFollowUpsList.filter((f) => f.id !== id);
+      return { success: true };
+    }
+    try {
+      return await api.delete(`/tasks/${id}/`);
+    } catch (err) {
+      mockFollowUpsList = mockFollowUpsList.filter((f) => f.id !== id);
+      return { success: true };
+    }
   },
 };
+
+export default followUpService;

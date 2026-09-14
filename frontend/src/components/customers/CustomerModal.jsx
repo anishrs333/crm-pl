@@ -155,14 +155,13 @@ export const CustomerModal = ({
           />
 
           <FormField
-            label="Estimated Deal Value ($)"
+            label="Estimated Deal Value (₹)"
             name="dealValue"
             type="number"
-            placeholder="50000"
+            placeholder="150000"
             value={formData.dealValue}
             onChange={handleChange}
             error={errors.dealValue}
-            icon={DollarSign}
           />
 
           <FormField
@@ -173,7 +172,9 @@ export const CustomerModal = ({
             onChange={handleChange}
             options={[
               { value: 'Active', label: 'Active Account' },
-              { value: 'Pending', label: 'Pending Review' },
+              { value: 'Ongoing', label: 'Ongoing Lead / Prospect' },
+              { value: 'Won', label: 'Closed Won' },
+              { value: 'Lost', label: 'Closed Lost' },
               { value: 'Inactive', label: 'Inactive / Churned' },
             ]}
           />

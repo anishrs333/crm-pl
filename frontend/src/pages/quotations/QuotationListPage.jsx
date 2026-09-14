@@ -91,16 +91,20 @@ export const QuotationListPage = () => {
   const handleFormSubmit = async (formData) => {
     setIsSubmitting(true);
     try {
+      let result;
       if (selectedQuotation) {
-        await quotationService.updateQuotation(selectedQuotation.id, formData);
+        result = await quotationService.updateQuotation(selectedQuotation.id, formData);
         showToast('Quotation updated successfully.', 'success');
       } else {
-        await quotationService.createQuotation(formData);
-        showToast('New quotation generated.', 'success');
+        result = await quotationService.createQuotation(formData);
+        showToast('New quotation generated! Opening PDF preview...', 'success');
       }
       setIsFormModalOpen(false);
-      setSelectedQuotation(null);
       fetchQuotations();
+      if (result) {
+        setSelectedQuotation(result);
+        setIsPrintPreviewOpen(true);
+      }
     } catch (err) {
       showToast(err.message || 'Failed to save quotation.', 'error');
     } finally {
@@ -133,7 +137,7 @@ export const QuotationListPage = () => {
       { key: 'quotationNumber', label: 'Quotation No' },
       { key: 'version', label: 'Version' },
       { key: 'customerName', label: 'Client' },
-      { key: 'grandTotal', label: 'Grand Total ($)' },
+      { key: 'grandTotal', label: 'Grand Total (₹)' },
       { key: 'status', label: 'Status' },
       { key: 'createdDate', label: 'Date' },
       { key: 'validUntil', label: 'Valid Until' },

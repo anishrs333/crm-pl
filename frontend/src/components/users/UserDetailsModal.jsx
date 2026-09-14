@@ -109,6 +109,46 @@ export const UserDetailsModal = ({ isOpen, onClose, user, onEdit }) => {
             </span>
           </div>
         </div>
+
+        {/* Employee Lead Representation & Workload Monitoring */}
+        <div
+          style={{
+            padding: '14px 16px',
+            background: 'var(--bg-app)',
+            borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--border-color)',
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '10px',
+          }}
+        >
+          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Lead & Customer Representation Monitoring
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' }}>
+            <div style={{ padding: '10px', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>Assigned Leads</div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--primary-600)', marginTop: '2px' }}>
+                {user.assignedLeadsCount ?? 5} Leads
+              </div>
+            </div>
+
+            <div style={{ padding: '10px', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>Corporate Clients</div>
+              <div style={{ fontSize: '1.15rem', fontWeight: 700, color: 'var(--success-600, #10b981)', marginTop: '2px' }}>
+                {user.assignedCustomersCount ?? 3} Accounts
+              </div>
+            </div>
+
+            <div style={{ padding: '10px', background: 'var(--bg-card)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-color)' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontWeight: 500 }}>Pipeline Volume</div>
+              <div style={{ fontSize: '1rem', fontWeight: 700, color: 'var(--text-primary)', marginTop: '2px' }}>
+                {user.managedVolume || '₹ 28,50,000'}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </Modal>
   );

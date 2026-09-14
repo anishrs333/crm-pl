@@ -60,7 +60,7 @@ export const ReportsPage = () => {
       {/* <div className="reports-metrics-grid">
         <DashboardCard
           title="Annual Run Rate (ARR)"
-          value="$1,240,000"
+          value="₹ 1,24,00,000"
           icon={TrendingUp}
           variant="success"
           trend="+22.8%"
@@ -68,7 +68,7 @@ export const ReportsPage = () => {
         />
         <DashboardCard
           title="Avg. Deal Size"
-          value="$54,800"
+          value="₹ 54,80,000"
           icon={DollarSign}
           variant="primary"
           trend="+8.4%"
@@ -76,7 +76,7 @@ export const ReportsPage = () => {
         />
         <DashboardCard
           title="Customer Acq. Cost"
-          value="$3,420"
+          value="₹ 3,42,000"
           icon={Target}
           variant="info"
           trend="-12.1%"

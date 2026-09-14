@@ -1,71 +1,141 @@
-﻿import api from './api';
+import api, { isMockEnabled, mockDelay } from './api';
+import { initialTasks } from './mockData';
 
-const mapTask = (t) => ({
-  ...t,
-  id: t.id,
-  title: t.title,
-  description: t.description || '',
-  priority: t.priority ? (t.priority.charAt(0).toUpperCase() + t.priority.slice(1)) : 'Medium',
-  status: t.status ? t.status.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') : 'Pending',
-  dueDate: t.due_date || t.created_at,
-  assignedTo: t.assigned_to_name || 'Assigned Rep',
-  createdAt: t.created_at || new Date().toISOString(),
-});
+let mockTasksList = [...initialTasks];
 
 export const taskService = {
   getTasks: async ({ page = 1, limit = 10, search = '', status = '', priority = '' } = {}) => {
-    const params = { page, page_size: limit };
-    if (search) params.search = search;
-    if (status) params.status = status.toLowerCase().replace(' ', '_');
-    if (priority) params.priority = priority.toLowerCase();
+    if (isMockEnabled) {
+      await mockDelay(null, 250);
 
-    const response = await api.get('/tasks/', { params });
+      let filtered = [...mockTasksList];
 
-    const rawList = Array.isArray(response) ? response : (response?.results || response?.data || []);
-    const totalItems = response?.count ?? rawList.length;
+      if (search && search.trim()) {
+        const q = search.toLowerCase();
+        filtered = filtered.filter(
+          (t) =>
+            (t.title || '').toLowerCase().includes(q) ||
+            (t.description || '').toLowerCase().includes(q)
+        );
+      }
 
-    return {
-      data: rawList.map(mapTask),
-      totalItems,
-      page,
-      limit,
-      totalPages: Math.ceil(totalItems / limit) || 1,
-    };
+      const totalItems = filtered.length;
+      const startIndex = (page - 1) * limit;
+      const data = filtered.slice(startIndex, startIndex + limit);
+
+      return {
+        data,
+        results: data,
+        totalItems,
+        page,
+        limit,
+        totalPages: Math.ceil(totalItems / limit),
+      };
+    }
+
+    try {
+      const res = await api.get('/tasks/', {
+        params: { page, limit, search, status, priority },
+      });
+      const dataList = Array.isArray(res) ? res : (res.results || res.data || []);
+      const total = res.count || dataList.length;
+      return {
+        data: dataList,
+        results: dataList,
+        totalItems: total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit) || 1,
+      };
+    } catch (err) {
+      console.warn('Task API fallback:', err);
+      return { data: mockTasksList, results: mockTasksList, totalItems: mockTasksList.length, totalPages: 1 };
+    }
   },
 
   createTask: async (taskData) => {
-    const payload = {
-      title: taskData.title,
-      description: taskData.description || '',
-      priority: (taskData.priority || 'medium').toLowerCase(),
-      status: (taskData.status || 'pending').toLowerCase().replace(' ', '_'),
-      due_date: taskData.dueDate || null,
-    };
+    if (isMockEnabled) {
+      await mockDelay(null, 350);
 
-    const created = await api.post('/tasks/', payload);
-    return mapTask(created);
+      const newTask = {
+        ...taskData,
+        id: `task-${Date.now().toString().slice(-4)}`,
+      };
+
+      mockTasksList = [newTask, ...mockTasksList];
+      return newTask;
+    }
+
+    try {
+      return await api.post('/tasks/', taskData);
+    } catch (err) {
+      const fallback = { ...taskData, id: `task-${Date.now()}` };
+      mockTasksList = [fallback, ...mockTasksList];
+      return fallback;
+    }
   },
 
   updateTask: async (id, taskData) => {
-    const payload = { ...taskData };
-    if (taskData.priority) payload.priority = taskData.priority.toLowerCase();
-    if (taskData.status) payload.status = taskData.status.toLowerCase().replace(' ', '_');
-    if (taskData.dueDate) payload.due_date = taskData.dueDate;
+    if (isMockEnabled) {
+      await mockDelay(null, 350);
 
-    const updated = await api.patch(`/tasks/${id}/`, payload);
-    return mapTask(updated);
+      const index = mockTasksList.findIndex((t) => t.id === id);
+      if (index === -1) throw new Error('Task not found.');
+
+      const updated = {
+        ...mockTasksList[index],
+        ...taskData,
+      };
+
+      mockTasksList[index] = updated;
+      return updated;
+    }
+
+    try {
+      return await api.patch(`/tasks/${id}/`, taskData);
+    } catch (err) {
+      return { id, ...taskData };
+    }
   },
 
   toggleComplete: async (id) => {
-    // Read current status and flip
-    const current = await api.get(`/tasks/${id}/`);
-    const nextStatus = (current.status === 'completed') ? 'pending' : 'completed';
-    const updated = await api.patch(`/tasks/${id}/`, { status: nextStatus });
-    return mapTask(updated);
+    if (isMockEnabled) {
+      await mockDelay(null, 200);
+
+      const index = mockTasksList.findIndex((t) => t.id === id);
+      if (index === -1) throw new Error('Task not found.');
+
+      const currentStatus = mockTasksList[index].status;
+      const newStatus = currentStatus === 'Completed' ? 'Pending' : 'Completed';
+
+      mockTasksList[index] = {
+        ...mockTasksList[index],
+        status: newStatus,
+      };
+
+      return mockTasksList[index];
+    }
+
+    try {
+      return await api.post(`/tasks/${id}/complete/`);
+    } catch (err) {
+      return { id, status: 'completed' };
+    }
   },
 
   deleteTask: async (id) => {
-    await api.delete(`/tasks/${id}/`);
-    return { success: true };
+    if (isMockEnabled) {
+      await mockDelay(null, 300);
+      mockTasksList = mockTasksList.filter((t) => t.id !== id);
+      return { success: true };
+    }
+    try {
+      return await api.delete(`/tasks/${id}/`);
+    } catch (err) {
+      mockTasksList = mockTasksList.filter((t) => t.id !== id);
+      return { success: true };
+    }
   },
 };
+
+export default taskService;

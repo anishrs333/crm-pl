@@ -92,15 +92,11 @@ export const Sidebar = ({
     {
       title: 'Administration',
       items: [
-        ...(user?.role === 'Admin'
-          ? [
-              {
-                label: 'Employee Management',
-                path: '/users',
-                icon: Users,
-              },
-            ]
-          : []),
+        {
+          label: 'Employee Monitoring',
+          path: '/users',
+          icon: Users,
+        },
         {
           label: 'System Settings',
           path: '/settings',

@@ -187,7 +187,7 @@ export const LeadModal = ({
           />
 
           <FormField
-            label="Estimated Deal Value ($)"
+            label="Estimated Deal Value (₹)"
             name="estimatedValue"
             type="number"
             placeholder="35000"

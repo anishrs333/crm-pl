@@ -1,9 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { notificationService } from '../../services/notificationService';
+import { userService } from '../../services/userService';
 import { getInitials } from '../../utils/formatters';
+import { UserModal } from '../users/UserModal';
 import { 
   Menu, 
   Search, 
@@ -16,7 +18,8 @@ import {
   PhoneCall,
   Flame,
   FileText,
-  CheckCircle
+  Users,
+  UserPlus
 } from 'lucide-react';
 import './Navbar.css';
 
@@ -29,24 +32,57 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [employeeCount, setEmployeeCount] = useState(0);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const menuRef = useRef(null);
   const notifRef = useRef(null);
 
-  // Load initial notifications
+  const loadEmployeeCount = useCallback(async () => {
+    try {
+      const res = await userService.getUsers({ limit: 1 });
+      setEmployeeCount(res.totalItems || res.data?.length || 0);
+    } catch (e) {
+      console.error('Failed to load employee count:', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadEmployeeCount();
+    const handleEmpCreated = () => loadEmployeeCount();
+    window.addEventListener('employee_created', handleEmpCreated);
+    return () => window.removeEventListener('employee_created', handleEmpCreated);
+  }, [loadEmployeeCount]);
+
+  const handleCreateEmployeeSubmit = async (formData) => {
+    setIsSubmitting(true);
+    try {
+      await userService.createUser(formData);
+      showToast(`🎉 New employee "${formData.name}" created successfully!`, 'success');
+      setIsAddModalOpen(false);
+      loadEmployeeCount();
+      window.dispatchEvent(new CustomEvent('employee_created'));
+    } catch (err) {
+      showToast(err.message || 'Failed to create employee account.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   useEffect(() => {
     const loadNotifs = async () => {
       try {
         const list = await notificationService.getNotifications();
-        setNotifications(list);
+        setNotifications(Array.isArray(list) ? list : []);
       } catch (e) {
         console.error('Failed to load notifications:', e);
+        setNotifications([]);
       }
     };
     loadNotifs();
   }, []);
 
-  // Close dropdowns on outside click
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -75,16 +111,18 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
     }
   };
 
+  const safeNotifs = Array.isArray(notifications) ? notifications : [];
+
   const handleMarkAllRead = async () => {
     await notificationService.markAllAsRead();
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    setNotifications((prev) => (Array.isArray(prev) ? prev : []).map((n) => ({ ...n, read: true, is_read: true })));
     showToast('All notifications marked as read.', 'info', 2000);
   };
 
   const handleNotificationClick = async (notif) => {
     await notificationService.markAsRead(notif.id);
     setNotifications((prev) =>
-      prev.map((n) => (n.id === notif.id ? { ...n, read: true } : n))
+      (Array.isArray(prev) ? prev : []).map((n) => (n.id === notif.id ? { ...n, read: true, is_read: true } : n))
     );
     setIsNotifOpen(false);
     if (notif.link) {
@@ -92,7 +130,7 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
     }
   };
 
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const unreadCount = safeNotifs.filter((n) => !n.read && !n.is_read).length;
 
   const getNotifIcon = (type) => {
     switch (type) {
@@ -110,7 +148,6 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
 
   return (
     <header className="crm-navbar">
-      {/* Left side: Hamburger Toggle and Global Search */}
       <div className="navbar-left">
         <button
           type="button"
@@ -134,9 +171,30 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
         </form>
       </div>
 
-      {/* Right side: Notifications & User Profile Menu */}
       <div className="navbar-right">
-        {/* Interactive Notification Bell */}
+        {/* Employees Counter Badge Button */}
+        <button
+          type="button"
+          className="navbar-employees-btn"
+          onClick={() => navigate('/users')}
+          title="View Employee List & Representation Workload"
+        >
+          <Users size={16} />
+          <span className="navbar-emp-label">Employees</span>
+          <span className="navbar-emp-count">{employeeCount}</span>
+        </button>
+
+        {/* Quick Add Employee Button */}
+        <button
+          type="button"
+          className="navbar-add-emp-btn"
+          onClick={() => setIsAddModalOpen(true)}
+          title="Create New Employee Account"
+        >
+          <UserPlus size={15} />
+          <span className="navbar-add-emp-label">Add Employee</span>
+        </button>
+
         <div className="notif-menu-wrapper" ref={notifRef}>
           <button
             type="button"
@@ -167,15 +225,15 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
               </div>
 
               <div className="notif-list">
-                {notifications.length === 0 ? (
+                {safeNotifs.length === 0 ? (
                   <div style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                     No notifications at this time.
                   </div>
                 ) : (
-                  notifications.map((n) => (
+                  safeNotifs.map((n) => (
                     <div
                       key={n.id}
-                      className={`notif-item ${!n.read ? 'unread' : ''}`}
+                      className={`notif-item ${!n.read && !n.is_read ? 'unread' : ''}`}
                       onClick={() => handleNotificationClick(n)}
                     >
                       <div className="notif-icon">
@@ -194,7 +252,7 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
           )}
         </div>
 
-        {/* User Profile Dropdown */}
+
         <div className="user-menu-wrapper" ref={menuRef}>
           <button
             type="button"
@@ -204,11 +262,11 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
             aria-haspopup="true"
           >
             <div className="user-avatar">
-              {getInitials(user?.name)}
+              {getInitials(user?.name || user?.username || 'U')}
             </div>
             <div className="user-info">
-              <span className="user-name">{user?.name || 'User'}</span>
-              <span className="user-role-tag">{user?.role || 'Guest'}</span>
+              <span className="user-name">{user?.name || user?.first_name || user?.username || 'User'}</span>
+              <span className="user-role-tag">{user?.role || user?.role_label || 'Guest'}</span>
             </div>
             <ChevronDown size={14} color="#94a3b8" />
           </button>
@@ -216,7 +274,7 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
           {isProfileOpen && (
             <div className="dropdown-menu" role="menu">
               <div className="dropdown-header">
-                <div className="dropdown-header-name">{user?.name}</div>
+                <div className="dropdown-header-name">{user?.name || user?.username}</div>
                 <div className="dropdown-header-email">{user?.email}</div>
               </div>
 
@@ -258,6 +316,16 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
           )}
         </div>
       </div>
+
+      {/* Quick Add Employee Modal */}
+      <UserModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSubmit={handleCreateEmployeeSubmit}
+        isLoading={isSubmitting}
+      />
     </header>
   );
 };
+
+export default Navbar;

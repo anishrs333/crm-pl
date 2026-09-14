@@ -20,7 +20,7 @@ export const UserModal = ({
     username: '',
     email: '',
     phone: '',
-    role: 'Admin',
+    role: 'Sales Executive',
     department: 'Sales',
     status: 'Active',
   });
@@ -34,7 +34,7 @@ export const UserModal = ({
         username: initialData.username || '',
         email: initialData.email || '',
         phone: initialData.phone || '',
-        role: initialData.role || 'Admin',
+        role: initialData.role || 'Sales Executive',
         department: initialData.department || 'Sales',
         status: initialData.status || 'Active',
       });
@@ -44,7 +44,7 @@ export const UserModal = ({
         username: '',
         email: '',
         phone: '',
-        role: 'Admin',
+        role: 'Sales Executive',
         department: 'Sales',
         status: 'Active',
       });
@@ -63,11 +63,8 @@ export const UserModal = ({
   const validate = () => {
     const newErrors = {};
 
-    const nameErr = validators.required(formData.name, 'Full Name');
+    const nameErr = validators.required(formData.name, 'Employee Name');
     if (nameErr) newErrors.name = nameErr;
-
-    const userErr = validators.required(formData.username, 'Username');
-    if (userErr) newErrors.username = userErr;
 
     const emailErr = validators.required(formData.email, 'Email Address') || validators.email(formData.email);
     if (emailErr) newErrors.email = emailErr;
@@ -84,14 +81,22 @@ export const UserModal = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-    onSubmit(formData);
+
+    const cleanUsername = formData.username.trim() || formData.name.toLowerCase().trim().replace(/[^a-z0-9]/g, '_');
+    const defaultPassword = 'Emp@' + Math.floor(1000 + Math.random() * 9000);
+
+    onSubmit({
+      ...formData,
+      username: cleanUsername,
+      password: defaultPassword,
+    });
   };
 
   return (
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      title={isEditing ? 'Edit CRM User' : 'Create New User'}
+      title={isEditing ? 'Edit Employee Details' : 'Add New Employee (Monitoring Roster)'}
       size="lg"
       footer={
         <>
@@ -103,7 +108,7 @@ export const UserModal = ({
             onClick={handleSubmit}
             isLoading={isLoading}
           >
-            {isEditing ? 'Save Changes' : 'Create User'}
+            {isEditing ? 'Save Employee' : 'Add Employee'}
           </Button>
         </>
       }
@@ -111,9 +116,9 @@ export const UserModal = ({
       <form onSubmit={handleSubmit} noValidate>
         <div className="user-form-grid">
           <FormField
-            label="Full Name"
+            label="Employee Full Name"
             name="name"
-            placeholder="e.g. Eleanor Vance"
+            placeholder="e.g. Rahul Sharma"
             value={formData.name}
             onChange={handleChange}
             error={errors.name}
@@ -122,22 +127,10 @@ export const UserModal = ({
           />
 
           <FormField
-            label="Username"
-            name="username"
-            placeholder="e.g. eleanor_v"
-            value={formData.username}
-            onChange={handleChange}
-            error={errors.username}
-            required
-            disabled={isEditing}
-            icon={User}
-          />
-
-          <FormField
-            label="Email Address"
+            label="Employee Email Address"
             name="email"
             type="email"
-            placeholder="e.g. eleanor@apexcrm.io"
+            placeholder="e.g. rahul.sharma@company.in"
             value={formData.email}
             onChange={handleChange}
             error={errors.email}
@@ -148,7 +141,7 @@ export const UserModal = ({
           <FormField
             label="Phone Number"
             name="phone"
-            placeholder="+1 (555) 000-0000"
+            placeholder="+91 98765 43210"
             value={formData.phone}
             onChange={handleChange}
             error={errors.phone}
@@ -156,7 +149,7 @@ export const UserModal = ({
           />
 
           <FormField
-            label="User Role"
+            label="Designation / Role"
             name="role"
             type="select"
             value={formData.role}
@@ -164,8 +157,11 @@ export const UserModal = ({
             required
             icon={ShieldCheck}
             options={[
-              { value: 'Admin', label: 'Admin (Full System & User Management)' },
-              { value: 'Manager', label: 'Manager (Sales & Operational Access)' },
+              { value: 'Sales Executive', label: 'Sales Executive' },
+              { value: 'Account Manager', label: 'Account Manager' },
+              { value: 'Sales Representative', label: 'Sales Representative' },
+              { value: 'Senior Manager', label: 'Senior Manager' },
+              { value: 'Support Representative', label: 'Support Representative' },
             ]}
           />
 
@@ -178,26 +174,23 @@ export const UserModal = ({
             icon={Briefcase}
             options={[
               { value: 'Sales', label: 'Sales' },
-              { value: 'Marketing', label: 'Marketing' },
-              { value: 'Customer Support', label: 'Customer Support' },
-              { value: 'Management', label: 'Management' },
-              { value: 'Engineering', label: 'Engineering' },
+              { value: 'Business Development', label: 'Business Development' },
+              { value: 'Customer Success', label: 'Customer Success' },
+              { value: 'Operations', label: 'Operations' },
             ]}
           />
 
-          <div className="user-form-full-width">
-            <FormField
-              label="Account Status"
-              name="status"
-              type="select"
-              value={formData.status}
-              onChange={handleChange}
-              options={[
-                { value: 'Active', label: 'Active' },
-                { value: 'Inactive', label: 'Inactive' },
-              ]}
-            />
-          </div>
+          <FormField
+            label="Employee Monitoring Status"
+            name="status"
+            type="select"
+            value={formData.status}
+            onChange={handleChange}
+            options={[
+              { value: 'Active', label: 'Active (Assigned to Leads)' },
+              { value: 'Inactive', label: 'Inactive (On Leave / Unassigned)' },
+            ]}
+          />
         </div>
       </form>
     </Modal>
