@@ -71,7 +71,7 @@ export const dashboardService = {
 
     try {
       const data = await api.get('/reports/dashboard-stats/');
-      return data;
+      return data || {};
     } catch (e) {
       console.warn('Backend stats endpoint fallback:', e);
       return {
@@ -96,7 +96,8 @@ export const dashboardService = {
     }
     try {
       const data = await api.get('/leads/');
-      const results = Array.isArray(data) ? data : (data.results || data.data || []);
+      const results = Array.isArray(data) ? data : (data?.results || data?.data || []);
+      if (!Array.isArray(results)) return [...initialActivities];
       return results.slice(0, 5).map((l) => ({
         id: `act-${l.id}`,
         user: l.assigned_to_name || 'Sales Rep',
@@ -116,7 +117,8 @@ export const dashboardService = {
     }
     try {
       const data = await api.get('/leads/');
-      return Array.isArray(data) ? data : (data.results || data.data || []);
+      const results = Array.isArray(data) ? data : (data?.results || data?.data || []);
+      return Array.isArray(results) ? results : initialLeads.slice(0, 5);
     } catch (e) {
       return initialLeads.slice(0, 5);
     }
@@ -129,7 +131,8 @@ export const dashboardService = {
     }
     try {
       const data = await api.get('/tasks/');
-      const tasks = Array.isArray(data) ? data : (data.results || data.data || []);
+      const tasks = Array.isArray(data) ? data : (data?.results || data?.data || []);
+      if (!Array.isArray(tasks)) return [...initialFollowUps];
       return tasks.slice(0, 5).map((t) => ({
         id: t.id,
         title: t.title,
@@ -140,7 +143,7 @@ export const dashboardService = {
         assignedTo: t.assigned_to_name || 'Assigned Rep',
       }));
     } catch (e) {
-      return initialFollowUps.slice(0, 4);
+      return [...initialFollowUps];
     }
   },
 
@@ -151,20 +154,22 @@ export const dashboardService = {
     }
     try {
       const res = await api.get('/opportunities/');
-      const list = Array.isArray(res) ? res : (res.results || res.data || []);
+      const list = Array.isArray(res) ? res : (res?.results || res?.data || []);
+      if (!Array.isArray(list)) return [...initialOpportunities];
       return list.map((opp) => ({
         id: opp.id,
         title: opp.title,
-        customerName: opp.customer_name || opp.customer || 'Client',
+        customerName: typeof opp.customer_name === 'string' ? opp.customer_name : (opp.customer || 'Client'),
         contactPerson: opp.assigned_to_name || 'Rep',
         dealValue: Number(opp.amount) || 0,
         stage: opp.stage_label || opp.stage || 'Discovery',
         probability: opp.probability || 50,
       }));
     } catch (e) {
-      return initialOpportunities;
+      return [...initialOpportunities];
     }
   },
 };
+
 
 export default dashboardService;

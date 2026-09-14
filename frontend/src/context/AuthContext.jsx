@@ -72,8 +72,9 @@ export const AuthProvider = ({ children }) => {
     (allowedRoles) => {
       if (!user || !user.role) return false;
       if (!allowedRoles || allowedRoles.length === 0) return true;
-      if (user.role === 'Admin') return true;
-      return allowedRoles.includes(user.role);
+      const normalizedRole = (user.role || '').toLowerCase();
+      if (normalizedRole === 'admin' || user.is_superuser) return true;
+      return allowedRoles.some((r) => r.toLowerCase() === normalizedRole);
     },
     [user]
   );
@@ -89,6 +90,8 @@ export const AuthProvider = ({ children }) => {
     });
   }, []);
 
+  const normalizedUserRole = (user?.role || '').toLowerCase();
+
   const value = {
     user,
     token,
@@ -97,10 +100,11 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     hasRole,
-    isAdmin: user?.role === 'Admin',
-    isManager: user?.role === 'Manager',
+    isAdmin: normalizedUserRole === 'admin' || user?.is_superuser || false,
+    isManager: normalizedUserRole === 'manager' || normalizedUserRole === 'sales_manager' || normalizedUserRole === 'admin' || user?.is_superuser || false,
     switchRole,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
+

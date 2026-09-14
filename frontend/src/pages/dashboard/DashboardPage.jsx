@@ -1,4 +1,4 @@
-﻿import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
@@ -70,22 +70,28 @@ export const DashboardPage = () => {
     setError(null);
     try {
       const [sumData, actData, oppData, followData] = await Promise.all([
-        dashboardService.getSummary(),
-        dashboardService.getRecentActivities(),
-        dashboardService.getRecentOpportunities(),
-        dashboardService.getPendingFollowUps(),
+        dashboardService.getSummary().catch(() => ({})),
+        dashboardService.getRecentActivities().catch(() => []),
+        dashboardService.getRecentOpportunities().catch(() => []),
+        dashboardService.getPendingFollowUps().catch(() => []),
       ]);
 
-      setSummary(sumData);
-      setActivities(actData);
+      const safeSummary = sumData && typeof sumData === 'object' ? sumData : {};
+      const safeActivities = Array.isArray(actData) ? actData : [];
+      const safeOppData = Array.isArray(oppData) ? oppData : [];
+      const safeFollowData = Array.isArray(followData) ? followData : [];
+
+      setSummary(safeSummary);
+      setActivities(safeActivities);
 
       // Map opportunities to our 4 interactive Kanban stages
-      const mappedDeals = (oppData || []).map((opp, index) => {
+      const mappedDeals = safeOppData.map((opp, index) => {
         let stageId = 'Discovery';
-        if (opp.stage === 'Qualification' || index % 4 === 0) stageId = 'Discovery';
-        else if (opp.stage === 'Contacted' || index % 4 === 1) stageId = 'FollowUp';
-        else if (opp.stage === 'Proposal' || opp.stage === 'Negotiation' || index % 4 === 2) stageId = 'Proposal';
-        else if (opp.stage === 'Closed Won' || index % 4 === 3) stageId = 'Won';
+        const stg = (opp.stage || '').toLowerCase();
+        if (stg.includes('qualification') || stg.includes('discovery') || index % 4 === 0) stageId = 'Discovery';
+        else if (stg.includes('contacted') || stg.includes('followup') || index % 4 === 1) stageId = 'FollowUp';
+        else if (stg.includes('proposal') || stg.includes('negotiation') || index % 4 === 2) stageId = 'Proposal';
+        else if (stg.includes('won') || stg.includes('closed') || index % 4 === 3) stageId = 'Won';
 
         return {
           ...opp,
@@ -94,7 +100,7 @@ export const DashboardPage = () => {
       });
 
       setPipelineDeals(mappedDeals);
-      setPendingFollowUps(followData || []);
+      setPendingFollowUps(safeFollowData);
     } catch (err) {
       console.error('Failed loading CRM Kanban cockpit:', err);
       setError(err.message || 'Unable to load interactive sales pipeline.');
@@ -102,6 +108,7 @@ export const DashboardPage = () => {
       setIsLoading(false);
     }
   }, []);
+
 
   useEffect(() => {
     fetchDashboardData();
