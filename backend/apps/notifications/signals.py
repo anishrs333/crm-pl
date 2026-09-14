@@ -13,7 +13,7 @@ def notify_lead_assigned(sender, instance, created, **kwargs):
         Notification.objects.create(
             recipient=instance.assigned_to,
             title="New Lead Assigned",
-            message=f"You have been assigned to lead '{instance.first_name} {instance.last_name}' ({instance.company or 'N/A'}).",
+            message=f"You have been assigned to lead '{instance.first_name} {instance.last_name}' ({getattr(instance, 'company', 'N/A')}).",
             notification_type=Notification.NotificationType.LEAD,
             link_url=f"/leads/{instance.id}"
         )

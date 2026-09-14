@@ -86,24 +86,38 @@ ASGI_APPLICATION = 'crm_core.asgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('DB_NAME', 'crm_db'),
-        'USER': os.getenv('DB_USER', 'root'),
-        'PASSWORD': os.getenv('DB_PASSWORD', 'PL@2026'),
-        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
-        'PORT': os.getenv('DB_PORT', '3306'),
-        'CONN_MAX_AGE': 600,
-        'OPTIONS': {
-            'charset': 'utf8mb4',
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
-    }
-}
+# Database Configuration
+import socket
 
-# Optional fallback to SQLite for quick local development or tests without MySQL
-if os.getenv('USE_SQLITE', 'False').lower() == 'true':
+def is_port_open(host, port, timeout=0.8):
+    try:
+        with socket.create_connection((host, int(port)), timeout=timeout):
+            return True
+    except (socket.timeout, ConnectionRefusedError, OSError):
+        return False
+
+use_sqlite_env = os.getenv('USE_SQLITE', 'False').lower() == 'true'
+db_engine_env = os.getenv('DB_ENGINE', 'mysql').lower()
+mysql_host = os.getenv('DB_HOST', '127.0.0.1')
+mysql_port = os.getenv('DB_PORT', '3306')
+
+if not use_sqlite_env and db_engine_env != 'sqlite3' and is_port_open(mysql_host, mysql_port):
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': os.getenv('DB_NAME', 'crm_db'),
+            'USER': os.getenv('DB_USER', 'root'),
+            'PASSWORD': os.getenv('DB_PASSWORD', 'PL@2026'),
+            'HOST': mysql_host,
+            'PORT': str(mysql_port),
+            'CONN_MAX_AGE': 600,
+            'OPTIONS': {
+                'charset': 'utf8mb4',
+                'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            },
+        }
+    }
+else:
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
