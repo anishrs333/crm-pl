@@ -22,38 +22,37 @@ import { NotFoundPage } from '../pages/common/NotFoundPage';
 export const AppRoutes = () => {
   return (
     <Routes>
-      {/* Public Route: Login */}
+      {/* Root Path defaults to Login page */}
+      <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="/login" element={<LoginPage />} />
 
       {/* Protected Routes inside Main CRM Layout */}
       <Route
-        path="/"
         element={
           <ProtectedRoute>
             <MainLayout />
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to="/dashboard" replace />} />
-        <Route path="dashboard" element={<DashboardPage />} />
-        <Route path="leads" element={<LeadListPage />} />
-        <Route path="follow-ups" element={<FollowUpListPage />} />
-        <Route path="opportunities" element={<OpportunityListPage />} />
-        <Route path="quotations" element={<QuotationListPage />} />
-        <Route path="customers" element={<CustomerListPage />} />
-        <Route path="products" element={<ProductListPage />} />
-        <Route path="tasks" element={<TaskListPage />} />
-        <Route path="reports" element={<ReportsPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/leads" element={<LeadListPage />} />
+        <Route path="/follow-ups" element={<FollowUpListPage />} />
+        <Route path="/opportunities" element={<OpportunityListPage />} />
+        <Route path="/quotations" element={<QuotationListPage />} />
+        <Route path="/customers" element={<CustomerListPage />} />
+        <Route path="/products" element={<ProductListPage />} />
+        <Route path="/tasks" element={<TaskListPage />} />
+        <Route path="/reports" element={<ReportsPage />} />
         <Route
-          path="users"
+          path="/users"
           element={
             <ProtectedRoute allowedRoles={['Admin']}>
               <UserListPage />
             </ProtectedRoute>
           }
         />
-        <Route path="permissions" element={<Navigate to="/users" replace />} />
-        <Route path="settings" element={<SettingsPage />} />
+        <Route path="/permissions" element={<Navigate to="/users" replace />} />
+        <Route path="/settings" element={<SettingsPage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
 
@@ -62,5 +61,6 @@ export const AppRoutes = () => {
     </Routes>
   );
 };
+
 
 export default AppRoutes;

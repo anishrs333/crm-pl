@@ -16,15 +16,11 @@ import {
 import './LoginPage.css';
 
 export const LoginPage = () => {
-  const { login, isAuthenticated } = useAuth();
+  const { login } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
 
-  // If already authenticated, redirect immediately away from login
-  if (isAuthenticated) {
-    return <Navigate to="/dashboard" replace />;
-  }
 
   const [formData, setFormData] = useState({
     username: '',
