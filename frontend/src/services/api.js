@@ -5,8 +5,9 @@ import { storage } from '../utils/storage';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
 
 
-// Check if Mock API fallback is active
-export const isMockEnabled = import.meta.env.VITE_USE_MOCK === 'true';
+// Disable Mock API fallback so real Django REST API / MySQL database is always used
+export const isMockEnabled = false;
+
 
 // Helper to simulate network latency for mock services
 export const mockDelay = (result, delayMs = 350) => {

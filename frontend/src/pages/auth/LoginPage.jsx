@@ -86,11 +86,11 @@ export const LoginPage = () => {
   const handleDemoFill = (username, roleName) => {
     setFormData({
       username,
-      password: 'password123',
+      password: 'admin123',
     });
     setErrors({});
     setServerError('');
-    showToast(`Filled credentials for ${roleName}`, 'info', 2000);
+    showToast(`Filled database credentials for ${roleName} (${username})`, 'info', 2000);
   };
 
   return (
@@ -135,7 +135,7 @@ export const LoginPage = () => {
                 type="text"
                 autoComplete="username"
                 className={`form-input ${errors.username ? 'has-error' : ''}`}
-                placeholder="e.g. sarah_admin or sarah.connor@apexcrm.io"
+                placeholder="e.g. anish or alex_manager"
                 value={formData.username}
                 onChange={handleChange}
                 disabled={isSubmitting}
@@ -195,27 +195,28 @@ export const LoginPage = () => {
           </button>
         </form>
 
-        {/* Quick Demo Credentials */}
+        {/* Quick Database Credentials */}
         <div className="demo-accounts-section">
-          <p className="demo-title">Quick Demo Login (Click to test)</p>
+          <p className="demo-title">Quick Database Login (Click to fill seed credentials)</p>
           <div className="demo-buttons-grid">
             <button
               type="button"
               className="demo-btn"
-              onClick={() => handleDemoFill('sarah_admin', 'Admin')}
+              onClick={() => handleDemoFill('anish', 'Admin')}
             >
-              🔑 Admin (Full Access)
+              🔑 Admin (anish)
             </button>
             <button
               type="button"
               className="demo-btn"
               onClick={() => handleDemoFill('alex_manager', 'Manager')}
             >
-              👔 Manager (Operations & Sales)
+              👔 Manager (alex_manager)
             </button>
           </div>
         </div>
       </div>
+
     </div>
   );
 };
