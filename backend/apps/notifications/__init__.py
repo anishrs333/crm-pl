@@ -1,1 +1,3 @@
-# Notifications App
+"""
+Notifications app initialization.
+"""
