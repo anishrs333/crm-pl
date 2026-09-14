@@ -114,7 +114,7 @@ export const OpportunityListPage = () => {
       { key: 'title', label: 'Opportunity Title' },
       { key: 'customerName', label: 'Customer' },
       { key: 'stage', label: 'Stage' },
-      { key: 'dealValue', label: 'Value ($)' },
+      { key: 'dealValue', label: 'Value (₹)' },
       { key: 'probability', label: 'Probability (%)' },
       { key: 'expectedCloseDate', label: 'Closing Date' },
       { key: 'assignedTo', label: 'Salesperson' },

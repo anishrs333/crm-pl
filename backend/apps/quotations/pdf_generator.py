@@ -155,9 +155,9 @@ def generate_quotation_pdf(quotation):
             Paragraph("<b>#</b>", table_header_style),
             Paragraph("<b>Description</b>", table_header_style),
             Paragraph("<b>Qty</b>", table_header_style),
-            Paragraph("<b>Unit Price ($)</b>", table_header_style),
+            Paragraph("<b>Unit Price (₹)</b>", table_header_style),
             Paragraph("<b>Tax Rate (%)</b>", table_header_style),
-            Paragraph("<b>Line Total ($)</b>", table_header_style),
+            Paragraph("<b>Line Total (₹)</b>", table_header_style),
         ]
     ]
 
@@ -166,9 +166,9 @@ def generate_quotation_pdf(quotation):
             Paragraph(str(index), table_cell_style),
             Paragraph(item.description, table_cell_style),
             Paragraph(str(item.quantity), table_cell_style),
-            Paragraph(f"{item.unit_price:,.2f}", table_cell_style),
+            Paragraph(f"₹{item.unit_price:,.2f}", table_cell_style),
             Paragraph(f"{item.tax_percentage:.2f}%", table_cell_style),
-            Paragraph(f"{item.line_total:,.2f}", table_cell_style),
+            Paragraph(f"₹{item.line_total:,.2f}", table_cell_style),
         ])
 
     items_table = Table(
@@ -190,10 +190,10 @@ def generate_quotation_pdf(quotation):
 
     # Summary Totals Section
     totals_data = [
-        [Paragraph("<b>Subtotal:</b>", body_bold), Paragraph(f"${quotation.subtotal:,.2f}", body_normal)],
-        [Paragraph("<b>Tax Amount (GST):</b>", body_bold), Paragraph(f"${quotation.tax_amount:,.2f}", body_normal)],
+        [Paragraph("<b>Subtotal:</b>", body_bold), Paragraph(f"₹{quotation.subtotal:,.2f}", body_normal)],
+        [Paragraph("<b>Tax Amount (GST):</b>", body_bold), Paragraph(f"₹{quotation.tax_amount:,.2f}", body_normal)],
         [Paragraph("<b>Grand Total:</b>", ParagraphStyle('GTotalLabel', parent=body_bold, fontSize=11, textColor=colors.HexColor('#0F172A'))),
-         Paragraph(f"<b>${quotation.grand_total:,.2f}</b>", ParagraphStyle('GTotalVal', parent=body_bold, fontSize=11, textColor=colors.HexColor('#2563EB')))],
+         Paragraph(f"<b>₹{quotation.grand_total:,.2f}</b>", ParagraphStyle('GTotalVal', parent=body_bold, fontSize=11, textColor=colors.HexColor('#2563EB')))],
     ]
 
     totals_table = Table(totals_data, colWidths=[2.2 * inch, 1.5 * inch])

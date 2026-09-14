@@ -140,7 +140,7 @@ export const ProductModal = ({
           />
 
           <FormField
-            label="Unit Price ($ / ₹)"
+            label="Unit Price (₹)"
             name="unitPrice"
             type="number"
             placeholder="75000"

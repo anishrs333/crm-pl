@@ -321,7 +321,7 @@ export const QuotationModal = ({
                 <tr>
                   <th style={{ width: '32%' }}>Item / Product</th>
                   <th style={{ width: '12%' }}>Qty</th>
-                  <th style={{ width: '18%' }}>Unit Price ($/₹)</th>
+                  <th style={{ width: '18%' }}>Unit Price (₹)</th>
                   <th style={{ width: '12%' }}>Disc %</th>
                   <th style={{ width: '12%' }}>GST %</th>
                   <th style={{ width: '14%' }}>Total</th>

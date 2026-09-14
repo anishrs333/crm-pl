@@ -3,6 +3,62 @@ import { initialQuotations } from './mockData';
 
 let mockQuotationsList = [...initialQuotations];
 
+const normalizeQuotation = (q) => {
+  if (!q) return q;
+  return {
+    id: q.id,
+    quotationNumber: q.quote_number || q.quotationNumber || `QT-2026-${String(q.id).padStart(4, '0')}`,
+    version: q.version || 'v1.0',
+    customer: q.customer,
+    customerName: q.customer_name || q.customerName || (q.customer_details ? q.customer_details.name : 'Client'),
+    contactPerson: q.contact_person || q.contactPerson || '',
+    email: q.email || (q.customer_details ? q.customer_details.email : ''),
+    phone: q.phone || (q.customer_details ? q.customer_details.phone : ''),
+    address: q.address || (q.customer_details ? q.customer_details.address : ''),
+    createdDate: q.created_at ? q.created_at.split('T')[0] : (q.createdDate || new Date().toISOString().split('T')[0]),
+    validUntil: q.valid_until || q.validUntil || '',
+    status: q.status_label || (q.status ? q.status.charAt(0).toUpperCase() + q.status.slice(1) : 'Draft'),
+    terms: q.terms_and_conditions || q.terms || '',
+    notes: q.notes || '',
+    subtotal: Number(q.subtotal) || 0,
+    taxTotal: Number(q.tax_amount) || Number(q.taxTotal) || 0,
+    grandTotal: Number(q.grand_total) || Number(q.grandTotal) || 0,
+    items: (q.items || []).map((item) => ({
+      id: item.id,
+      productId: item.product,
+      name: item.description || item.name || '',
+      description: item.description || '',
+      quantity: Number(item.quantity) || 1,
+      unitPrice: Number(item.unit_price || item.unitPrice) || 0,
+      taxPercentage: Number(item.tax_percentage || item.taxPercentage) || 18,
+      lineTotal: Number(item.line_total || item.lineTotal) || 0,
+    })),
+  };
+};
+
+const mapPayloadToBackend = (data) => {
+  const payload = {
+    customer_name: data.customerName || data.customer_name || 'Client',
+    valid_until: data.validUntil || data.valid_until || null,
+    status: (data.status || 'draft').toLowerCase(),
+    terms_and_conditions: data.terms || data.terms_and_conditions || '',
+    notes: data.notes || '',
+    items: (data.items || []).map((item) => ({
+      product: typeof item.productId === 'number' ? item.productId : null,
+      description: item.name || item.description || 'Deliverable Line Item',
+      quantity: Number(item.quantity) || 1,
+      unit_price: Number(item.unitPrice || item.unit_price) || 0,
+      tax_percentage: Number(item.taxPercentage || item.tax_percentage) || 18,
+    })),
+  };
+
+  if (data.customer && typeof data.customer === 'number') {
+    payload.customer = data.customer;
+  }
+
+  return payload;
+};
+
 export const quotationService = {
   getQuotations: async ({ page = 1, limit = 10, search = '', status = '' } = {}) => {
     if (isMockEnabled) {
@@ -21,7 +77,7 @@ export const quotationService = {
 
       const totalItems = filtered.length;
       const startIndex = (page - 1) * limit;
-      const data = filtered.slice(startIndex, startIndex + limit);
+      const data = filtered.slice(startIndex, startIndex + limit).map(normalizeQuotation);
 
       return {
         data,
@@ -29,7 +85,7 @@ export const quotationService = {
         totalItems,
         page,
         limit,
-        totalPages: Math.ceil(totalItems / limit),
+        totalPages: Math.ceil(totalItems / limit) || 1,
       };
     }
 
@@ -37,7 +93,7 @@ export const quotationService = {
       const res = await api.get('/quotations/', {
         params: { page, limit, search, status },
       });
-      const dataList = Array.isArray(res) ? res : (res.results || res.data || []);
+      const dataList = (Array.isArray(res) ? res : (res.results || res.data || [])).map(normalizeQuotation);
       const total = res.count || dataList.length;
       return {
         data: dataList,
@@ -49,7 +105,8 @@ export const quotationService = {
       };
     } catch (err) {
       console.warn('Quotation API fallback:', err);
-      return { data: mockQuotationsList, results: mockQuotationsList, totalItems: mockQuotationsList.length, totalPages: 1 };
+      const normalizedMock = mockQuotationsList.map(normalizeQuotation);
+      return { data: normalizedMock, results: normalizedMock, totalItems: normalizedMock.length, totalPages: 1 };
     }
   },
 
@@ -58,12 +115,14 @@ export const quotationService = {
       await mockDelay(null, 200);
       const found = mockQuotationsList.find((q) => q.id === id);
       if (!found) throw new Error('Quotation not found.');
-      return found;
+      return normalizeQuotation(found);
     }
     try {
-      return await api.get(`/quotations/${id}/`);
+      const res = await api.get(`/quotations/${id}/`);
+      return normalizeQuotation(res);
     } catch (e) {
-      return mockQuotationsList.find((q) => q.id === id) || { id, quote_number: 'QT-2026-0001' };
+      const fallback = mockQuotationsList.find((q) => q.id === id) || { id, quote_number: 'QT-2026-0001' };
+      return normalizeQuotation(fallback);
     }
   },
 
@@ -82,16 +141,12 @@ export const quotationService = {
       };
 
       mockQuotationsList = [newQuotation, ...mockQuotationsList];
-      return newQuotation;
+      return normalizeQuotation(newQuotation);
     }
 
-    try {
-      return await api.post('/quotations/', quotationData);
-    } catch (err) {
-      const fallback = { ...quotationData, id: `quot-${Date.now()}` };
-      mockQuotationsList = [fallback, ...mockQuotationsList];
-      return fallback;
-    }
+    const payload = mapPayloadToBackend(quotationData);
+    const res = await api.post('/quotations/', payload);
+    return normalizeQuotation(res);
   },
 
   updateQuotation: async (id, quotationData) => {
@@ -107,14 +162,12 @@ export const quotationService = {
       };
 
       mockQuotationsList[index] = updated;
-      return updated;
+      return normalizeQuotation(updated);
     }
 
-    try {
-      return await api.patch(`/quotations/${id}/`, quotationData);
-    } catch (err) {
-      return { id, ...quotationData };
-    }
+    const payload = mapPayloadToBackend(quotationData);
+    const res = await api.patch(`/quotations/${id}/`, payload);
+    return normalizeQuotation(res);
   },
 
   createRevision: async (id) => {
@@ -127,14 +180,11 @@ export const quotationService = {
         status: 'Draft',
       };
       mockQuotationsList = [revision, ...mockQuotationsList];
-      return revision;
+      return normalizeQuotation(revision);
     }
 
-    try {
-      return await api.post(`/quotations/${id}/accept/`);
-    } catch (err) {
-      return { id, status: 'accepted' };
-    }
+    const res = await api.post(`/quotations/${id}/accept/`);
+    return normalizeQuotation(res);
   },
 
   deleteQuotation: async (id) => {
@@ -143,12 +193,7 @@ export const quotationService = {
       mockQuotationsList = mockQuotationsList.filter((q) => q.id !== id);
       return { success: true };
     }
-    try {
-      return await api.delete(`/quotations/${id}/`);
-    } catch (err) {
-      mockQuotationsList = mockQuotationsList.filter((q) => q.id !== id);
-      return { success: true };
-    }
+    return await api.delete(`/quotations/${id}/`);
   },
 };
 

@@ -329,6 +329,61 @@
   color: var(--danger-solid);
 }
 
+/* Employees Quick Badge Button */
+.navbar-employees-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  background-color: var(--bg-app);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.navbar-employees-btn:hover {
+  background-color: var(--primary-50);
+  border-color: var(--primary-300);
+  color: var(--primary-700);
+}
+
+.navbar-emp-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 7px;
+  background-color: var(--primary-100);
+  color: var(--primary-700);
+  border-radius: var(--radius-full);
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+/* Quick Add Employee Button */
+.navbar-add-emp-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
+  color: white;
+  border-radius: var(--radius-md);
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-fast);
+}
+
+.navbar-add-emp-btn:hover {
+  background: linear-gradient(135deg, var(--primary-700), var(--primary-800));
+  box-shadow: var(--shadow-md);
+}
+
 @media (max-width: 768px) {
   .crm-navbar {
     padding: 0 16px;
@@ -337,6 +392,10 @@
     display: none;
   }
   .user-info {
+    display: none;
+  }
+  .navbar-emp-label,
+  .navbar-add-emp-label {
     display: none;
   }
 }

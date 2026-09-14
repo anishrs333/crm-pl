@@ -283,7 +283,7 @@ export const DashboardPage = () => {
             <span className="board-filter-label">Filter:</span>
             {[
               { id: 'all', label: 'All Opportunities' },
-              { id: 'high_value', label: 'High Value (≥ $50k)' },
+              { id: 'high_value', label: 'High Value (≥ ₹ 5,00,000)' },
               { id: 'my_deals', label: 'My Assigned' },
             ].map((opt) => (
               <button
@@ -490,7 +490,7 @@ export const DashboardPage = () => {
             </div>
             <div className="deck-quota-bottom">
               <span>{formatCurrency(totalPipelineVal)} Current</span>
-              <span>Target: $500,000</span>
+              <span>Target: ₹ 50,00,000</span>
             </div>
           </div>
 

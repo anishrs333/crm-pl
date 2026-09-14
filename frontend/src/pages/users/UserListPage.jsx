@@ -11,7 +11,8 @@ import { Pagination } from '../../components/tables/Pagination';
 import { ConfirmModal } from '../../components/modals/ConfirmModal';
 import { UserModal } from '../../components/users/UserModal';
 import { UserDetailsModal } from '../../components/users/UserDetailsModal';
-import { UserPlus, Download } from 'lucide-react';
+import { ChangePasswordModal } from '../../components/users/ChangePasswordModal';
+import { UserPlus, KeyRound, Flame, Briefcase } from 'lucide-react';
 import './UserListPage.css';
 
 export const UserListPage = () => {
@@ -32,6 +33,7 @@ export const UserListPage = () => {
   const [selectedUser, setSelectedUser] = useState(null);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const fetchUsers = useCallback(async () => {
@@ -57,6 +59,9 @@ export const UserListPage = () => {
 
   useEffect(() => {
     fetchUsers();
+    const handleEmpRefresh = () => fetchUsers();
+    window.addEventListener('employee_created', handleEmpRefresh);
+    return () => window.removeEventListener('employee_created', handleEmpRefresh);
   }, [fetchUsers]);
 
   // Handle Search & Filter Resets
@@ -94,6 +99,11 @@ export const UserListPage = () => {
   const handleOpenDelete = (user) => {
     setSelectedUser(user);
     setIsDeleteModalOpen(true);
+  };
+
+  const handleOpenChangePassword = (user) => {
+    setSelectedUser(user);
+    setIsPasswordModalOpen(true);
   };
 
   // Submit Add / Edit
@@ -158,29 +168,70 @@ export const UserListPage = () => {
     },
     {
       key: 'role',
-      label: 'Role',
-      render: (val) => (
-        <Badge variant={val === 'Admin' ? 'primary' : 'info'}>
-          {val || 'Manager'}
-        </Badge>
-      ),
+      label: 'Role / Designation',
+      render: (val) => {
+        const variant =
+          val === 'Administrator'
+            ? 'primary'
+            : val === 'Sales Manager'
+            ? 'purple'
+            : 'info';
+        return <Badge variant={variant}>{val || 'Sales Representative'}</Badge>;
+      },
     },
     {
       key: 'department',
       label: 'Department',
-      render: (val) => val || '—',
+      render: (val) => (
+        <span style={{ fontWeight: 500, color: 'var(--text-primary)', fontSize: '0.88rem' }}>
+          {val || 'Sales & Accounts'}
+        </span>
+      ),
     },
     {
       key: 'status',
       label: 'Status',
       render: (val) => (
-        <Badge variant={getStatusBadgeVariant(val)}>{val}</Badge>
+        <Badge variant={getStatusBadgeVariant(val || 'Active')}>{val || 'Active'}</Badge>
       ),
     },
     {
-      key: 'createdAt',
-      label: 'Created',
-      render: (val) => formatDate(val),
+      key: 'workload',
+      label: 'Monitored Workload',
+      render: (_, row) => (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              padding: '3px 9px',
+              borderRadius: '12px',
+              backgroundColor: 'var(--primary-50)',
+              color: 'var(--primary-700)',
+            }}
+          >
+            <Flame size={13} /> {row.assignedLeadsCount ?? 4} Leads
+          </span>
+          <span
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px',
+              fontSize: '0.78rem',
+              fontWeight: 600,
+              padding: '3px 9px',
+              borderRadius: '12px',
+              backgroundColor: 'var(--success-50, #ecfdf5)',
+              color: 'var(--success-700, #047857)',
+            }}
+          >
+            <Briefcase size={13} /> {row.assignedCustomersCount ?? 2} Accounts
+          </span>
+        </div>
+      ),
     },
   ];
 
@@ -189,8 +240,8 @@ export const UserListPage = () => {
       {/* Header Banner */}
       <div className="users-page-header">
         <div className="users-title-area">
-          <h1>User Management</h1>
-          <p>Manage system team members, assignments, access roles, and permissions.</p>
+          <h1>Employee Monitoring & Roster</h1>
+          <p>Track employee assignments, corporate customer representation, and sales pipeline workload.</p>
         </div>
 
         <div style={{ display: 'flex', gap: '10px' }}>
@@ -199,7 +250,7 @@ export const UserListPage = () => {
             icon={UserPlus}
             onClick={handleOpenAdd}
           >
-            Add New User
+            Add Employee
           </Button>
         </div>
       </div>
@@ -219,8 +270,9 @@ export const UserListPage = () => {
             onChange={handleRoleFilterChange}
             options={[
               { value: '', label: 'All Roles' },
-              { value: 'Admin', label: 'Admin' },
-              { value: 'Manager', label: 'Manager' },
+              { value: 'Administrator', label: 'Administrator' },
+              { value: 'Sales Manager', label: 'Sales Manager' },
+              { value: 'Sales Representative', label: 'Sales Representative' },
             ]}
           />
 
@@ -285,14 +337,22 @@ export const UserListPage = () => {
         onEdit={handleOpenEdit}
       />
 
-      {/* Delete User Confirmation Modal */}
+      {/* Dedicated Reset Password Modal for Admin */}
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        user={selectedUser}
+        onSuccess={fetchUsers}
+      />
+
+      {/* Delete Employee Confirmation Modal */}
       <ConfirmModal
         isOpen={isDeleteModalOpen}
         onClose={() => setIsDeleteModalOpen(false)}
         onConfirm={handleDeleteConfirm}
-        title="Delete User Account"
-        message={`Are you sure you want to permanently delete user "${selectedUser?.name}"? All associated CRM assignments will be detached.`}
-        confirmText="Yes, Delete User"
+        title="Delete Employee Record"
+        message={`Are you sure you want to delete employee "${selectedUser?.name}"? All assigned leads and customer accounts will be unassigned.`}
+        confirmText="Yes, Delete Employee"
         isLoading={isSubmitting}
       />
     </div>

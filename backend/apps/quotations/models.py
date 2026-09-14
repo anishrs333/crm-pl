@@ -76,7 +76,7 @@ class Quotation(models.Model):
         ordering = ['-created_at']
 
     def __str__(self):
-        return f"{self.quote_number} - {self.customer.name} (${self.grand_total:,.2f})"
+        return f"{self.quote_number} - {self.customer.name} (₹{self.grand_total:,.2f})"
 
     def recalculate_totals(self):
         items = self.items.all()

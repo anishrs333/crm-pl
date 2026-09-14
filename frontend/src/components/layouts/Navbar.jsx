@@ -1,9 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { notificationService } from '../../services/notificationService';
+import { userService } from '../../services/userService';
 import { getInitials } from '../../utils/formatters';
+import { UserModal } from '../users/UserModal';
 import { 
   Menu, 
   Search, 
@@ -15,7 +17,9 @@ import {
   Clock,
   PhoneCall,
   Flame,
-  FileText
+  FileText,
+  Users,
+  UserPlus
 } from 'lucide-react';
 import './Navbar.css';
 
@@ -28,9 +32,43 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
   const [isNotifOpen, setIsNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [employeeCount, setEmployeeCount] = useState(0);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const menuRef = useRef(null);
   const notifRef = useRef(null);
+
+  const loadEmployeeCount = useCallback(async () => {
+    try {
+      const res = await userService.getUsers({ limit: 1 });
+      setEmployeeCount(res.totalItems || res.data?.length || 0);
+    } catch (e) {
+      console.error('Failed to load employee count:', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadEmployeeCount();
+    const handleEmpCreated = () => loadEmployeeCount();
+    window.addEventListener('employee_created', handleEmpCreated);
+    return () => window.removeEventListener('employee_created', handleEmpCreated);
+  }, [loadEmployeeCount]);
+
+  const handleCreateEmployeeSubmit = async (formData) => {
+    setIsSubmitting(true);
+    try {
+      await userService.createUser(formData);
+      showToast(`🎉 New employee "${formData.name}" created successfully!`, 'success');
+      setIsAddModalOpen(false);
+      loadEmployeeCount();
+      window.dispatchEvent(new CustomEvent('employee_created'));
+    } catch (err) {
+      showToast(err.message || 'Failed to create employee account.', 'error');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     const loadNotifs = async () => {
@@ -134,6 +172,29 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
       </div>
 
       <div className="navbar-right">
+        {/* Employees Counter Badge Button */}
+        <button
+          type="button"
+          className="navbar-employees-btn"
+          onClick={() => navigate('/users')}
+          title="View Employee List & Representation Workload"
+        >
+          <Users size={16} />
+          <span className="navbar-emp-label">Employees</span>
+          <span className="navbar-emp-count">{employeeCount}</span>
+        </button>
+
+        {/* Quick Add Employee Button */}
+        <button
+          type="button"
+          className="navbar-add-emp-btn"
+          onClick={() => setIsAddModalOpen(true)}
+          title="Create New Employee Account"
+        >
+          <UserPlus size={15} />
+          <span className="navbar-add-emp-label">Add Employee</span>
+        </button>
+
         <div className="notif-menu-wrapper" ref={notifRef}>
           <button
             type="button"
@@ -255,6 +316,14 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
           )}
         </div>
       </div>
+
+      {/* Quick Add Employee Modal */}
+      <UserModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSubmit={handleCreateEmployeeSubmit}
+        isLoading={isSubmitting}
+      />
     </header>
   );
 };

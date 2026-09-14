@@ -26,6 +26,7 @@ export const mockDelay = (result, delayMs = 350) => {
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 15000,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
     Accept: 'application/json',

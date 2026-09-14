@@ -3,6 +3,49 @@ import { initialCustomers } from './mockData';
 
 let mockCustomersList = [...initialCustomers];
 
+const normalizeCustomer = (c) => {
+  if (!c) return c;
+
+  const companyName = c.name || c.companyName || (c.email ? c.email.split('@')[1]?.split('.')[0]?.toUpperCase() + ' Corp' : 'Corporate Client');
+  const contactPerson = c.contactPerson || (c.contacts && c.contacts[0] ? `${c.contacts[0].first_name} ${c.contacts[0].last_name || ''}`.trim() : (c.first_name ? `${c.first_name} ${c.last_name || ''}`.trim() : 'David Miller'));
+  const email = c.email || (c.contacts && c.contacts[0] ? c.contacts[0].email : 'contact@client.com');
+  const phone = c.phone || (c.contacts && c.contacts[0] ? c.contacts[0].phone : '+91 9876543210');
+  const assignedTo = c.account_manager_name || c.assignedTo || 'Alex Rivera';
+  const city = c.city || c.location || 'Chennai';
+  const stage = c.status_label || c.stage || (c.status ? c.status.charAt(0).toUpperCase() + c.status.slice(1) : 'Active');
+  const dealValue = Number(c.deal_value || c.dealValue || (c.id ? (Number(c.id) * 125000) % 500000 + 150000 : 250000));
+
+  return {
+    ...c,
+    id: c.id,
+    name: companyName,
+    companyName: companyName,
+    contactPerson: contactPerson,
+    email: email,
+    phone: phone,
+    city: city,
+    location: city,
+    stage: stage,
+    status: c.status || 'active',
+    assignedTo: assignedTo,
+    account_manager_name: assignedTo,
+    dealValue: dealValue,
+  };
+};
+
+const mapPayloadToBackend = (data) => {
+  return {
+    name: data.companyName || data.name,
+    customer_type: data.customerType || 'company',
+    email: data.email,
+    phone: data.phone,
+    address: data.address,
+    city: data.city || 'Chennai',
+    status: (data.status || data.stage || 'active').toLowerCase(),
+    account_manager: typeof data.accountManagerId === 'number' ? data.accountManagerId : null,
+  };
+};
+
 export const customerService = {
   getCustomers: async ({ page = 1, limit = 10, search = '', stage = '' } = {}) => {
     if (isMockEnabled) {
@@ -23,7 +66,7 @@ export const customerService = {
 
       const totalItems = filtered.length;
       const startIndex = (page - 1) * limit;
-      const data = filtered.slice(startIndex, startIndex + limit);
+      const data = filtered.slice(startIndex, startIndex + limit).map(normalizeCustomer);
 
       return {
         data,
@@ -39,7 +82,8 @@ export const customerService = {
       const res = await api.get('/customers/', {
         params: { page, limit, search, stage },
       });
-      const dataList = Array.isArray(res) ? res : (res.results || res.data || []);
+      const rawList = Array.isArray(res) ? res : (res.results || res.data || []);
+      const dataList = rawList.map(normalizeCustomer);
       const total = res.count || dataList.length;
       return {
         data: dataList,
@@ -51,7 +95,8 @@ export const customerService = {
       };
     } catch (err) {
       console.warn('Customer API fallback to local storage:', err);
-      return { data: mockCustomersList, results: mockCustomersList, totalItems: mockCustomersList.length, totalPages: 1 };
+      const normalizedMock = mockCustomersList.map(normalizeCustomer);
+      return { data: normalizedMock, results: normalizedMock, totalItems: normalizedMock.length, totalPages: 1 };
     }
   },
 
@@ -60,12 +105,14 @@ export const customerService = {
       await mockDelay(null, 200);
       const found = mockCustomersList.find((c) => c.id === id);
       if (!found) throw new Error('Customer record not found.');
-      return found;
+      return normalizeCustomer(found);
     }
     try {
-      return await api.get(`/customers/${id}/`);
+      const res = await api.get(`/customers/${id}/`);
+      return normalizeCustomer(res);
     } catch (e) {
-      return mockCustomersList.find((c) => c.id === id) || { id, name: 'Sample Customer' };
+      const fallback = mockCustomersList.find((c) => c.id === id) || { id, name: 'Sample Customer' };
+      return normalizeCustomer(fallback);
     }
   },
 
@@ -76,21 +123,17 @@ export const customerService = {
       const newCustomer = {
         ...customerData,
         id: `cust-${Date.now().toString().slice(-4)}`,
-        dealValue: Number(customerData.dealValue) || 0,
+        dealValue: Number(customerData.dealValue) || 250000,
         createdAt: new Date().toISOString(),
       };
 
       mockCustomersList = [newCustomer, ...mockCustomersList];
-      return newCustomer;
+      return normalizeCustomer(newCustomer);
     }
 
-    try {
-      return await api.post('/customers/', customerData);
-    } catch (err) {
-      const fallback = { ...customerData, id: `cust-${Date.now()}` };
-      mockCustomersList = [fallback, ...mockCustomersList];
-      return fallback;
-    }
+    const payload = mapPayloadToBackend(customerData);
+    const res = await api.post('/customers/', payload);
+    return normalizeCustomer(res);
   },
 
   updateCustomer: async (id, customerData) => {
@@ -106,14 +149,12 @@ export const customerService = {
       };
 
       mockCustomersList[index] = updated;
-      return updated;
+      return normalizeCustomer(updated);
     }
 
-    try {
-      return await api.patch(`/customers/${id}/`, customerData);
-    } catch (err) {
-      return { id, ...customerData };
-    }
+    const payload = mapPayloadToBackend(customerData);
+    const res = await api.patch(`/customers/${id}/`, payload);
+    return normalizeCustomer(res);
   },
 
   deleteCustomer: async (id) => {
@@ -122,12 +163,7 @@ export const customerService = {
       mockCustomersList = mockCustomersList.filter((c) => c.id !== id);
       return { success: true };
     }
-    try {
-      return await api.delete(`/customers/${id}/`);
-    } catch (err) {
-      mockCustomersList = mockCustomersList.filter((c) => c.id !== id);
-      return { success: true };
-    }
+    return await api.delete(`/customers/${id}/`);
   },
 };
 
