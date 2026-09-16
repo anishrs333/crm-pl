@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useToast } from '../../hooks/useToast';
 import { validators } from '../../utils/validators';
@@ -11,7 +11,8 @@ import {
   EyeOff, 
   Loader2, 
   ArrowRight, 
-  AlertCircle 
+  AlertCircle,
+  ShieldCheck
 } from 'lucide-react';
 import './LoginPage.css';
 
@@ -20,7 +21,6 @@ export const LoginPage = () => {
   const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
-
 
   const [formData, setFormData] = useState({
     username: '',
@@ -69,24 +69,13 @@ export const LoginPage = () => {
 
     try {
       const response = await login(formData.username, formData.password);
-      showToast(`Welcome back, ${response.user.name}!`, 'success');
+      showToast(`Welcome back, ${response.user.name || 'Admin'}!`, 'success');
       navigate(redirectPath, { replace: true });
     } catch (err) {
-      setServerError(err.message || 'Failed to authenticate. Please check your credentials.');
+      setServerError(err.message || 'Authentication failed. Please check your username and password.');
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  // Demo Login Helper
-  const handleDemoFill = (username, roleName) => {
-    setFormData({
-      username,
-      password: 'admin123',
-    });
-    setErrors({});
-    setServerError('');
-    showToast(`Filled database credentials for ${roleName} (${username})`, 'info', 2000);
   };
 
   return (
@@ -95,17 +84,17 @@ export const LoginPage = () => {
         {/* Brand Header */}
         <div className="login-brand">
           <div className="login-logo-icon">
-            {/* <Building2 size={24} /> */}
+            <Building2 size={24} />
           </div>
           <div className="login-brand-text">
-            <h1>PL CRM</h1>
-            <p>Enterprise Management System</p>
+            <h1>PL SOFT CRM</h1>
+            <p>Enterprise Management Portal</p>
           </div>
         </div>
 
         <div className="login-header">
-          <h2>Welcome back</h2>
-          <p>Please enter your credentials to access your account.</p>
+          <h2>Sign in to your account</h2>
+          <p>Welcome back! Enter your corporate credentials to continue.</p>
         </div>
 
         {/* Global Server Error Alert */}
@@ -121,7 +110,7 @@ export const LoginPage = () => {
           {/* Username / User ID Field */}
           <div className="form-group">
             <label className="form-label" htmlFor="username">
-              Username or Email <span className="form-required">*</span>
+              Username or Corporate Email <span className="form-required">*</span>
             </label>
             <div className="input-wrapper">
               <User className="input-icon" size={18} />
@@ -131,7 +120,7 @@ export const LoginPage = () => {
                 type="text"
                 autoComplete="username"
                 className={`form-input ${errors.username ? 'has-error' : ''}`}
-                placeholder="e.g. anish or alex_manager"
+                placeholder="e.g. crm_admin"
                 value={formData.username}
                 onChange={handleChange}
                 disabled={isSubmitting}
@@ -180,40 +169,25 @@ export const LoginPage = () => {
             {isSubmitting ? (
               <>
                 <Loader2 size={18} className="animate-spin" />
-                <span>Signing in...</span>
+                <span>Authenticating...</span>
               </>
             ) : (
               <>
-                <span>Sign in to CRM</span>
+                <span>Sign In to System</span>
                 <ArrowRight size={18} />
               </>
             )}
           </button>
         </form>
 
-        {/* Quick Database Credentials */}
-        <div className="demo-accounts-section">
-          <p className="demo-title">Quick Database Login (Click to fill seed credentials)</p>
-          <div className="demo-buttons-grid">
-            <button
-              type="button"
-              className="demo-btn"
-              onClick={() => handleDemoFill('anish', 'Admin')}
-            >
-              🔑 Admin (anish)
-            </button>
-            <button
-              type="button"
-              className="demo-btn"
-              onClick={() => handleDemoFill('alex_manager', 'Manager')}
-            >
-              👔 Manager (alex_manager)
-            </button>
-          </div>
+        {/* Security Footer Badge */}
+        <div className="login-security-footer">
+          <ShieldCheck size={16} />
+          <span>256-Bit SSL Encrypted • Authorized Personnel Only</span>
         </div>
       </div>
-
     </div>
   );
 };
+
 

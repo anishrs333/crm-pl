@@ -1,8 +1,3 @@
-/**
- * Realistic initial mock dataset for CRM modules
- * This data powers the mock API engine when real backend is disconnected
- */
-
 export const initialUsers = [
   {
     id: 'usr-101',

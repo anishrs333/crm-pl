@@ -17,7 +17,7 @@ export const authService = {
       );
 
       if (!matchedUser) {
-        throw new Error('User not found. Try "sarah_admin", "alex_manager", or "jessica_sales".');
+        throw new Error('User not found. Please check your username and password.');
       }
 
       if (!password || password.length < 4) {

@@ -48,10 +48,21 @@ const mapPayloadToBackend = (data) => {
 
 export const customerService = {
   getCustomers: async ({ page = 1, limit = 10, search = '', stage = '' } = {}) => {
+    const mapStageToDjango = (stg) => {
+      if (!stg) return '';
+      const s = String(stg).toLowerCase();
+      if (s.includes('active')) return 'active';
+      if (s.includes('ongoing') || s.includes('lead') || s.includes('prospect')) return 'lead';
+      if (s.includes('won')) return 'won';
+      if (s.includes('lost')) return 'lost';
+      if (s.includes('inactive')) return 'inactive';
+      return s;
+    };
+
     if (isMockEnabled) {
       await mockDelay(null, 250);
 
-      let filtered = [...mockCustomersList];
+      let filtered = [...mockCustomersList].map(normalizeCustomer);
 
       if (search && search.trim()) {
         const q = search.toLowerCase();
@@ -64,9 +75,14 @@ export const customerService = {
         );
       }
 
+      if (stage && stage !== 'All') {
+        const s = stage.toLowerCase();
+        filtered = filtered.filter((c) => (c.stage || c.status || '').toLowerCase().includes(s));
+      }
+
       const totalItems = filtered.length;
       const startIndex = (page - 1) * limit;
-      const data = filtered.slice(startIndex, startIndex + limit).map(normalizeCustomer);
+      const data = filtered.slice(startIndex, startIndex + limit);
 
       return {
         data,
@@ -79,9 +95,16 @@ export const customerService = {
     }
 
     try {
-      const res = await api.get('/customers/', {
-        params: { page, limit, search, stage },
-      });
+      const params = new URLSearchParams();
+      if (page) params.append('page', page);
+      if (limit) params.append('limit', limit);
+      if (search) params.append('search', search);
+      if (stage && stage !== 'All') {
+        const djangoStatus = mapStageToDjango(stage);
+        if (djangoStatus) params.append('status', djangoStatus);
+      }
+
+      const res = await api.get(`/customers/?${params.toString()}`);
       const rawList = Array.isArray(res) ? res : (res.results || res.data || []);
       const dataList = rawList.map(normalizeCustomer);
       const total = res.count || dataList.length;

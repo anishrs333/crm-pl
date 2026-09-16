@@ -20,6 +20,19 @@ export const productService = {
         );
       }
 
+      if (category && category !== 'All') {
+        const c = category.toLowerCase();
+        filtered = filtered.filter((p) => (p.category || '').toLowerCase().includes(c));
+      }
+
+      if (status && status !== 'All') {
+        const s = status.toLowerCase();
+        filtered = filtered.filter((p) => {
+          const st = p.status || (p.is_active ? 'Active' : 'Inactive');
+          return st.toLowerCase() === s;
+        });
+      }
+
       const totalItems = filtered.length;
       const startIndex = (page - 1) * limit;
       const data = filtered.slice(startIndex, startIndex + limit);
@@ -35,9 +48,17 @@ export const productService = {
     }
 
     try {
-      const res = await api.get('/products/', {
-        params: { page, limit, search, category, status },
-      });
+      const params = new URLSearchParams();
+      if (page) params.append('page', page);
+      if (limit) params.append('limit', limit);
+      if (search) params.append('search', search);
+      if (category && category !== 'All') params.append('category', category);
+      if (status && status !== 'All') {
+        if (status.toLowerCase() === 'active') params.append('is_active', 'true');
+        else if (status.toLowerCase() === 'inactive') params.append('is_active', 'false');
+      }
+
+      const res = await api.get(`/products/?${params.toString()}`);
       const dataList = Array.isArray(res) ? res : (res.results || res.data || []);
       const total = res.count || dataList.length;
       return {

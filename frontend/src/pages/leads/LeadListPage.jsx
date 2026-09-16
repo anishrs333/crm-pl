@@ -21,7 +21,7 @@ export const LeadListPage = () => {
   const [leads, setLeads] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(100);
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [sourceFilter, setSourceFilter] = useState('');
@@ -35,16 +35,21 @@ export const LeadListPage = () => {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const fetchLeads = useCallback(async () => {
+  const fetchLeads = useCallback(async (overrideFilters = null) => {
     setIsLoading(true);
     setError(null);
     try {
+      const activeSearch = overrideFilters && overrideFilters.search !== undefined ? overrideFilters.search : search;
+      const activeStatus = overrideFilters && overrideFilters.status !== undefined ? overrideFilters.status : statusFilter;
+      const activeSource = overrideFilters && overrideFilters.source !== undefined ? overrideFilters.source : sourceFilter;
+      const activePage = overrideFilters && overrideFilters.page !== undefined ? overrideFilters.page : page;
+
       const res = await leadService.getLeads({
-        page,
+        page: activePage,
         limit: pageSize,
-        search,
-        status: statusFilter,
-        source: sourceFilter,
+        search: activeSearch,
+        status: activeStatus,
+        source: activeSource,
       });
       setLeads(res.data);
       setTotalItems(res.totalItems);
@@ -89,15 +94,24 @@ export const LeadListPage = () => {
     setIsSubmitting(true);
     try {
       if (selectedLead) {
-        await leadService.updateLead(selectedLead.id, formData);
+        const updated = await leadService.updateLead(selectedLead.id, formData);
         showToast('Lead details updated successfully.', 'success');
+        setLeads((prev) => prev.map((l) => (l.id === selectedLead.id ? updated : l)));
+        setIsFormModalOpen(false);
+        setSelectedLead(null);
+        await fetchLeads();
       } else {
-        await leadService.createLead(formData);
+        const created = await leadService.createLead(formData);
         showToast('New lead added to sales pipeline.', 'success');
+        setStatusFilter('');
+        setSourceFilter('');
+        setSearch('');
+        setPage(1);
+        setIsFormModalOpen(false);
+        setSelectedLead(null);
+        setLeads((prev) => [created, ...prev.filter((l) => String(l.id) !== String(created.id))]);
+        await fetchLeads({ page: 1, search: '', status: '', source: '' });
       }
-      setIsFormModalOpen(false);
-      setSelectedLead(null);
-      fetchLeads();
     } catch (err) {
       showToast(err.message || 'Failed to save lead.', 'error');
     } finally {

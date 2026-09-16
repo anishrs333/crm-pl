@@ -3,6 +3,17 @@ import { initialOpportunities } from './mockData';
 
 let mockOpportunitiesList = [...initialOpportunities];
 
+const mapStageToDjango = (stg) => {
+  if (!stg) return '';
+  const s = String(stg).toLowerCase();
+  if (s.includes('qualif') || s.includes('discover')) return 'discovery';
+  if (s.includes('propos')) return 'proposal';
+  if (s.includes('negotia')) return 'negotiation';
+  if (s.includes('won')) return 'won';
+  if (s.includes('lost')) return 'lost';
+  return s;
+};
+
 export const opportunityService = {
   getOpportunities: async ({ page = 1, limit = 10, search = '', stage = '', assignedTo = '' } = {}) => {
     if (isMockEnabled) {
@@ -20,6 +31,16 @@ export const opportunityService = {
         );
       }
 
+      if (stage && stage !== 'All') {
+        const s = stage.toLowerCase();
+        filtered = filtered.filter((o) => (o.stage || '').toLowerCase().includes(s));
+      }
+
+      if (assignedTo && assignedTo !== 'All') {
+        const a = assignedTo.toLowerCase();
+        filtered = filtered.filter((o) => (o.assignedTo || o.assigned_to_name || '').toLowerCase().includes(a));
+      }
+
       const totalItems = filtered.length;
       const startIndex = (page - 1) * limit;
       const data = filtered.slice(startIndex, startIndex + limit);
@@ -35,9 +56,16 @@ export const opportunityService = {
     }
 
     try {
-      const res = await api.get('/opportunities/', {
-        params: { page, limit, search, stage, assignedTo },
-      });
+      const params = new URLSearchParams();
+      if (page) params.append('page', page);
+      if (limit) params.append('limit', limit);
+      if (search) params.append('search', search);
+      if (stage && stage !== 'All') {
+        const djangoStage = mapStageToDjango(stage);
+        if (djangoStage) params.append('stage', djangoStage);
+      }
+
+      const res = await api.get(`/opportunities/?${params.toString()}`);
       const dataList = Array.isArray(res) ? res : (res.results || res.data || []);
       const total = res.count || dataList.length;
       return {

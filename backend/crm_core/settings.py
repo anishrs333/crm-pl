@@ -33,12 +33,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 
-    # Third party packages
+
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
+    'django_filters',
 
-    # CRM Core Apps
+
     'apps.users',
     'apps.leads',
     'apps.customers',
@@ -102,7 +103,7 @@ DATABASES = {
     }
 }
 
-# Optional fallback to SQLite for quick local development or tests without MySQL
+
 if os.getenv('USE_SQLITE', 'False').lower() == 'true':
     DATABASES = {
         'default': {
@@ -169,6 +170,11 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_FILTER_BACKENDS': (
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.SearchFilter',
+        'rest_framework.filters.OrderingFilter',
     ),
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',

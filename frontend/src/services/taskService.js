@@ -3,6 +3,26 @@ import { initialTasks } from './mockData';
 
 let mockTasksList = [...initialTasks];
 
+const mapStatusToDjango = (st) => {
+  if (!st) return '';
+  const s = String(st).toLowerCase();
+  if (s.includes('progress')) return 'in_progress';
+  if (s.includes('pend')) return 'pending';
+  if (s.includes('complete')) return 'completed';
+  if (s.includes('cancel')) return 'cancelled';
+  return s;
+};
+
+const mapPriorityToDjango = (pr) => {
+  if (!pr) return '';
+  const p = String(pr).toLowerCase();
+  if (p.includes('high') || p.includes('hot')) return 'high';
+  if (p.includes('med') || p.includes('warm')) return 'medium';
+  if (p.includes('low') || p.includes('cold')) return 'low';
+  if (p.includes('urg')) return 'urgent';
+  return p;
+};
+
 export const taskService = {
   getTasks: async ({ page = 1, limit = 10, search = '', status = '', priority = '' } = {}) => {
     if (isMockEnabled) {
@@ -17,6 +37,16 @@ export const taskService = {
             (t.title || '').toLowerCase().includes(q) ||
             (t.description || '').toLowerCase().includes(q)
         );
+      }
+
+      if (status && status !== 'All') {
+        const s = status.toLowerCase();
+        filtered = filtered.filter((t) => (t.status || '').toLowerCase().includes(s));
+      }
+
+      if (priority && priority !== 'All') {
+        const p = priority.toLowerCase();
+        filtered = filtered.filter((t) => (t.priority || '').toLowerCase().includes(p));
       }
 
       const totalItems = filtered.length;
@@ -34,9 +64,20 @@ export const taskService = {
     }
 
     try {
-      const res = await api.get('/tasks/', {
-        params: { page, limit, search, status, priority },
-      });
+      const params = new URLSearchParams();
+      if (page) params.append('page', page);
+      if (limit) params.append('limit', limit);
+      if (search) params.append('search', search);
+      if (status && status !== 'All') {
+        const djangoStatus = mapStatusToDjango(status);
+        if (djangoStatus) params.append('status', djangoStatus);
+      }
+      if (priority && priority !== 'All') {
+        const djangoPriority = mapPriorityToDjango(priority);
+        if (djangoPriority) params.append('priority', djangoPriority);
+      }
+
+      const res = await api.get(`/tasks/?${params.toString()}`);
       const dataList = Array.isArray(res) ? res : (res.results || res.data || []);
       const total = res.count || dataList.length;
       return {

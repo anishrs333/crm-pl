@@ -20,7 +20,7 @@ export const CustomerListPage = () => {
   const [customers, setCustomers] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [pageSize, setPageSize] = useState(100);
   const [search, setSearch] = useState('');
   const [stageFilter, setStageFilter] = useState('');
   const [isLoading, setIsLoading] = useState(true);

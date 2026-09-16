@@ -9,11 +9,15 @@ from .models import Notification
 
 @receiver(post_save, sender=Lead)
 def notify_lead_assigned(sender, instance, created, **kwargs):
-    if instance.assigned_to and (created or instance.tracker.has_changed('assigned_to_id') if hasattr(instance, 'tracker') else True):
+    if instance.assigned_to:
+        company_display = getattr(instance, 'company_name', None) or 'N/A'
+        first_name = instance.first_name or ''
+        last_name = instance.last_name or ''
+        full_name = f"{first_name} {last_name}".strip() or 'Lead'
         Notification.objects.create(
             recipient=instance.assigned_to,
             title="New Lead Assigned",
-            message=f"You have been assigned to lead '{instance.first_name} {instance.last_name}' ({instance.company or 'N/A'}).",
+            message=f"You have been assigned to lead '{full_name}' ({company_display}).",
             notification_type=Notification.NotificationType.LEAD,
             link_url=f"/leads/{instance.id}"
         )
@@ -34,10 +38,11 @@ def notify_task_created(sender, instance, created, **kwargs):
 @receiver(post_save, sender=Quotation)
 def notify_quotation_status_change(sender, instance, created, **kwargs):
     if not created and instance.created_by:
+        cust_name = instance.customer.name if instance.customer else getattr(instance, 'customer_name', 'Client')
         Notification.objects.create(
             recipient=instance.created_by,
             title=f"Quotation {instance.quote_number} Status Updated",
-            message=f"Quotation status for '{instance.customer.name}' changed to {instance.get_status_display()}.",
+            message=f"Quotation status for '{cust_name}' changed to {instance.get_status_display()}.",
             notification_type=Notification.NotificationType.QUOTATION,
             link_url=f"/quotations"
         )

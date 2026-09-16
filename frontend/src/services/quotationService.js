@@ -59,12 +59,23 @@ const mapPayloadToBackend = (data) => {
   return payload;
 };
 
+const mapStatusToDjango = (st) => {
+  if (!st) return '';
+  const s = String(st).toLowerCase();
+  if (s.includes('draft')) return 'draft';
+  if (s.includes('sent')) return 'sent';
+  if (s.includes('accept')) return 'accepted';
+  if (s.includes('declin') || s.includes('reject')) return 'rejected';
+  if (s.includes('expir')) return 'expired';
+  return s;
+};
+
 export const quotationService = {
   getQuotations: async ({ page = 1, limit = 10, search = '', status = '' } = {}) => {
     if (isMockEnabled) {
       await mockDelay(null, 250);
 
-      let filtered = [...mockQuotationsList];
+      let filtered = [...mockQuotationsList].map(normalizeQuotation);
 
       if (search && search.trim()) {
         const q = search.toLowerCase();
@@ -75,9 +86,14 @@ export const quotationService = {
         );
       }
 
+      if (status && status !== 'All') {
+        const s = status.toLowerCase();
+        filtered = filtered.filter((item) => (item.status || '').toLowerCase().includes(s));
+      }
+
       const totalItems = filtered.length;
       const startIndex = (page - 1) * limit;
-      const data = filtered.slice(startIndex, startIndex + limit).map(normalizeQuotation);
+      const data = filtered.slice(startIndex, startIndex + limit);
 
       return {
         data,
@@ -90,9 +106,16 @@ export const quotationService = {
     }
 
     try {
-      const res = await api.get('/quotations/', {
-        params: { page, limit, search, status },
-      });
+      const params = new URLSearchParams();
+      if (page) params.append('page', page);
+      if (limit) params.append('limit', limit);
+      if (search) params.append('search', search);
+      if (status && status !== 'All') {
+        const djangoStatus = mapStatusToDjango(status);
+        if (djangoStatus) params.append('status', djangoStatus);
+      }
+
+      const res = await api.get(`/quotations/?${params.toString()}`);
       const dataList = (Array.isArray(res) ? res : (res.results || res.data || [])).map(normalizeQuotation);
       const total = res.count || dataList.length;
       return {

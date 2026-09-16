@@ -62,6 +62,16 @@ export const normalizeUser = (u) => {
   };
 };
 
+const mapRoleToDjango = (rl) => {
+  if (!rl) return '';
+  const r = String(rl).toLowerCase();
+  if (r.includes('admin')) return 'admin';
+  if (r.includes('manager')) return 'sales_manager';
+  if (r.includes('rep') || r.includes('sales')) return 'sales_rep';
+  if (r.includes('cust')) return 'customer_rep';
+  return r;
+};
+
 export const userService = {
   getUsers: async ({ page = 1, limit = 10, search = '', role = '', status = '' } = {}) => {
     if (isMockEnabled) {
@@ -79,6 +89,16 @@ export const userService = {
         );
       }
 
+      if (role && role !== 'All') {
+        const r = role.toLowerCase();
+        filtered = filtered.filter((u) => (u.role || '').toLowerCase().includes(r));
+      }
+
+      if (status && status !== 'All') {
+        const s = status.toLowerCase();
+        filtered = filtered.filter((u) => (u.status || '').toLowerCase() === s);
+      }
+
       const totalItems = filtered.length;
       const startIndex = (page - 1) * limit;
       const data = filtered.slice(startIndex, startIndex + limit);
@@ -94,9 +114,20 @@ export const userService = {
     }
 
     try {
-      const res = await api.get('/users/', {
-        params: { page, limit, search, role, status },
-      });
+      const params = new URLSearchParams();
+      if (page) params.append('page', page);
+      if (limit) params.append('limit', limit);
+      if (search) params.append('search', search);
+      if (role && role !== 'All') {
+        const djangoRole = mapRoleToDjango(role);
+        if (djangoRole) params.append('role', djangoRole);
+      }
+      if (status && status !== 'All') {
+        if (status.toLowerCase() === 'active') params.append('is_active', 'true');
+        else if (status.toLowerCase() === 'inactive') params.append('is_active', 'false');
+      }
+
+      const res = await api.get(`/users/?${params.toString()}`);
       const rawList = Array.isArray(res) ? res : (res.results || res.data || []);
       const dataList = rawList.map(normalizeUser);
       const total = res.count || dataList.length;

@@ -1,15 +1,14 @@
 import axios from 'axios';
 import { storage } from '../utils/storage';
 
-// Base API URL from environment variables
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '/api';
+// Base API URL explicitly configured for Django REST Framework (Port 8000)
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
 
 
 // Disable Mock API fallback so real Django REST API / MySQL database is always used
 export const isMockEnabled = false;
 
 
-// Helper to simulate network latency for mock services
 export const mockDelay = (result, delayMs = 350) => {
   return new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -62,7 +61,21 @@ api.interceptors.response.use(
 
       switch (status) {
         case 400:
-          errorMessage = data?.message || (data?.errors ? Object.values(data.errors).flat().join(', ') : 'Invalid request data.');
+          if (typeof data === 'string') {
+            errorMessage = data;
+          } else if (data?.message) {
+            errorMessage = data.message;
+          } else if (data?.errors) {
+            errorMessage = typeof data.errors === 'string' ? data.errors : Object.values(data.errors).flat().join(', ');
+          } else if (data && typeof data === 'object') {
+            const formatted = Object.entries(data)
+              .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(' ') : v}`)
+              .join('; ');
+            if (formatted) errorMessage = formatted;
+            else errorMessage = 'Invalid request data.';
+          } else {
+            errorMessage = 'Invalid request data.';
+          }
           break;
 
         case 401:
