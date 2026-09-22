@@ -15,7 +15,8 @@ import {
   ShieldCheck,
   Shield,
   Briefcase,
-  Sparkles
+  Sparkles,
+  Info
 } from 'lucide-react';
 import './LoginPage.css';
 
@@ -25,7 +26,7 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Inputs MUST be completely empty by default
+  // Inputs start completely empty by default
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -50,8 +51,17 @@ export const LoginPage = () => {
 
   const handlePortalSwitch = (mode) => {
     setPortalMode(mode);
-    if (serverError) setServerError('');
+    setServerError('');
+    setErrors({});
   };
+
+  const normalizedInputUser = (formData.username || '').trim().toLowerCase();
+  const isManagerCredentialEntered = normalizedInputUser.includes('manager');
+  const isAdminCredentialEntered = normalizedInputUser.includes('admin');
+
+  // Local helper notice for mismatched tab selection
+  const showManagerTabNotice = portalMode === 'Admin' && isManagerCredentialEntered;
+  const showAdminTabNotice = portalMode === 'Manager' && isAdminCredentialEntered;
 
   const validateForm = () => {
     const newErrors = {};
@@ -74,6 +84,16 @@ export const LoginPage = () => {
     e.preventDefault();
     if (!validateForm()) return;
 
+    // Strict client-side pre-check for portal mode
+    if (portalMode === 'Admin' && isManagerCredentialEntered) {
+      setServerError('Access Denied: "manager_crm" is a Manager account. Please switch to the Manager Portal tab to log in.');
+      return;
+    }
+    if (portalMode === 'Manager' && isAdminCredentialEntered) {
+      setServerError('Access Denied: "crm_admin" is an Admin account. Please switch to the Admin Portal tab to log in.');
+      return;
+    }
+
     setIsSubmitting(true);
     setServerError('');
 
@@ -83,6 +103,7 @@ export const LoginPage = () => {
       const isAdminUser = userRole === 'admin' || response.user?.is_superuser;
       const isManagerUser = userRole === 'manager' || userRole === 'sales_manager';
 
+      // Verify portal scope against authenticated user role
       if (portalMode === 'Admin' && !isAdminUser) {
         await logout();
         setServerError('Access Denied: This account is a Manager account. Please switch to the Manager Portal tab to log in.');
@@ -126,28 +147,45 @@ export const LoginPage = () => {
           </div>
         </div>
 
-        {/* Portal Scope Switcher */}
-        <div className="role-chips-bar">
-          <button
-            type="button"
-            className={`role-chip ${portalMode === 'Admin' ? 'active' : ''}`}
-            onClick={() => handlePortalSwitch('Admin')}
-          >
-            <Shield size={14} /> Admin Portal
-          </button>
-          <button
-            type="button"
-            className={`role-chip ${portalMode === 'Manager' ? 'active' : ''}`}
-            onClick={() => handlePortalSwitch('Manager')}
-          >
-            <Briefcase size={14} /> Manager Portal
-          </button>
+        {/* Portal Role Scope Switcher */}
+        <div className="portal-switcher-wrapper">
+          <div className="role-chips-bar">
+            <button
+              type="button"
+              className={`role-chip ${portalMode === 'Admin' ? 'active admin-active' : ''}`}
+              onClick={() => handlePortalSwitch('Admin')}
+            >
+              <Shield size={15} /> 
+              <span>Admin Portal</span>
+            </button>
+            <button
+              type="button"
+              className={`role-chip ${portalMode === 'Manager' ? 'active manager-active' : ''}`}
+              onClick={() => handlePortalSwitch('Manager')}
+            >
+              <Briefcase size={15} /> 
+              <span>Manager Portal</span>
+            </button>
+          </div>
+
+          {/* Active Scope Description Banner */}
+          <div className="scope-indicator-banner">
+            {portalMode === 'Admin' ? (
+              <span className="scope-tag scope-admin">
+                <Shield size={12} /> Strictly Admin Scope • System Governance
+              </span>
+            ) : (
+              <span className="scope-tag scope-manager">
+                <Briefcase size={12} /> Strictly Manager Scope • Sales Operations
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Global Server Error Alert */}
         {serverError && (
           <div className="login-error-banner" role="alert">
-            <AlertCircle size={18} />
+            <AlertCircle size={18} className="error-banner-icon" />
             <span>{serverError}</span>
           </div>
         )}
@@ -166,7 +204,7 @@ export const LoginPage = () => {
                 name="username"
                 type="text"
                 autoComplete="off"
-                className={`field-input ${errors.username ? 'error' : ''}`}
+                className={`field-input ${errors.username ? 'error' : ''} ${showManagerTabNotice || showAdminTabNotice ? 'warning-border' : ''}`}
                 placeholder="Enter your user ID..."
                 value={formData.username}
                 onChange={handleChange}
@@ -174,6 +212,20 @@ export const LoginPage = () => {
               />
             </div>
             {errors.username && <span className="field-error-msg">{errors.username}</span>}
+
+            {/* Smart Portal Switcher Hint */}
+            {showManagerTabNotice && (
+              <div className="tab-hint-box" onClick={() => handlePortalSwitch('Manager')}>
+                <Info size={14} />
+                <span>Manager credential detected. <strong>Click here to switch to Manager Portal</strong></span>
+              </div>
+            )}
+            {showAdminTabNotice && (
+              <div className="tab-hint-box" onClick={() => handlePortalSwitch('Admin')}>
+                <Info size={14} />
+                <span>Admin credential detected. <strong>Click here to switch to Admin Portal</strong></span>
+              </div>
+            )}
           </div>
 
           {/* Password Field */}
@@ -220,7 +272,7 @@ export const LoginPage = () => {
               </>
             ) : (
               <>
-                <span>Sign In to Portal</span>
+                <span>Sign In to {portalMode} Portal</span>
                 <ArrowRight size={18} className="submit-arrow" />
               </>
             )}

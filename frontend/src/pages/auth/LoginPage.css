@@ -17,32 +17,32 @@
 .ambient-orb {
   position: absolute;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.35;
+  filter: blur(90px);
+  opacity: 0.38;
   pointer-events: none;
   animation: orbFloat 14s infinite ease-in-out alternate;
 }
 
 .orb-1 {
-  width: 450px;
-  height: 450px;
+  width: 480px;
+  height: 480px;
   background: radial-gradient(circle, #1a237e 0%, #283593 60%, transparent 100%);
-  top: -10%;
-  left: -5%;
+  top: -12%;
+  left: -6%;
 }
 
 .orb-2 {
-  width: 500px;
-  height: 500px;
+  width: 520px;
+  height: 520px;
   background: radial-gradient(circle, #e65100 0%, #f57c00 60%, transparent 100%);
-  bottom: -15%;
+  bottom: -16%;
   right: -8%;
   animation-delay: -5s;
 }
 
 .orb-3 {
-  width: 350px;
-  height: 350px;
+  width: 380px;
+  height: 380px;
   background: radial-gradient(circle, #c5cae9 0%, #e8eaf6 70%, transparent 100%);
   top: 40%;
   left: 50%;
@@ -60,13 +60,13 @@
 .premium-login-card {
   width: 100%;
   max-width: 440px;
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-radius: 24px;
-  border: 1px solid var(--border-color);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-radius: 26px;
+  border: 1px solid rgba(26, 35, 126, 0.12);
   box-shadow: 
-    0 25px 50px -12px rgba(26, 35, 126, 0.12),
+    0 25px 50px -12px rgba(26, 35, 126, 0.14),
     0 0 1px 1px rgba(209, 209, 214, 0.8);
   padding: 40px 36px;
   position: relative;
@@ -79,7 +79,7 @@
 
 .premium-login-card:hover {
   box-shadow: 
-    0 30px 60px -15px rgba(26, 35, 126, 0.18),
+    0 30px 60px -15px rgba(26, 35, 126, 0.2),
     0 0 1px 1px var(--primary-400);
 }
 
@@ -91,9 +91,9 @@
 }
 
 .brand-logo-container {
-  width: 50px;
-  height: 50px;
-  background: linear-gradient(135deg, #1a237e 0%, #283593 60%, #303f9f 100%);
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, #1a237e 0%, #283593 60%, #e65100 100%);
   border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
@@ -112,34 +112,40 @@
 .brand-badge-pill {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   font-size: 0.68rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: var(--accent-carrot);
   background: var(--accent-carrot-bg);
-  padding: 2px 8px;
+  padding: 2px 9px;
   border-radius: var(--radius-full);
   width: fit-content;
 }
 
 .brand-title {
-  font-size: 1.35rem;
+  font-size: 1.38rem;
   font-weight: 800;
   color: var(--text-primary);
   letter-spacing: -0.02em;
   margin: 0;
 }
 
-/* Portal Role Chips Bar */
+/* Portal Switcher Wrapper & Scope Indicator */
+.portal-switcher-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .role-chips-bar {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--bg-app);
-  padding: 6px;
-  border-radius: var(--radius-lg);
+  background: #f1f5f9;
+  padding: 5px;
+  border-radius: 14px;
   border: 1px solid var(--border-color);
 }
 
@@ -148,27 +154,67 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 7px 10px;
-  border-radius: var(--radius-md);
-  font-size: 0.78rem;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  font-size: 0.82rem;
   font-weight: 600;
   color: var(--text-secondary);
   background: transparent;
   transition: all var(--transition-fast);
+  cursor: pointer;
 }
 
 .role-chip:hover {
   color: var(--primary-700);
-  background: rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.7);
 }
 
 .role-chip.active {
   background: #ffffff;
-  color: var(--primary-700);
   font-weight: 700;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   border: 1px solid var(--border-color);
+}
+
+.role-chip.admin-active {
+  color: #1a237e;
+  border-color: rgba(26, 35, 126, 0.25);
+}
+
+.role-chip.manager-active {
+  color: #e65100;
+  border-color: rgba(230, 81, 0, 0.25);
+}
+
+.scope-indicator-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scope-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  transition: all var(--transition-fast);
+}
+
+.scope-admin {
+  color: #1a237e;
+  background: #e8eaf6;
+  border: 1px solid #c5cae9;
+}
+
+.scope-manager {
+  color: #e65100;
+  background: #fff3e0;
+  border: 1px solid #ffe0b2;
 }
 
 /* Error Banner */
@@ -181,8 +227,14 @@
   color: #9f1239;
   padding: 12px 14px;
   border-radius: var(--radius-md);
-  font-size: 0.85rem;
-  font-weight: 500;
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.4;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+.error-banner-icon {
+  flex-shrink: 0;
 }
 
 /* Form Styling */
@@ -199,11 +251,11 @@
 }
 
 .field-label {
-  font-size: 0.82rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  letter-spacing: 0.04em;
 }
 
 .field-input-wrapper {
@@ -241,12 +293,36 @@
   color: var(--primary-600);
 }
 
+.field-input.warning-border {
+  border-color: #f59e0b;
+}
+
 .field-input.error {
   border-color: #e11d48;
 }
 
 .field-input.error:focus {
   box-shadow: 0 0 0 3px rgba(225, 29, 72, 0.18);
+}
+
+.tab-hint-box {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: #d97706;
+  background: #fffbeb;
+  border: 1px dashed #fde68a;
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-top: 2px;
+}
+
+.tab-hint-box:hover {
+  background: #fef3c7;
+  color: #b45309;
 }
 
 .password-toggle-btn {
@@ -259,6 +335,9 @@
   align-items: center;
   justify-content: center;
   transition: color var(--transition-fast);
+  background: transparent;
+  border: none;
+  cursor: pointer;
 }
 
 .password-toggle-btn:hover {
@@ -287,6 +366,8 @@
   box-shadow: 0 8px 20px -4px rgba(26, 35, 126, 0.35);
   transition: all var(--transition-fast);
   margin-top: 6px;
+  border: none;
+  cursor: pointer;
 }
 
 .premium-submit-btn:hover:not(:disabled) {
@@ -323,6 +404,11 @@
 
 .security-icon {
   color: var(--primary-700);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @media (max-width: 480px) {
