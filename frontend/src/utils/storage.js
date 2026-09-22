@@ -23,8 +23,10 @@ export const storage = {
     try {
       if (token) {
         localStorage.setItem(STORAGE_KEYS.ACCESS_TOKEN, token);
+        localStorage.setItem('access_token', token);
       } else {
         localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN);
+        localStorage.removeItem('access_token');
       }
     } catch (e) {
       console.error('Failed to save access token to localStorage', e);

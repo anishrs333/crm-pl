@@ -1,4 +1,5 @@
 import axios from "axios";
+import { storage } from "../utils/storage";
 
 export const isMockEnabled = false;
 export const mockDelay = async (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
@@ -12,10 +13,9 @@ const api  = axios.create({
 
 api.interceptors.request.use(
     (config) => {
+        const token = storage.getAccessToken() || localStorage.getItem("access_token") || localStorage.getItem("apexcrm_access_token");
 
-        const token = localStorage.getItem("access_token");
-
-        if(token){
+        if (token) {
             config.headers.Authorization = `Bearer ${token}`;
         }
 
