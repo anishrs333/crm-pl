@@ -20,7 +20,7 @@ import {
 import './LoginPage.css';
 
 export const LoginPage = () => {
-  const { login } = useAuth();
+  const { login, logout } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
   const location = useLocation();
@@ -50,6 +50,7 @@ export const LoginPage = () => {
 
   const handlePortalSwitch = (mode) => {
     setPortalMode(mode);
+    if (serverError) setServerError('');
   };
 
   const validateForm = () => {
@@ -78,6 +79,22 @@ export const LoginPage = () => {
 
     try {
       const response = await login(formData.username, formData.password);
+      const userRole = (response.user?.role || '').toLowerCase();
+      const isAdminUser = userRole === 'admin' || response.user?.is_superuser;
+      const isManagerUser = userRole === 'manager' || userRole === 'sales_manager';
+
+      if (portalMode === 'Admin' && !isAdminUser) {
+        await logout();
+        setServerError('Access Denied: This account is a Manager account. Please switch to the Manager Portal tab to log in.');
+        return;
+      }
+
+      if (portalMode === 'Manager' && !isManagerUser) {
+        await logout();
+        setServerError('Access Denied: This account is an Admin account. Please switch to the Admin Portal tab to log in.');
+        return;
+      }
+
       showToast(`Welcome back, ${response.user?.name || 'User'}!`, 'success');
       navigate(redirectPath, { replace: true });
     } catch (err) {
