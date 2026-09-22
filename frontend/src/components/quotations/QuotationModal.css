@@ -1,0 +1,105 @@
+/* ==========================================================================
+   Quotation Modal Styling
+   ========================================================================== */
+
+.quot-form-section {
+  margin-bottom: 20px;
+}
+
+.quot-section-title {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.quot-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+}
+
+.quot-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 14px 18px;
+}
+
+/* Line Items Table */
+.line-items-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+  margin-bottom: 12px;
+}
+
+.line-items-table th {
+  background-color: var(--bg-subtle);
+  padding: 8px 10px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  text-align: left;
+}
+
+.line-items-table td {
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  vertical-align: middle;
+}
+
+.line-item-input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.85rem;
+}
+
+.line-item-input:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}
+
+/* Financial Summary Box */
+.quot-summary-box {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background-color: var(--bg-app);
+  padding: 14px 18px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-color);
+  max-width: 320px;
+  margin-left: auto;
+}
+
+.quot-summary-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  color: var(--text-secondary);
+}
+
+.quot-summary-row.total {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  border-top: 1px solid var(--border-color);
+  padding-top: 6px;
+  margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .quot-grid-2,
+  .quot-grid-3 {
+    grid-template-columns: 1fr;
+  }
+}

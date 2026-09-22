@@ -1,0 +1,43 @@
+/* ==========================================================================
+   Main CRM Shell Layout Styling
+   ========================================================================== */
+
+.crm-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-app);
+}
+
+.crm-main-content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  transition: margin-left var(--transition-normal);
+  margin-left: var(--sidebar-width);
+  width: calc(100% - var(--sidebar-width));
+}
+
+.crm-main-content-wrapper.sidebar-collapsed {
+  margin-left: var(--sidebar-collapsed-width);
+  width: calc(100% - var(--sidebar-collapsed-width));
+}
+
+.crm-page-container {
+  flex: 1;
+  padding: 24px 32px 48px;
+  max-width: 1440px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (max-width: 992px) {
+  .crm-main-content-wrapper,
+  .crm-main-content-wrapper.sidebar-collapsed {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+  .crm-page-container {
+    padding: 16px 16px 36px;
+  }
+}

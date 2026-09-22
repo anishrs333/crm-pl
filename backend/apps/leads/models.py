@@ -55,6 +55,7 @@ class Lead(models.Model):
         blank=True
     )
     notes = models.TextField(blank=True, null=True)
+    follow_up_date = models.DateTimeField(null=True, blank=True, db_index=True)
 
     assigned_to = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -85,7 +86,6 @@ class Lead(models.Model):
 
 
 class LeadNote(models.Model):
-    """Activity and interaction log specific to a lead timeline."""
     lead = models.ForeignKey(
         Lead,
         on_delete=models.CASCADE,

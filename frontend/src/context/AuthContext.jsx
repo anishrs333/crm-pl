@@ -1,80 +1,110 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useState, useEffect, useCallback } from 'react';
+import { storage } from '../utils/storage';
+import { authService } from '../services/authService';
 
-const AuthContext = createContext(null);
+export const AuthContext = createContext(null);
 
-export function AuthProvider({children}){
-    const [user, setUser] = useState(null);
+export const AuthProvider = ({ children }) => {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-    const [loading, setLoading] = useState(true);
+  // Initialize session from LocalStorage on mount
+  useEffect(() => {
+    const initializeAuth = () => {
+      try {
+        const savedToken = storage.getAccessToken();
+        const savedUser = storage.getUser();
 
-    useEffect(()=>{
-        const savedUser = localStorage.getItem("user");
-
-        const accessToken = localStorage.getItem("access_token");
-
-        if(savedUser && accessToken){
-            try{
-                setUser(JSON.parse(savedUser));
-            }
-            catch(error){
-                localStorage.removeItem("user");
-                localStorage.removeItem("access_token");
-                localStorage.removeItem("refresh_token");
-            }
+        if (savedToken && savedUser) {
+          setToken(savedToken);
+          setUser(savedUser);
         }
-
-        setLoading(false);
-    }, []);
-
-    const login = (data)=>{
-        if(data.access){
-            localStorage.setItem(
-                "access_token",
-                data.access
-            );
-        }
-
-        if(data.refresh){
-            localStorage.setItem(
-                "refresh_token",
-                data.refresh
-            );
-        }
-
-        if(data.user){
-            localStorage.setItem(
-                "user",
-                JSON.stringify(data.user)
-            );
-
-            setUser(data.user);
-        }
+      } catch (err) {
+        console.error('Failed to restore authentication session:', err);
+        storage.clearSession();
+      } finally {
+        setIsLoading(false);
+      }
     };
 
-    const logout = ()=>{
-        localStorage.removeItem("access_token");
-        localStorage.removeItem("refresh_token");
-        localStorage.removeItem("user");
+    initializeAuth();
 
-        setUser(null);
+    // Listen for 401 Unauthorized events emitted by api.js
+    const handleUnauthorized = () => {
+      setUser(null);
+      setToken(null);
+      storage.clearSession();
     };
 
-    const isAuthenticated = !!localStorage.getItem("access_token");
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => {
+      window.removeEventListener('auth:unauthorized', handleUnauthorized);
+    };
+  }, []);
 
-    return(
-        <AuthContext.Provider
-         value={{
-            user,
-            loading,
-            login,
-            logout,
-            isAuthenticated,
-         }}>
-            {children}
-         </AuthContext.Provider>
-    );
-}
+  const login = useCallback(async (username, password) => {
+    setIsLoading(true);
+    try {
+      const response = await authService.login({ username, password });
+      setUser(response.user);
+      setToken(response.accessToken);
+      return response;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
-export function useAuth(){
-    return useContext(AuthContext);
-}
+  const logout = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      await authService.logout();
+    } finally {
+      setUser(null);
+      setToken(null);
+      storage.clearSession();
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Role authorization: Admin has global access; Manager has operational access
+  const hasRole = useCallback(
+    (allowedRoles) => {
+      if (!user || !user.role) return false;
+      if (!allowedRoles || allowedRoles.length === 0) return true;
+      const normalizedRole = (user.role || '').toLowerCase();
+      if (normalizedRole === 'admin' || user.is_superuser) return true;
+      return allowedRoles.some((r) => r.toLowerCase() === normalizedRole);
+    },
+    [user]
+  );
+
+  // Quick switch for previewing Admin vs Manager role
+  const switchRole = useCallback((newRole) => {
+    if (newRole !== 'Admin' && newRole !== 'Manager') return;
+    setUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, role: newRole };
+      storage.setUser(updated);
+      return updated;
+    });
+  }, []);
+
+  const normalizedUserRole = (user?.role || '').toLowerCase();
+
+  const value = {
+    user,
+    token,
+    isAuthenticated: !!token && !!user,
+    isLoading,
+    login,
+    logout,
+    hasRole,
+    isAdmin: normalizedUserRole === 'admin' || user?.is_superuser || false,
+    isManager: normalizedUserRole === 'manager' || normalizedUserRole === 'sales_manager' || normalizedUserRole === 'admin' || user?.is_superuser || false,
+    switchRole,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+

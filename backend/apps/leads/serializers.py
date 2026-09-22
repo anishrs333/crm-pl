@@ -34,6 +34,7 @@ class LeadListSerializer(serializers.ModelSerializer):
             'priority',
             'priority_label',
             'estimated_budget',
+            'follow_up_date',
             'assigned_to',
             'assigned_to_name',
             'created_at',
@@ -66,6 +67,7 @@ class LeadDetailSerializer(serializers.ModelSerializer):
             'priority',
             'estimated_budget',
             'notes',
+            'follow_up_date',
             'assigned_to',
             'assigned_to_name',
             'created_by',
@@ -79,7 +81,6 @@ class LeadDetailSerializer(serializers.ModelSerializer):
 
 
 class LeadConvertSerializer(serializers.Serializer):
-    """Payload for converting a Lead into a Customer + Opportunity."""
     deal_title = serializers.CharField(max_length=200, required=False)
     deal_amount = serializers.DecimalField(max_digits=12, decimal_places=2, required=False)
     expected_close_date = serializers.DateField(required=False)

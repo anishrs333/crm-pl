@@ -1,0 +1,51 @@
+/* ==========================================================================
+   Empty State & Error State Styling
+   ========================================================================== */
+
+.crm-state-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 48px 24px;
+  background-color: var(--bg-surface);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--border-color);
+  margin: 16px 0;
+}
+
+.crm-state-icon-wrapper {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.state-empty-icon {
+  background-color: var(--bg-subtle);
+  color: var(--text-muted);
+}
+
+.state-error-icon {
+  background-color: var(--danger-bg);
+  color: var(--danger-solid);
+}
+
+.crm-state-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 6px;
+}
+
+.crm-state-description {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  max-width: 440px;
+  margin-bottom: 20px;
+  line-height: 1.5;
+}

@@ -1,17 +1,20 @@
-import { BrowserRouter } from "react-router-dom";
-import AppRoutes from "./routes/AppRoutes";
-import { AuthProvider } from "./context/AuthContext";
+import React from 'react';
+import { BrowserRouter } from 'react-router-dom';
+import { AuthProvider } from './context/AuthContext';
+import { ToastProvider } from './context/ToastContext';
+import { AppRoutes } from './routes/AppRoutes';
+import './App.css';
 
-function App() {
+export function App() {
   return (
     <BrowserRouter>
-
       <AuthProvider>
-
-        <AppRoutes />
-
+        <ToastProvider>
+          <div className="app-root">
+            <AppRoutes />
+          </div>
+        </ToastProvider>
       </AuthProvider>
-      
     </BrowserRouter>
   );
 }

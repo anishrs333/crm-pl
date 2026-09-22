@@ -1,0 +1,31 @@
+/* ==========================================================================
+   FilterDropdown Component Styling
+   ========================================================================== */
+
+.crm-filter-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.crm-filter-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.crm-filter-select {
+  padding: 8px 12px;
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.88rem;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.crm-filter-select:focus {
+  outline: none;
+  border-color: var(--border-focus);
+}

@@ -1,0 +1,15 @@
+/* ==========================================================================
+   Opportunity Modal Styling
+   ========================================================================== */
+
+.opp-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 18px;
+}
+
+@media (max-width: 600px) {
+  .opp-form-grid {
+    grid-template-columns: 1fr;
+  }
+}

@@ -23,13 +23,12 @@ class LeadViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, IsLeadOwnerOrManager]
     filterset_fields = ['status', 'priority', 'source', 'assigned_to']
     search_fields = ['first_name', 'last_name', 'email', 'phone', 'company_name']
-    ordering_fields = ['created_at', 'priority', 'estimated_budget']
+    ordering_fields = ['created_at', 'priority', 'estimated_budget', 'follow_up_date']
 
     def get_queryset(self):
         user = self.request.user
         queryset = Lead.objects.select_related('assigned_to', 'created_by')
 
-        # Data Isolation: Sales Reps only see leads assigned to or created by them
         if not user.is_manager:
             return queryset.filter(models.Q(assigned_to=user) | models.Q(created_by=user))
         return queryset
@@ -45,7 +44,6 @@ class LeadViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='add-note')
     def add_note(self, request, pk=None):
-        """Append an activity/progress note to a lead's timeline."""
         lead = self.get_object()
         serializer = LeadNoteSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -54,10 +52,6 @@ class LeadViewSet(viewsets.ModelViewSet):
 
     @action(detail=True, methods=['post'], url_path='convert')
     def convert(self, request, pk=None):
-        """
-        ATOMIC BUSINESS ACTION: Converts a Lead into a Customer + Opportunity + Task.
-        Rolls back 100% if any operation fails.
-        """
         lead = self.get_object()
 
         if lead.status == Lead.Status.CONVERTED:
@@ -71,7 +65,6 @@ class LeadViewSet(viewsets.ModelViewSet):
         data = serializer.validated_data
 
         with transaction.atomic():
-            # 1. Create Customer Account
             customer_name = lead.company_name or f"{lead.first_name} {lead.last_name or ''}".strip()
             customer = Customer.objects.create(
                 name=customer_name,
@@ -82,7 +75,6 @@ class LeadViewSet(viewsets.ModelViewSet):
                 status=Customer.Status.ACTIVE
             )
 
-            # 2. Create Primary Contact Person under Customer
             CustomerContact.objects.create(
                 customer=customer,
                 first_name=lead.first_name,
@@ -93,7 +85,6 @@ class LeadViewSet(viewsets.ModelViewSet):
                 is_primary=True
             )
 
-            # 3. Create Deal / Opportunity
             deal_amount = data.get('deal_amount') or lead.estimated_budget or 0
             deal_title = data.get('deal_title') or f"Deal - {customer_name}"
             opportunity = Opportunity.objects.create(
@@ -107,7 +98,6 @@ class LeadViewSet(viewsets.ModelViewSet):
                 assigned_to=lead.assigned_to or request.user
             )
 
-            # 4. Create Onboarding Follow-up Task
             Task.objects.create(
                 title=f"Onboard new customer: {customer_name}",
                 description=f"Initial discovery call & proposal for opportunity: {opportunity.title}",
@@ -118,7 +108,6 @@ class LeadViewSet(viewsets.ModelViewSet):
                 lead=lead
             )
 
-            # 5. Mark Lead as Converted
             lead.status = Lead.Status.CONVERTED
             lead.converted_at = timezone.now()
             lead.save()
@@ -131,3 +120,60 @@ class LeadViewSet(viewsets.ModelViewSet):
             "opportunity_title": opportunity.title,
             "deal_amount": opportunity.amount,
         }, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['get'], url_path='check-duplicates')
+    def check_duplicates(self, request):
+        email = request.query_params.get('email', '').strip()
+        phone = request.query_params.get('phone', '').strip()
+
+        if not email and not phone:
+            return Response({'duplicates': []})
+
+        query = models.Q()
+        if email:
+            query |= models.Q(email__iexact=email)
+        if phone:
+            query |= models.Q(phone__iexact=phone)
+
+        duplicates = self.get_queryset().filter(query)
+        data = [
+            {
+                'id': d.id,
+                'name': f"{d.first_name} {d.last_name}",
+                'email': d.email,
+                'phone': d.phone,
+                'company': d.company_name,
+                'status': d.status
+            }
+            for d in duplicates
+        ]
+        return Response({'duplicate_count': len(data), 'duplicates': data})
+
+    @action(detail=False, methods=['get'], url_path='export-csv')
+    def export_csv(self, request):
+        import csv
+        from django.http import HttpResponse
+
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = 'attachment; filename="leads_export.csv"'
+
+        writer = csv.writer(response)
+        writer.writerow(['ID', 'First Name', 'Last Name', 'Email', 'Phone', 'Company', 'Status', 'Priority', 'Assigned To', 'Created At'])
+
+        for lead in self.get_queryset():
+            assigned_name = lead.assigned_to.get_full_name() if lead.assigned_to else ''
+            writer.writerow([
+                lead.id,
+                lead.first_name,
+                lead.last_name,
+                lead.email,
+                lead.phone,
+                lead.company_name,
+                lead.status,
+                lead.priority,
+                assigned_name,
+                lead.created_at.strftime('%Y-%m-%d %H:%M')
+            ])
+
+        return response
+

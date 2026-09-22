@@ -76,7 +76,7 @@ class CustomerContact(models.Model):
 
 
 class CustomerInteraction(models.Model):
-    """Log of past interactions, meetings, calls, and touchpoints."""
+    
     class InteractionType(models.TextChoices):
         CALL = 'call', 'Phone Call'
         MEETING = 'meeting', 'In-Person / Virtual Meeting'

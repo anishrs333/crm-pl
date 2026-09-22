@@ -18,6 +18,7 @@ class LeadAdmin(admin.ModelAdmin):
         'status',
         'priority',
         'source',
+        'follow_up_date',
         'assigned_to',
         'created_at'
     )

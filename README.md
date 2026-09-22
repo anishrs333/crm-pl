@@ -56,7 +56,7 @@ crm-project/
 
 ### Prerequisites
 
-- **Python**: 3.10 or higher
+- **Python**: 3.14 or higher
 - **Node.js**: 18.x or higher & npm
 - **MySQL**: 8.x (or MariaDB)
 - **Git**
