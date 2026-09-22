@@ -38,8 +38,8 @@ export const TaskModal = ({
         const list = res.data || res.results || [];
         if (list.length > 0) {
           const opts = list.map((u) => ({
-            value: u.name,
-            label: `${u.name} (${u.role || 'Staff'})`,
+            value: String(u.id),
+            label: `${u.name} (${u.role_label || u.role || 'Staff'})`,
           }));
           setAssigneeOptions([{ value: 'Unassigned', label: 'Unassigned' }, ...opts]);
         }
@@ -61,7 +61,7 @@ export const TaskModal = ({
         dueDate: initialData.dueDate || '',
         priority: initialData.priority || 'Medium',
         status: initialData.status || 'Pending',
-        assignedTo: initialData.assignedTo || 'Unassigned',
+        assignedTo: initialData.assigned_to ? String(initialData.assigned_to) : (initialData.assignedTo || 'Unassigned'),
         category: initialData.category || 'Sales',
       });
     } else {
@@ -102,7 +102,13 @@ export const TaskModal = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-    onSubmit(formData);
+    const selectedUserId = formData.assignedTo !== 'Unassigned' ? Number(formData.assignedTo) : null;
+    const selectedUserObj = assigneeOptions.find((o) => String(o.value) === String(formData.assignedTo));
+    onSubmit({
+      ...formData,
+      assignedToId: selectedUserId,
+      assignedTo: selectedUserObj ? selectedUserObj.label.split(' (')[0] : formData.assignedTo,
+    });
   };
 
   return (

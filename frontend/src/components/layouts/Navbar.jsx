@@ -41,8 +41,11 @@ export const Navbar = ({ onToggleSidebar, isSidebarCollapsed }) => {
 
   const loadEmployeeCount = useCallback(async () => {
     try {
-      const res = await userService.getUsers({ limit: 1 });
-      setEmployeeCount(res.totalItems || res.data?.length || 0);
+      const res = await userService.getUsers({ limit: 100 });
+      const employeeList = (res.data || res.results || []).filter(
+        (u) => u.username !== 'admin' && u.username !== 'crm_admin' && (u.role || '').toLowerCase() !== 'admin'
+      );
+      setEmployeeCount(employeeList.length);
     } catch (e) {
       console.error('Failed to load employee count:', e);
     }

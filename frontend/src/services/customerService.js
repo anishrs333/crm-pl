@@ -15,9 +15,9 @@ const normalizeCustomer = (c) => {
   if (!c) return c;
 
   const companyName = c.name || c.companyName || (c.email ? c.email.split('@')[1]?.split('.')[0]?.toUpperCase() + ' Corp' : 'Corporate Client');
-  const contactPerson = c.contactPerson || (c.contacts && c.contacts[0] ? `${c.contacts[0].first_name} ${c.contacts[0].last_name || ''}`.trim() : (c.first_name ? `${c.first_name} ${c.last_name || ''}`.trim() : 'David Miller'));
-  const email = c.email || (c.contacts && c.contacts[0] ? c.contacts[0].email : 'contact@client.com');
-  const phone = c.phone || (c.contacts && c.contacts[0] ? c.contacts[0].phone : '+91 9876543210');
+  const contactPerson = c.contact_person || c.contactPerson || (c.contacts && c.contacts[0] ? `${c.contacts[0].first_name} ${c.contacts[0].last_name || ''}`.trim() : (c.first_name ? `${c.first_name} ${c.last_name || ''}`.trim() : 'N/A'));
+  const email = c.email || (c.contacts && c.contacts[0] ? c.contacts[0].email : '');
+  const phone = c.phone || (c.contacts && c.contacts[0] ? c.contacts[0].phone : '');
   const assignedTo = c.account_manager_name || c.assignedTo || 'Unassigned';
   const city = c.city || c.location || '';
   
@@ -35,6 +35,7 @@ const normalizeCustomer = (c) => {
     name: companyName,
     companyName: companyName,
     contactPerson: contactPerson,
+    contact_person: contactPerson,
     email: email,
     phone: phone,
     city: city,
@@ -50,11 +51,12 @@ const normalizeCustomer = (c) => {
 const mapPayloadToBackend = (data) => {
   return {
     name: data.companyName || data.name || 'Corporate Client',
+    contact_person: data.contactPerson || data.contact_person || '',
     customer_type: data.customerType || 'company',
     email: data.email || '',
     phone: data.phone || '',
     address: data.address || '',
-    city: data.city || 'Chennai',
+    city: data.city || '',
     status: mapStatusToDjango(data.status || data.stage),
     account_manager: typeof data.accountManagerId === 'number' ? data.accountManagerId : null,
   };

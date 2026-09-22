@@ -13,6 +13,7 @@ class Customer(models.Model):
         VIP = 'vip', 'VIP / Key Account'
 
     name = models.CharField(max_length=200, db_index=True)
+    contact_person = models.CharField(max_length=200, blank=True, null=True, verbose_name="Primary Contact Person")
     customer_type = models.CharField(
         max_length=20,
         choices=CustomerType.choices,

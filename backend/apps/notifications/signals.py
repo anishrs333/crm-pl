@@ -19,7 +19,7 @@ def notify_lead_assigned(sender, instance, created, **kwargs):
             title="New Lead Assigned",
             message=f"You have been assigned to lead '{full_name}' ({company_display}).",
             notification_type=Notification.NotificationType.LEAD,
-            link_url=f"/leads/{instance.id}"
+            link_url="/leads"
         )
 
 

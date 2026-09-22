@@ -83,6 +83,22 @@ export const QuotationListPage = () => {
     }
   };
 
+  const handleDirectDownloadPdf = async (quotation) => {
+    try {
+      showToast(`Generating PDF for ${quotation.quotationNumber}...`, 'info', 1800);
+      const success = await quotationService.downloadPdf(quotation.id, quotation.quotationNumber);
+      if (success) {
+        showToast(`Quotation ${quotation.quotationNumber} PDF downloaded!`, 'success');
+      } else {
+        setSelectedQuotation(quotation);
+        setIsPrintPreviewOpen(true);
+      }
+    } catch (e) {
+      setSelectedQuotation(quotation);
+      setIsPrintPreviewOpen(true);
+    }
+  };
+
   const handleOpenDelete = (quotation) => {
     setSelectedQuotation(quotation);
     setIsDeleteModalOpen(true);

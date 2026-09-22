@@ -40,8 +40,8 @@ export const LeadModal = ({
         const list = res.data || res.results || [];
         if (list.length > 0) {
           const opts = list.map((u) => ({
-            value: u.name,
-            label: `${u.name} (${u.role || 'Staff'})`,
+            value: String(u.id),
+            label: `${u.name} (${u.role_label || u.role || 'Staff'})`,
           }));
           setAssigneeOptions([{ value: 'Unassigned', label: 'Unassigned' }, ...opts]);
         }
@@ -65,7 +65,7 @@ export const LeadModal = ({
         source: initialData.source || 'Website',
         status: initialData.status || 'New',
         estimatedValue: initialData.estimatedValue || '',
-        assignedTo: initialData.assignedTo || 'Unassigned',
+        assignedTo: initialData.assigned_to ? String(initialData.assigned_to) : (initialData.assignedTo || 'Unassigned'),
         score: initialData.score ?? 60,
       });
     } else {
@@ -116,7 +116,13 @@ export const LeadModal = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-    onSubmit(formData);
+    const selectedUserId = formData.assignedTo !== 'Unassigned' ? Number(formData.assignedTo) : null;
+    const selectedUserObj = assigneeOptions.find((o) => String(o.value) === String(formData.assignedTo));
+    onSubmit({
+      ...formData,
+      assignedToId: selectedUserId,
+      assignedTo: selectedUserObj ? selectedUserObj.label.split(' (')[0] : formData.assignedTo,
+    });
   };
 
   return (

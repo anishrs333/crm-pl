@@ -195,8 +195,8 @@ export const leadService = {
     const lastName = parts.slice(1).join(' ') || '';
 
     const payload = {
-      first_name: firstName,
-      last_name: lastName,
+      first_name: parts[0] || 'Prospect',
+      last_name: parts.slice(1).join(' ') || '',
       company_name: leadData.name || leadData.company_name || 'Corporate Prospect',
       email: leadData.email || '',
       phone: leadData.phone || '',
@@ -205,6 +205,11 @@ export const leadService = {
       priority: mapPriorityToDjango(leadData.priority),
       estimated_budget: Number(leadData.estimatedValue || leadData.estimated_budget) || 0,
     };
+
+    if (leadData.assignedToId !== undefined && leadData.assignedToId !== null && leadData.assignedToId !== 'Unassigned') {
+      const parsedId = Number(leadData.assignedToId);
+      if (!isNaN(parsedId) && parsedId > 0) payload.assigned_to = parsedId;
+    }
 
     if (isMockEnabled) {
       await mockDelay(null, 350);
@@ -238,6 +243,10 @@ export const leadService = {
     }
     if (leadData.name) payload.company_name = leadData.name;
     if (leadData.email !== undefined) payload.email = leadData.email;
+    if (leadData.assignedToId !== undefined && leadData.assignedToId !== null && leadData.assignedToId !== 'Unassigned') {
+      const parsedId = Number(leadData.assignedToId);
+      if (!isNaN(parsedId) && parsedId > 0) payload.assigned_to = parsedId;
+    }
     if (leadData.phone !== undefined) payload.phone = leadData.phone;
     if (leadData.status) payload.status = mapStatusToDjango(leadData.status);
     if (leadData.source) payload.source = mapSourceToDjango(leadData.source);

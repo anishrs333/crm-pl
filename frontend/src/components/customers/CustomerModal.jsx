@@ -40,8 +40,8 @@ export const CustomerModal = ({
         const list = res.data || res.results || [];
         if (list.length > 0) {
           const opts = list.map((u) => ({
-            value: u.name,
-            label: `${u.name} (${u.role || 'Staff'})`,
+            value: String(u.id),
+            label: `${u.name} (${u.role_label || u.role || 'Staff'})`,
           }));
           setAssigneeOptions([{ value: 'Unassigned', label: 'Unassigned' }, ...opts]);
         }
@@ -65,7 +65,7 @@ export const CustomerModal = ({
         stage: initialData.stage || 'Active',
         industry: initialData.industry || 'Enterprise Software',
         dealValue: initialData.dealValue || '',
-        assignedTo: initialData.assignedTo || 'Unassigned',
+        assignedTo: initialData.account_manager ? String(initialData.account_manager) : (initialData.assignedTo || 'Unassigned'),
         city: initialData.city || '',
       });
     } else {
@@ -95,19 +95,17 @@ export const CustomerModal = ({
   const validate = () => {
     const newErrors = {};
 
-    const compErr = validators.required(formData.companyName, 'Company Name');
-    if (compErr) newErrors.companyName = compErr;
+    const companyErr = validators.required(formData.companyName, 'Company Name');
+    if (companyErr) newErrors.companyName = companyErr;
 
     const personErr = validators.required(formData.contactPerson, 'Contact Person');
     if (personErr) newErrors.contactPerson = personErr;
 
-    const emailErr = validators.required(formData.email, 'Email') || validators.email(formData.email);
+    const emailErr = validators.email(formData.email);
     if (emailErr) newErrors.email = emailErr;
 
-    if (formData.dealValue) {
-      const valErr = validators.isPositiveNumber(formData.dealValue, 'Deal Value');
-      if (valErr) newErrors.dealValue = valErr;
-    }
+    const phoneErr = validators.phone(formData.phone);
+    if (phoneErr) newErrors.phone = phoneErr;
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -116,7 +114,13 @@ export const CustomerModal = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-    onSubmit(formData);
+    const selectedUserId = formData.assignedTo !== 'Unassigned' ? Number(formData.assignedTo) : null;
+    const selectedUserObj = assigneeOptions.find((o) => String(o.value) === String(formData.assignedTo));
+    onSubmit({
+      ...formData,
+      accountManagerId: selectedUserId,
+      assignedTo: selectedUserObj ? selectedUserObj.label.split(' (')[0] : formData.assignedTo,
+    });
   };
 
   return (

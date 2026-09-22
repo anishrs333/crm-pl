@@ -40,6 +40,7 @@ class CustomerListSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'name',
+            'contact_person',
             'customer_type',
             'customer_type_label',
             'email',
@@ -64,6 +65,7 @@ class CustomerDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id',
             'name',
+            'contact_person',
             'customer_type',
             'email',
             'phone',

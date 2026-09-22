@@ -20,6 +20,8 @@ class LoginSerializer(TokenObtainPairSerializer):
 
 class UserListSerializer(serializers.ModelSerializer):
     role_label = serializers.CharField(source='get_role_display', read_only=True)
+    assigned_leads_count = serializers.SerializerMethodField()
+    assigned_customers_count = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -36,8 +38,16 @@ class UserListSerializer(serializers.ModelSerializer):
             'designation',
             'is_active',
             'date_joined',
+            'assigned_leads_count',
+            'assigned_customers_count',
         ]
         read_only_fields = ['id', 'date_joined']
+
+    def get_assigned_leads_count(self, obj):
+        return getattr(obj, 'assigned_leads', None).count() if hasattr(obj, 'assigned_leads') else 0
+
+    def get_assigned_customers_count(self, obj):
+        return getattr(obj, 'customers', None).count() if hasattr(obj, 'customers') else 0
 
 
 class CreateUserSerializer(serializers.ModelSerializer):

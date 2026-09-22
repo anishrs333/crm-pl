@@ -75,7 +75,7 @@ const normalizeQuotation = (q) => {
     createdDate: q.created_at ? q.created_at.split('T')[0] : (q.createdDate || new Date().toISOString().split('T')[0]),
     validUntil: q.valid_until || q.validUntil || '',
     status: statusDisplay,
-    terms: q.terms_and_conditions || q.terms || '1. 50% advance payment along with official work order.\n2. 30% milestone payment upon UAT release.\n3. 20% on final sign-off & code handover.\n4. Standard 1 year warranty & critical bug fixes included.',
+    terms: q.terms_and_conditions || q.terms || '',
     notes: q.notes || '',
     subtotal: finalSubtotal,
     taxTotal: finalTaxTotal,
@@ -265,20 +265,48 @@ export const quotationService = {
 
   downloadPdf: async (id, quotationNumber = 'QT-2026-0001') => {
     try {
-      const token = localStorage.getItem('crm_access_token');
-      const response = await fetch(`http://127.0.0.1:8000/api/quotations/${id}/pdf/`, {
+      const token = storage.getAccessToken();
+      const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api';
+      const pdfUrl = `${API_BASE_URL}/quotations/${id}/pdf/`;
+
+      const response = await fetch(pdfUrl, {
         headers: token ? { Authorization: `Bearer ${token}` } : {},
       });
+
       if (response.ok) {
         const blob = await response.blob();
+        const fileName = `Quotation_${quotationNumber}.pdf`;
+
+        // Cross-platform handling for Web + APK / Mobile WebViews
+        const isMobileApp = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent) || window.Android || window.Capacitor || window.Cordova;
+
+        if (isMobileApp) {
+          return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+              const base64data = reader.result;
+              const link = document.createElement('a');
+              link.href = base64data;
+              link.download = fileName;
+              link.target = '_blank';
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              resolve(true);
+            };
+            reader.onerror = () => resolve(false);
+            reader.readAsDataURL(blob);
+          });
+        }
+
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `Quotation_${quotationNumber}.pdf`;
+        link.download = fileName;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
-        window.URL.revokeObjectURL(url);
+        setTimeout(() => window.URL.revokeObjectURL(url), 1000);
         return true;
       }
     } catch (e) {

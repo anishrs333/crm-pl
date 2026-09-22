@@ -37,7 +37,7 @@ const mapStatusToDjango = (st) => {
 const normalizeTask = (t) => {
   if (!t) return t;
 
-  let statusDisplay = t.status || 'Pending';
+  let statusDisplay = t.status_label || t.status || 'Pending';
   const s = String(t.status || '').toLowerCase();
   if (s === 'pending') statusDisplay = 'Pending';
   else if (s === 'in_progress') statusDisplay = 'In Progress';
@@ -52,18 +52,22 @@ const normalizeTask = (t) => {
   else if (tp === 'follow_up') typeDisplay = 'Follow-up';
   else if (tp === 'demo') typeDisplay = 'Product Demo';
 
+  const assignedName = t.assigned_to_name || (t.assigned_to && typeof t.assigned_to === 'object' ? (t.assigned_to.first_name ? `${t.assigned_to.first_name} ${t.assigned_to.last_name || ''}`.trim() : t.assigned_to.username) : t.assignedTo) || 'Unassigned';
+
   return {
     ...t,
     id: t.id,
     title: t.title || 'Task',
     description: t.description || '',
+    category: t.category || 'Sales',
     taskType: typeDisplay,
     type: typeDisplay,
-    priority: t.priority || 'Medium',
+    priority: t.priority_label || t.priority || 'Medium',
     status: statusDisplay,
     dueDate: t.due_date ? t.due_date.split('T')[0] : (t.dueDate || ''),
     due_date: t.due_date || t.dueDate || '',
-    assignedTo: t.assigned_to_name || t.assignedTo || 'Unassigned',
+    assignedTo: assignedName,
+    assigned_to_name: assignedName,
   };
 };
 
@@ -71,11 +75,19 @@ const mapPayloadToBackend = (data) => {
   const payload = {
     title: data.title || 'Task Item',
     description: data.description || data.notes || '',
-    task_type: mapTaskTypeToDjango(data.taskType || data.task_type || data.type),
+    category: data.category || 'Sales',
+    task_type: mapTaskTypeToDjango(data.taskType || data.task_type || data.type || data.category),
     priority: mapPriorityToDjango(data.priority),
     status: mapStatusToDjango(data.status),
     due_date: data.dueDate || data.due_date || data.scheduledDate || null,
   };
+
+  if (data.assignedToId !== undefined && data.assignedToId !== null && data.assignedToId !== 'Unassigned') {
+    const parsedId = Number(data.assignedToId);
+    if (!isNaN(parsedId) && parsedId > 0) payload.assigned_to = parsedId;
+  } else if (typeof data.assigned_to === 'number') {
+    payload.assigned_to = data.assigned_to;
+  }
 
   if (typeof data.lead === 'number') payload.lead = data.lead;
   if (typeof data.customer === 'number') payload.customer = data.customer;

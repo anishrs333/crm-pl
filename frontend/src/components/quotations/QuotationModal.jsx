@@ -29,7 +29,7 @@ export const QuotationModal = ({
     validUntil: '',
     status: 'Draft',
     assignedTo: 'Unassigned',
-    terms: '1. 50% advance payment along with official work order.\n2. 30% milestone payment upon UAT release.\n3. 20% on final sign-off & code handover.\n4. Standard 1 year warranty & critical bug fixes included.',
+    terms: '',
     items: [],
   });
 
@@ -81,16 +81,16 @@ export const QuotationModal = ({
         validUntil: expiry,
         status: 'Draft',
         assignedTo: 'Unassigned',
-        terms: '1. 50% advance payment along with official work order.\n2. 30% milestone payment upon UAT release.\n3. 20% on final sign-off & code handover.\n4. Standard 1 year warranty & critical bug fixes included.',
+        terms: '',
         items: [
           {
-            name: 'Enterprise CRM Core Platform',
-            description: 'Enterprise CRM Core Platform',
+            name: '',
+            description: '',
             quantity: 1,
-            unitPrice: 75000,
+            unitPrice: '',
             discountPercentage: 0,
             taxPercentage: 18,
-            lineTotal: 88500,
+            lineTotal: 0,
           },
         ],
       });
@@ -100,7 +100,7 @@ export const QuotationModal = ({
 
   // Recalculate line total for an item
   const calculateLineTotal = (item) => {
-    const qty = Number(item.quantity) || 1;
+    const qty = Number(item.quantity) || 0;
     const price = Number(item.unitPrice) || 0;
     const discount = Number(item.discountPercentage) || 0;
     const tax = Number(item.taxPercentage) || 18;
@@ -130,13 +130,13 @@ export const QuotationModal = ({
 
   const handleAddItem = () => {
     const newItem = {
-      name: 'Custom Service / Item',
-      description: 'Deliverable details',
+      name: '',
+      description: '',
       quantity: 1,
-      unitPrice: 10000,
+      unitPrice: '',
       discountPercentage: 0,
       taxPercentage: 18,
-      lineTotal: 11800,
+      lineTotal: 0,
     };
     newItem.lineTotal = calculateLineTotal(newItem);
     setFormData((prev) => ({ ...prev, items: [...prev.items, newItem] }));

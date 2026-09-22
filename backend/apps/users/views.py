@@ -1,4 +1,3 @@
-from django.contrib.auth import login as django_login, logout as django_logout
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -17,30 +16,6 @@ from .serializers import (
 
 class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
-
-    def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
-        if response.status_code == 200:
-            access_token = response.data.get('access')
-            refresh_token = response.data.get('refresh')
-            
-            if access_token:
-                response.set_cookie(
-                    'access_token',
-                    access_token,
-                    httponly=True,
-                    samesite='Lax',
-                    max_age=3600
-                )
-            if refresh_token:
-                response.set_cookie(
-                    'refresh_token',
-                    refresh_token,
-                    httponly=True,
-                    samesite='Lax',
-                    max_age=7 * 86400
-                )
-        return response
 
 
 class UserViewSet(viewsets.ModelViewSet):
@@ -61,13 +36,6 @@ class UserViewSet(viewsets.ModelViewSet):
         if self.action in ('list', 'retrieve', 'update', 'partial_update'):
             return [IsManager()]
         return [IsAuthenticated()]
-
-    def perform_update(self, serializer):
-        user = serializer.save()
-        new_password = self.request.data.get('password')
-        if new_password and str(new_password).strip():
-            user.set_password(str(new_password).strip())
-            user.save()
 
     @action(detail=False, methods=['get', 'patch'], url_path='me')
     def me(self, request):
@@ -104,6 +72,31 @@ class UserViewSet(viewsets.ModelViewSet):
         user.save()
         return Response(
             {'message': f'Password updated successfully for user {user.username}.'},
+            status=status.HTTP_200_OK
+        )
+
+    @action(detail=False, methods=['post'], url_path='change-password')
+    def change_password(self, request):
+        user = request.user
+        old_password = request.data.get('old_password') or request.data.get('current_password')
+        new_password = request.data.get('new_password') or request.data.get('password')
+
+        if old_password and not user.check_password(str(old_password).strip()):
+            return Response(
+                {'message': 'Current password is incorrect. Please verify and try again.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not new_password or len(str(new_password).strip()) < 4:
+            return Response(
+                {'message': 'New password must be at least 4 characters long.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.set_password(str(new_password).strip())
+        user.save()
+        return Response(
+            {'message': 'Password changed successfully.'},
             status=status.HTTP_200_OK
         )
 

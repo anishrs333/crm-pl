@@ -25,6 +25,7 @@ class Task(models.Model):
 
     title = models.CharField(max_length=200, db_index=True)
     description = models.TextField(blank=True, null=True)
+    category = models.CharField(max_length=100, blank=True, null=True, default='Sales')
     task_type = models.CharField(
         max_length=20,
         choices=TaskType.choices,

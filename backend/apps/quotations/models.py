@@ -58,7 +58,7 @@ class Quotation(models.Model):
     terms_and_conditions = models.TextField(
         blank=True,
         null=True,
-        default="1. Quotation valid for 30 days.\n2. Payment terms: 50% advance, 50% upon delivery."
+        default=""
     )
     notes = models.TextField(blank=True, null=True)
 

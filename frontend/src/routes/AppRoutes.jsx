@@ -3,7 +3,6 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from './ProtectedRoute';
 import { MainLayout } from '../components/layouts/MainLayout';
 
-
 import { LoginPage } from '../pages/auth/LoginPage';
 import { DashboardPage } from '../pages/dashboard/DashboardPage';
 import { UserListPage } from '../pages/users/UserListPage';
@@ -15,7 +14,6 @@ import { QuotationListPage } from '../pages/quotations/QuotationListPage';
 import { ProductListPage } from '../pages/products/ProductListPage';
 import { TaskListPage } from '../pages/tasks/TaskListPage';
 import { ReportsPage } from '../pages/reports/ReportsPage';
-import { RolePermissionPage } from '../pages/permissions/RolePermissionPage';
 import { SettingsPage } from '../pages/settings/SettingsPage';
 import { NotFoundPage } from '../pages/common/NotFoundPage';
 
@@ -36,6 +34,7 @@ export const AppRoutes = () => {
       >
         <Route path="/dashboard" element={<DashboardPage />} />
         <Route path="/leads" element={<LeadListPage />} />
+        <Route path="/leads/:id" element={<LeadListPage />} />
         <Route path="/follow-ups" element={<FollowUpListPage />} />
         <Route path="/opportunities" element={<OpportunityListPage />} />
         <Route path="/quotations" element={<QuotationListPage />} />
@@ -61,6 +60,5 @@ export const AppRoutes = () => {
     </Routes>
   );
 };
-
 
 export default AppRoutes;
