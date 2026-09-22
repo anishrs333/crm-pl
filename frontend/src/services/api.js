@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const isMockEnabled = () => false;
+export const isMockEnabled = false;
 export const mockDelay = async (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const api  = axios.create({
