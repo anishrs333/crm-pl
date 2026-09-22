@@ -3,6 +3,14 @@ import { initialCustomers } from './mockData';
 
 let mockCustomersList = [...initialCustomers];
 
+const mapStatusToDjango = (st) => {
+  if (!st) return 'active';
+  const s = String(st).toLowerCase();
+  if (s.includes('vip')) return 'vip';
+  if (s.includes('inact')) return 'inactive';
+  return 'active';
+};
+
 const normalizeCustomer = (c) => {
   if (!c) return c;
 
@@ -10,10 +18,16 @@ const normalizeCustomer = (c) => {
   const contactPerson = c.contactPerson || (c.contacts && c.contacts[0] ? `${c.contacts[0].first_name} ${c.contacts[0].last_name || ''}`.trim() : (c.first_name ? `${c.first_name} ${c.last_name || ''}`.trim() : 'David Miller'));
   const email = c.email || (c.contacts && c.contacts[0] ? c.contacts[0].email : 'contact@client.com');
   const phone = c.phone || (c.contacts && c.contacts[0] ? c.contacts[0].phone : '+91 9876543210');
-  const assignedTo = c.account_manager_name || c.assignedTo || 'Alex Rivera';
-  const city = c.city || c.location || 'Chennai';
-  const stage = c.status_label || c.stage || (c.status ? c.status.charAt(0).toUpperCase() + c.status.slice(1) : 'Active');
-  const dealValue = Number(c.deal_value || c.dealValue || (c.id ? (Number(c.id) * 125000) % 500000 + 150000 : 250000));
+  const assignedTo = c.account_manager_name || c.assignedTo || 'Unassigned';
+  const city = c.city || c.location || '';
+  
+  let statusDisplay = c.status_label || c.stage || 'Active';
+  const st = String(c.status || '').toLowerCase();
+  if (st === 'active') statusDisplay = 'Active';
+  else if (st === 'inactive') statusDisplay = 'Inactive';
+  else if (st === 'vip') statusDisplay = 'VIP / Key Account';
+
+  const dealValue = Number(c.deal_value || c.dealValue || 0);
 
   return {
     ...c,
@@ -25,7 +39,7 @@ const normalizeCustomer = (c) => {
     phone: phone,
     city: city,
     location: city,
-    stage: stage,
+    stage: statusDisplay,
     status: c.status || 'active',
     assignedTo: assignedTo,
     account_manager_name: assignedTo,
@@ -35,30 +49,19 @@ const normalizeCustomer = (c) => {
 
 const mapPayloadToBackend = (data) => {
   return {
-    name: data.companyName || data.name,
+    name: data.companyName || data.name || 'Corporate Client',
     customer_type: data.customerType || 'company',
-    email: data.email,
-    phone: data.phone,
-    address: data.address,
+    email: data.email || '',
+    phone: data.phone || '',
+    address: data.address || '',
     city: data.city || 'Chennai',
-    status: (data.status || data.stage || 'active').toLowerCase(),
+    status: mapStatusToDjango(data.status || data.stage),
     account_manager: typeof data.accountManagerId === 'number' ? data.accountManagerId : null,
   };
 };
 
 export const customerService = {
   getCustomers: async ({ page = 1, limit = 10, search = '', stage = '' } = {}) => {
-    const mapStageToDjango = (stg) => {
-      if (!stg) return '';
-      const s = String(stg).toLowerCase();
-      if (s.includes('active')) return 'active';
-      if (s.includes('ongoing') || s.includes('lead') || s.includes('prospect')) return 'lead';
-      if (s.includes('won')) return 'won';
-      if (s.includes('lost')) return 'lost';
-      if (s.includes('inactive')) return 'inactive';
-      return s;
-    };
-
     if (isMockEnabled) {
       await mockDelay(null, 250);
 
@@ -100,7 +103,7 @@ export const customerService = {
       if (limit) params.append('limit', limit);
       if (search) params.append('search', search);
       if (stage && stage !== 'All') {
-        const djangoStatus = mapStageToDjango(stage);
+        const djangoStatus = mapStatusToDjango(stage);
         if (djangoStatus) params.append('status', djangoStatus);
       }
 
@@ -142,42 +145,41 @@ export const customerService = {
   createCustomer: async (customerData) => {
     if (isMockEnabled) {
       await mockDelay(null, 350);
-
-      const newCustomer = {
+      const newCustomer = normalizeCustomer({
         ...customerData,
         id: `cust-${Date.now().toString().slice(-4)}`,
-        dealValue: Number(customerData.dealValue) || 250000,
         createdAt: new Date().toISOString(),
-      };
-
+      });
       mockCustomersList = [newCustomer, ...mockCustomersList];
-      return normalizeCustomer(newCustomer);
+      return newCustomer;
     }
 
     const payload = mapPayloadToBackend(customerData);
     const res = await api.post('/customers/', payload);
-    return normalizeCustomer(res);
+    const normalized = normalizeCustomer(res);
+    mockCustomersList = [normalized, ...mockCustomersList];
+    return normalized;
   },
 
   updateCustomer: async (id, customerData) => {
     if (isMockEnabled) {
       await mockDelay(null, 350);
-
       const index = mockCustomersList.findIndex((c) => c.id === id);
       if (index === -1) throw new Error('Customer not found.');
-
-      const updated = {
+      const updated = normalizeCustomer({
         ...mockCustomersList[index],
         ...customerData,
-      };
-
+      });
       mockCustomersList[index] = updated;
-      return normalizeCustomer(updated);
+      return updated;
     }
 
     const payload = mapPayloadToBackend(customerData);
     const res = await api.patch(`/customers/${id}/`, payload);
-    return normalizeCustomer(res);
+    const normalized = normalizeCustomer(res);
+    const index = mockCustomersList.findIndex((c) => c.id === id);
+    if (index !== -1) mockCustomersList[index] = normalized;
+    return normalized;
   },
 
   deleteCustomer: async (id) => {
@@ -186,7 +188,9 @@ export const customerService = {
       mockCustomersList = mockCustomersList.filter((c) => c.id !== id);
       return { success: true };
     }
-    return await api.delete(`/customers/${id}/`);
+    await api.delete(`/customers/${id}/`);
+    mockCustomersList = mockCustomersList.filter((c) => c.id !== id);
+    return { success: true };
   },
 };
 

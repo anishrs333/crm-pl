@@ -84,7 +84,7 @@ const mapDjangoLeadToFrontend = (lead) => {
     priority: lead.priority_label || lead.priority || 'Medium',
     estimatedValue: Number(lead.estimated_budget || lead.estimatedValue) || 0,
     score: lead.score || 50,
-    assignedTo: lead.assigned_to_name || lead.assignedTo || 'Jessica Chen',
+    assignedTo: lead.assigned_to_name || lead.assignedTo || 'Unassigned',
   };
 };
 
@@ -218,18 +218,13 @@ export const leadService = {
       return newLead;
     }
 
-    try {
-      const created = await api.post('/leads/', payload);
-      const mapped = mapDjangoLeadToFrontend({
-        ...created,
-        contactName: contactStr,
-      });
-      mockLeadsList = [mapped, ...mockLeadsList];
-      return mapped;
-    } catch (err) {
-      console.error('Failed to create lead in Django:', err);
-      throw err;
-    }
+    const created = await api.post('/leads/', payload);
+    const mapped = mapDjangoLeadToFrontend({
+      ...created,
+      contactName: contactStr,
+    });
+    mockLeadsList = [mapped, ...mockLeadsList];
+    return mapped;
   },
 
   updateLead: async (id, leadData) => {
@@ -257,20 +252,11 @@ export const leadService = {
       return mapDjangoLeadToFrontend(mockLeadsList[index] || { id, ...leadData });
     }
 
-    try {
-      const updated = await api.patch(`/leads/${id}/`, payload);
-      const mapped = mapDjangoLeadToFrontend(updated);
-      const index = mockLeadsList.findIndex((l) => l.id === id);
-      if (index !== -1) mockLeadsList[index] = mapped;
-      return mapped;
-    } catch (err) {
-      const index = mockLeadsList.findIndex((l) => l.id === id);
-      if (index !== -1) {
-        mockLeadsList[index] = mapDjangoLeadToFrontend({ ...mockLeadsList[index], ...leadData });
-        return mockLeadsList[index];
-      }
-      return mapDjangoLeadToFrontend({ id, ...leadData });
-    }
+    const updated = await api.patch(`/leads/${id}/`, payload);
+    const mapped = mapDjangoLeadToFrontend(updated);
+    const index = mockLeadsList.findIndex((l) => l.id === id);
+    if (index !== -1) mockLeadsList[index] = mapped;
+    return mapped;
   },
 
   convertLead: async (id, conversionData) => {
@@ -280,11 +266,7 @@ export const leadService = {
       if (lead) lead.status = 'Won';
       return { message: 'Lead converted successfully!' };
     }
-    try {
-      return await api.post(`/leads/${id}/convert/`, conversionData);
-    } catch (err) {
-      return { message: 'Lead converted' };
-    }
+    return await api.post(`/leads/${id}/convert/`, conversionData);
   },
 
   addLeadNote: async (id, note) => {
@@ -292,11 +274,7 @@ export const leadService = {
       await mockDelay(null, 200);
       return { id: Date.now(), note, created_at: new Date().toISOString() };
     }
-    try {
-      return await api.post(`/leads/${id}/add-note/`, { note });
-    } catch (err) {
-      return { id: Date.now(), note };
-    }
+    return await api.post(`/leads/${id}/add-note/`, { note });
   },
 
   deleteLead: async (id) => {
@@ -305,14 +283,9 @@ export const leadService = {
       mockLeadsList = mockLeadsList.filter((l) => l.id !== id);
       return { success: true };
     }
-    try {
-      await api.delete(`/leads/${id}/`);
-      mockLeadsList = mockLeadsList.filter((l) => l.id !== id);
-      return { success: true };
-    } catch (err) {
-      mockLeadsList = mockLeadsList.filter((l) => l.id !== id);
-      return { success: true };
-    }
+    await api.delete(`/leads/${id}/`);
+    mockLeadsList = mockLeadsList.filter((l) => l.id !== id);
+    return { success: true };
   },
 };
 

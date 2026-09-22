@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../modals/Modal';
 import { FormField } from '../forms/FormField';
 import { Button } from '../common/Button';
+import { userService } from '../../services/userService';
 import { validators } from '../../utils/validators';
 import { Calendar, User, PhoneCall, Building2 } from 'lucide-react';
 import './FollowUpModal.css';
@@ -15,6 +16,10 @@ export const FollowUpModal = ({
 }) => {
   const isEditing = Boolean(initialData);
 
+  const [assigneeOptions, setAssigneeOptions] = useState([
+    { value: 'Unassigned', label: 'Unassigned' }
+  ]);
+
   const [formData, setFormData] = useState({
     title: '',
     entityType: 'Customer',
@@ -22,12 +27,34 @@ export const FollowUpModal = ({
     contactPerson: '',
     type: 'Call',
     scheduledDate: '',
-    assignedTo: 'Alex Rivera',
+    assignedTo: 'Unassigned',
     status: 'Pending',
     notes: '',
   });
 
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    const fetchAssignees = async () => {
+      try {
+        const res = await userService.getUsers({ limit: 100 });
+        const list = res.data || res.results || [];
+        if (list.length > 0) {
+          const opts = list.map((u) => ({
+            value: u.name,
+            label: `${u.name} (${u.role || 'Staff'})`,
+          }));
+          setAssigneeOptions([{ value: 'Unassigned', label: 'Unassigned' }, ...opts]);
+        }
+      } catch (e) {
+        console.warn('Failed to load assignees for follow-up modal:', e);
+      }
+    };
+
+    if (isOpen) {
+      fetchAssignees();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (initialData) {
@@ -38,7 +65,7 @@ export const FollowUpModal = ({
         contactPerson: initialData.contactPerson || '',
         type: initialData.type || 'Call',
         scheduledDate: initialData.scheduledDate || '',
-        assignedTo: initialData.assignedTo || 'Alex Rivera',
+        assignedTo: initialData.assignedTo || 'Unassigned',
         status: initialData.status || 'Pending',
         notes: initialData.notes || '',
       });
@@ -50,7 +77,7 @@ export const FollowUpModal = ({
         contactPerson: '',
         type: 'Call',
         scheduledDate: new Date(Date.now() + 86400000).toISOString().slice(0, 16),
-        assignedTo: 'Alex Rivera',
+        assignedTo: 'Unassigned',
         status: 'Pending',
         notes: '',
       });
@@ -184,12 +211,7 @@ export const FollowUpModal = ({
             value={formData.assignedTo}
             onChange={handleChange}
             icon={User}
-            options={[
-              { value: 'Alex Rivera', label: 'Alex Rivera (Sales Lead)' },
-              { value: 'Jessica Chen', label: 'Jessica Chen (Account Exec)' },
-              { value: 'Sarah Connor', label: 'Sarah Connor (VP Sales)' },
-              { value: 'Marcus Vance', label: 'Marcus Vance (Customer Rep)' },
-            ]}
+            options={assigneeOptions}
           />
 
           <div style={{ gridColumn: '1 / -1' }}>

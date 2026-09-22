@@ -46,3 +46,21 @@
   font-weight: 700;
   font-size: 0.8rem;
 }
+
+/* Print / PDF Document Styling */
+@media print {
+  aside, nav, header, button, .reports-header button {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+  .reports-container {
+    padding: 0 !important;
+    gap: 16px !important;
+  }
+  .reports-metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../modals/Modal';
 import { FormField } from '../forms/FormField';
 import { Button } from '../common/Button';
+import { userService } from '../../services/userService';
 import { validators } from '../../utils/validators';
 import { CheckSquare, Calendar, User, Tag } from 'lucide-react';
 
@@ -14,17 +15,43 @@ export const TaskModal = ({
 }) => {
   const isEditing = Boolean(initialData);
 
+  const [assigneeOptions, setAssigneeOptions] = useState([
+    { value: 'Unassigned', label: 'Unassigned' }
+  ]);
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     dueDate: '',
     priority: 'Medium',
     status: 'Pending',
-    assignedTo: 'Alex Rivera',
+    assignedTo: 'Unassigned',
     category: 'Sales',
   });
 
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    const fetchAssignees = async () => {
+      try {
+        const res = await userService.getUsers({ limit: 100 });
+        const list = res.data || res.results || [];
+        if (list.length > 0) {
+          const opts = list.map((u) => ({
+            value: u.name,
+            label: `${u.name} (${u.role || 'Staff'})`,
+          }));
+          setAssigneeOptions([{ value: 'Unassigned', label: 'Unassigned' }, ...opts]);
+        }
+      } catch (e) {
+        console.warn('Failed to load assignees for task modal:', e);
+      }
+    };
+
+    if (isOpen) {
+      fetchAssignees();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (initialData) {
@@ -34,7 +61,7 @@ export const TaskModal = ({
         dueDate: initialData.dueDate || '',
         priority: initialData.priority || 'Medium',
         status: initialData.status || 'Pending',
-        assignedTo: initialData.assignedTo || 'Alex Rivera',
+        assignedTo: initialData.assignedTo || 'Unassigned',
         category: initialData.category || 'Sales',
       });
     } else {
@@ -44,7 +71,7 @@ export const TaskModal = ({
         dueDate: new Date().toISOString().split('T')[0],
         priority: 'Medium',
         status: 'Pending',
-        assignedTo: 'Alex Rivera',
+        assignedTo: 'Unassigned',
         category: 'Sales',
       });
     }
@@ -167,12 +194,7 @@ export const TaskModal = ({
               value={formData.assignedTo}
               onChange={handleChange}
               icon={User}
-              options={[
-                { value: 'Alex Rivera', label: 'Alex Rivera (Manager)' },
-                { value: 'Jessica Chen', label: 'Jessica Chen (Sales)' },
-                { value: 'Sarah Connor', label: 'Sarah Connor (Admin)' },
-                { value: 'Marcus Vance', label: 'Marcus Vance (Support)' },
-              ]}
+              options={assigneeOptions}
             />
           </div>
 

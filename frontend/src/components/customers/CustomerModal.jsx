@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../modals/Modal';
 import { FormField } from '../forms/FormField';
 import { Button } from '../common/Button';
+import { userService } from '../../services/userService';
 import { validators } from '../../utils/validators';
-import { Building2, User, Mail, Phone, DollarSign, MapPin } from 'lucide-react';
+import { Building2, User, Mail, Phone, MapPin } from 'lucide-react';
 
 export const CustomerModal = ({
   isOpen,
@@ -14,6 +15,10 @@ export const CustomerModal = ({
 }) => {
   const isEditing = Boolean(initialData);
 
+  const [assigneeOptions, setAssigneeOptions] = useState([
+    { value: 'Unassigned', label: 'Unassigned' }
+  ]);
+
   const [formData, setFormData] = useState({
     companyName: '',
     contactPerson: '',
@@ -22,11 +27,33 @@ export const CustomerModal = ({
     stage: 'Active',
     industry: 'Enterprise Software',
     dealValue: '',
-    assignedTo: 'Alex Rivera',
+    assignedTo: 'Unassigned',
     city: '',
   });
 
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    const fetchAssignees = async () => {
+      try {
+        const res = await userService.getUsers({ limit: 100 });
+        const list = res.data || res.results || [];
+        if (list.length > 0) {
+          const opts = list.map((u) => ({
+            value: u.name,
+            label: `${u.name} (${u.role || 'Staff'})`,
+          }));
+          setAssigneeOptions([{ value: 'Unassigned', label: 'Unassigned' }, ...opts]);
+        }
+      } catch (e) {
+        console.warn('Failed to load assignees for customer modal:', e);
+      }
+    };
+
+    if (isOpen) {
+      fetchAssignees();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (initialData) {
@@ -38,7 +65,7 @@ export const CustomerModal = ({
         stage: initialData.stage || 'Active',
         industry: initialData.industry || 'Enterprise Software',
         dealValue: initialData.dealValue || '',
-        assignedTo: initialData.assignedTo || 'Alex Rivera',
+        assignedTo: initialData.assignedTo || 'Unassigned',
         city: initialData.city || '',
       });
     } else {
@@ -50,7 +77,7 @@ export const CustomerModal = ({
         stage: 'Active',
         industry: 'Enterprise Software',
         dealValue: '',
-        assignedTo: 'Alex Rivera',
+        assignedTo: 'Unassigned',
         city: '',
       });
     }
@@ -194,12 +221,7 @@ export const CustomerModal = ({
             type="select"
             value={formData.assignedTo}
             onChange={handleChange}
-            options={[
-              { value: 'Sarah Connor', label: 'Sarah Connor (Admin)' },
-              { value: 'Alex Rivera', label: 'Alex Rivera (Manager)' },
-              { value: 'Jessica Chen', label: 'Jessica Chen (Sales)' },
-              { value: 'Marcus Vance', label: 'Marcus Vance (Support)' },
-            ]}
+            options={assigneeOptions}
           />
         </div>
       </form>

@@ -3,6 +3,16 @@ import { initialUsers } from './mockData';
 
 let mockUsersList = [...initialUsers];
 
+const mapRoleToDjango = (rl) => {
+  if (!rl) return 'sales_rep';
+  const r = String(rl).toLowerCase();
+  if (r.includes('admin')) return 'admin';
+  if (r.includes('manager')) return 'manager';
+  if (r.includes('rep') || r.includes('sales')) return 'sales_rep';
+  if (r.includes('supp')) return 'support';
+  return 'sales_rep';
+};
+
 export const normalizeUser = (u) => {
   if (!u) return {};
 
@@ -14,11 +24,8 @@ export const normalizeUser = (u) => {
   } else if (u.username) {
     const cleanUser = u.username.replace(/^@/, '');
     const knownNames = {
-      jessica_sales: 'Jessica Chen',
-      alex_manager: 'Alex Rivera',
-      anishrs: 'Anish Sharma',
-      abishek: 'Abishek Kumar',
-      anish: 'Anish Admin',
+      crm_admin: 'CRM Admin',
+      manager_crm: 'CRM Manager',
     };
     if (knownNames[cleanUser]) {
       name = knownNames[cleanUser];
@@ -35,8 +42,9 @@ export const normalizeUser = (u) => {
   let roleLabel = u.role_label || u.role || 'Sales Representative';
   const roleLower = String(roleLabel).toLowerCase();
   if (roleLower === 'admin' || roleLower === 'administrator') roleLabel = 'Administrator';
-  else if (roleLower === 'sales_manager' || roleLower === 'manager') roleLabel = 'Sales Manager';
+  else if (roleLower === 'manager' || roleLower === 'sales_manager') roleLabel = 'Sales Manager';
   else if (roleLower === 'sales_rep' || roleLower === 'representative') roleLabel = 'Sales Representative';
+  else if (roleLower === 'support') roleLabel = 'Support';
 
   let dept = u.department || u.designation || 'Sales & Accounts';
   if (dept === 'Sales') dept = 'Sales & Accounts';
@@ -45,31 +53,43 @@ export const normalizeUser = (u) => {
   const statusLabel = isActive ? 'Active' : 'Inactive';
 
   return {
+    ...u,
     id: u.id,
     name,
     username: u.username ? u.username.replace(/^@/, '') : name.toLowerCase().replace(/\s+/g, '_'),
     email: u.email || `${u.username || 'emp'}@plsofttech.com`,
-    phone: u.phone || '+91 98765 43210',
+    phone: u.phone || '',
     role: roleLabel,
     department: dept,
     status: statusLabel,
     is_active: isActive,
     createdAt: u.date_joined || u.createdAt || new Date().toISOString(),
     lastLogin: u.last_login || u.lastLogin,
-    assignedLeadsCount: u.assigned_leads_count ?? u.assignedLeadsCount ?? (name.includes('Alex') ? 8 : name.includes('Jessica') ? 5 : 4),
-    assignedCustomersCount: u.assigned_customers_count ?? u.assignedCustomersCount ?? (name.includes('Alex') ? 4 : name.includes('Jessica') ? 3 : 2),
-    managedVolume: u.managed_volume || u.managedVolume || '₹ 28,50,000',
+    assignedLeadsCount: u.assigned_leads_count ?? u.assignedLeadsCount ?? 0,
+    assignedCustomersCount: u.assigned_customers_count ?? u.assignedCustomersCount ?? 0,
+    managedVolume: u.managed_volume || u.managedVolume || '₹ 0',
   };
 };
 
-const mapRoleToDjango = (rl) => {
-  if (!rl) return '';
-  const r = String(rl).toLowerCase();
-  if (r.includes('admin')) return 'admin';
-  if (r.includes('manager')) return 'sales_manager';
-  if (r.includes('rep') || r.includes('sales')) return 'sales_rep';
-  if (r.includes('cust')) return 'customer_rep';
-  return r;
+const mapPayloadToBackend = (data) => {
+  const nameStr = data.name || `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'Employee';
+  const parts = nameStr.split(' ');
+  const firstName = parts[0] || 'Employee';
+  const lastName = parts.slice(1).join(' ') || '';
+
+  const cleanUser = (data.username || data.email ? (data.email || '').split('@')[0] : firstName.toLowerCase()).replace(/[^a-zA-Z0-9_]/g, '_');
+
+  return {
+    username: cleanUser || `usr_${Date.now().toString().slice(-4)}`,
+    password: data.password || 'Admin123!@#',
+    first_name: firstName,
+    last_name: lastName,
+    email: data.email || `${cleanUser}@plsofttech.com`,
+    role: mapRoleToDjango(data.role),
+    department: data.department || 'Sales',
+    designation: data.designation || data.role || 'Sales Rep',
+    phone: data.phone || '',
+  };
 };
 
 export const userService = {
@@ -151,59 +171,56 @@ export const userService = {
       await mockDelay(null, 200);
       const found = mockUsersList.find((u) => u.id === id);
       if (!found) throw new Error('User not found.');
-      return found;
+      return normalizeUser(found);
     }
     try {
-      return await api.get(`/users/${id}/`);
+      const res = await api.get(`/users/${id}/`);
+      return normalizeUser(res);
     } catch (e) {
-      return mockUsersList.find((u) => u.id === id) || { id, username: 'user' };
+      return normalizeUser(mockUsersList.find((u) => u.id === id) || { id, username: 'user' });
     }
   },
 
   createUser: async (userData) => {
     if (isMockEnabled) {
       await mockDelay(null, 350);
-
-      const newUser = {
+      const newUser = normalizeUser({
         ...userData,
         id: `usr-${Date.now().toString().slice(-4)}`,
         createdAt: new Date().toISOString(),
-      };
-
+      });
       mockUsersList = [newUser, ...mockUsersList];
       return newUser;
     }
 
-    try {
-      return await api.post('/users/', userData);
-    } catch (err) {
-      const fallback = { ...userData, id: `usr-${Date.now()}` };
-      mockUsersList = [fallback, ...mockUsersList];
-      return fallback;
-    }
+    const payload = mapPayloadToBackend(userData);
+    const res = await api.post('/users/', payload);
+    const normalized = normalizeUser(res);
+    mockUsersList = [normalized, ...mockUsersList];
+    return normalized;
   },
 
   updateUser: async (id, userData) => {
     if (isMockEnabled) {
       await mockDelay(null, 350);
-
       const index = mockUsersList.findIndex((u) => u.id === id);
       if (index === -1) throw new Error('User not found.');
-
-      const updated = {
+      const updated = normalizeUser({
         ...mockUsersList[index],
         ...userData,
-      };
-
+      });
       mockUsersList[index] = updated;
       return updated;
     }
 
-    try {
-      return await api.patch(`/users/${id}/`, userData);
-    } catch (err) {
-      return { id, ...userData };
-    }
+    const payload = mapPayloadToBackend(userData);
+    delete payload.password; // Do not send password on user detail update
+    delete payload.username;
+    const res = await api.patch(`/users/${id}/`, payload);
+    const normalized = normalizeUser(res);
+    const index = mockUsersList.findIndex((u) => u.id === id);
+    if (index !== -1) mockUsersList[index] = normalized;
+    return normalized;
   },
 
   deleteUser: async (id) => {
@@ -212,12 +229,9 @@ export const userService = {
       mockUsersList = mockUsersList.filter((u) => u.id !== id);
       return { success: true };
     }
-    try {
-      return await api.delete(`/users/${id}/`);
-    } catch (err) {
-      mockUsersList = mockUsersList.filter((u) => u.id !== id);
-      return { success: true };
-    }
+    await api.delete(`/users/${id}/`);
+    mockUsersList = mockUsersList.filter((u) => u.id !== id);
+    return { success: true };
   },
 
   changePassword: async (id, password) => {

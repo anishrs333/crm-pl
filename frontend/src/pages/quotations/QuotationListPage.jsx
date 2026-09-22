@@ -167,13 +167,21 @@ export const QuotationListPage = () => {
     },
     {
       key: 'customerName',
-      label: 'Customer / Client',
-      render: (_, row) => (
+      label: 'Client / Account',
+      sortable: true,
+      render: (val, row) => (
         <div>
-          <div style={{ fontWeight: 500, color: 'var(--text-primary)' }}>{row.customerName}</div>
-          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{row.contactPerson || '—'}</div>
+          <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{val}</div>
+          <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+            Contact: {row.contactPerson || 'Representative'}
+          </div>
         </div>
       ),
+    },
+    {
+      key: 'createdDate',
+      label: 'Date',
+      render: (val) => formatDate(val),
     },
     {
       key: 'grandTotal',
@@ -203,9 +211,18 @@ export const QuotationListPage = () => {
           <button
             type="button"
             className="table-action-icon-btn"
+            style={{ color: 'var(--accent-carrot)' }}
+            onClick={() => handleDirectDownloadPdf(row)}
+            title="Download PDF File"
+          >
+            <Download size={15} />
+          </button>
+          <button
+            type="button"
+            className="table-action-icon-btn"
             style={{ color: 'var(--primary-600)' }}
             onClick={() => handleOpenPrint(row)}
-            title="Generate / Print PDF"
+            title="Print / Save as PDF"
           >
             <Printer size={15} />
           </button>

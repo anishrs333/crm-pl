@@ -195,10 +195,10 @@ export const CustomerListPage = () => {
               justifyContent: 'center',
             }}
           >
-            {getInitials(val || 'Alex Rivera')}
+            {getInitials(val || 'Unassigned')}
           </span>
           <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
-            {val || 'Alex Rivera'}
+            {val || 'Unassigned'}
           </span>
         </div>
       ),

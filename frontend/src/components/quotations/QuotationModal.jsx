@@ -4,8 +4,7 @@ import { FormField } from '../forms/FormField';
 import { Button } from '../common/Button';
 import { productService } from '../../services/productService';
 import { formatCurrency } from '../../utils/formatters';
-import { validators } from '../../utils/validators';
-import { Plus, Trash2, FileText, User, Calendar } from 'lucide-react';
+import { Plus, Trash2, User, Calendar } from 'lucide-react';
 import './QuotationModal.css';
 
 export const QuotationModal = ({
@@ -29,7 +28,7 @@ export const QuotationModal = ({
     createdDate: '',
     validUntil: '',
     status: 'Draft',
-    assignedTo: 'Alex Rivera',
+    assignedTo: 'Unassigned',
     terms: '1. 50% advance payment along with official work order.\n2. 30% milestone payment upon UAT release.\n3. 20% on final sign-off & code handover.\n4. Standard 1 year warranty & critical bug fixes included.',
     items: [],
   });
@@ -63,7 +62,7 @@ export const QuotationModal = ({
         createdDate: initialData.createdDate || '',
         validUntil: initialData.validUntil || '',
         status: initialData.status || 'Draft',
-        assignedTo: initialData.assignedTo || 'Alex Rivera',
+        assignedTo: initialData.assignedTo || 'Unassigned',
         terms: initialData.terms || '',
         items: initialData.items ? [...initialData.items] : [],
       });
@@ -81,13 +80,12 @@ export const QuotationModal = ({
         createdDate: today,
         validUntil: expiry,
         status: 'Draft',
-        assignedTo: 'Alex Rivera',
+        assignedTo: 'Unassigned',
         terms: '1. 50% advance payment along with official work order.\n2. 30% milestone payment upon UAT release.\n3. 20% on final sign-off & code handover.\n4. Standard 1 year warranty & critical bug fixes included.',
         items: [
           {
-            productId: 'prod-001',
             name: 'Enterprise CRM Core Platform',
-            description: 'Core CRM modules license',
+            description: 'Enterprise CRM Core Platform',
             quantity: 1,
             unitPrice: 75000,
             discountPercentage: 0,
@@ -115,12 +113,12 @@ export const QuotationModal = ({
     const updatedItems = [...formData.items];
     updatedItems[index] = { ...updatedItems[index], [field]: value };
 
-    // If product selection changed, auto-populate name, unit price, tax %
-    if (field === 'productId') {
+    // If product selection changed from dropdown, auto-populate name, unit price, tax %
+    if (field === 'productId' && value) {
       const prod = availableProducts.find((p) => p.id === value);
       if (prod) {
         updatedItems[index].name = prod.name;
-        updatedItems[index].description = prod.description;
+        updatedItems[index].description = prod.description || prod.name;
         updatedItems[index].unitPrice = prod.unitPrice;
         updatedItems[index].taxPercentage = prod.taxPercentage;
       }
@@ -131,16 +129,14 @@ export const QuotationModal = ({
   };
 
   const handleAddItem = () => {
-    const defaultProd = availableProducts[0];
     const newItem = {
-      productId: defaultProd ? defaultProd.id : '',
-      name: defaultProd ? defaultProd.name : 'Custom Deliverable',
-      description: defaultProd ? defaultProd.description : '',
+      name: 'Custom Service / Item',
+      description: 'Deliverable details',
       quantity: 1,
-      unitPrice: defaultProd ? defaultProd.unitPrice : 10000,
+      unitPrice: 10000,
       discountPercentage: 0,
-      taxPercentage: defaultProd ? defaultProd.taxPercentage : 18,
-      lineTotal: defaultProd ? defaultProd.unitPrice * 1.18 : 11800,
+      taxPercentage: 18,
+      lineTotal: 11800,
     };
     newItem.lineTotal = calculateLineTotal(newItem);
     setFormData((prev) => ({ ...prev, items: [...prev.items, newItem] }));
@@ -319,7 +315,7 @@ export const QuotationModal = ({
             <table className="line-items-table">
               <thead>
                 <tr>
-                  <th style={{ width: '32%' }}>Item / Product</th>
+                  <th style={{ width: '32%' }}>Item Name & Description</th>
                   <th style={{ width: '12%' }}>Qty</th>
                   <th style={{ width: '18%' }}>Unit Price (₹)</th>
                   <th style={{ width: '12%' }}>Disc %</th>
@@ -332,18 +328,14 @@ export const QuotationModal = ({
                 {formData.items.map((item, idx) => (
                   <tr key={idx}>
                     <td>
-                      <select
+                      <input
+                        type="text"
                         className="line-item-input"
-                        value={item.productId}
-                        onChange={(e) => handleItemChange(idx, 'productId', e.target.value)}
-                        style={{ marginBottom: '4px' }}
-                      >
-                        {availableProducts.map((p) => (
-                          <option key={p.id} value={p.id}>
-                            {p.code} - {p.name}
-                          </option>
-                        ))}
-                      </select>
+                        placeholder="Item Name (e.g. Enterprise CRM)"
+                        value={item.name || ''}
+                        onChange={(e) => handleItemChange(idx, 'name', e.target.value)}
+                        style={{ fontWeight: 600, marginBottom: '4px' }}
+                      />
                       <input
                         type="text"
                         className="line-item-input"
@@ -394,7 +386,7 @@ export const QuotationModal = ({
                       </select>
                     </td>
                     <td style={{ fontWeight: 600 }}>
-                      {formatCurrency(item.lineTotal)}
+                      {formatCurrency(item.lineTotal || calculateLineTotal(item))}
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       <button

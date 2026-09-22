@@ -1,842 +1,872 @@
-﻿/* ==========================================================================
-   Interactive Sales Pipeline & Operational Flight Deck Styling
-   Emerald & Forest Teal Palette Theme
+/* ==========================================================================
+   Executive Dashboard Page Styling - Persian Blue & Carrot Orange Theme
    ========================================================================== */
 
-.kanban-deck-container {
+.executive-dashboard-container {
   display: flex;
   flex-direction: column;
-  gap: 22px;
-  animation: deckFadeIn 0.3s ease-out;
-}
-
-@keyframes deckFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  gap: 24px;
+  padding: 24px;
+  max-width: 1600px;
+  margin: 0 auto;
 }
 
 /* ==========================================================================
-   1. TOP MINIMALIST FLIGHT BAR & ROLE PREVIEW SWITCHER
+   1. LUXURY EXECUTIVE HERO BANNER
    ========================================================================== */
 
-.flight-header-strip {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
+.executive-hero-banner {
+  background: linear-gradient(135deg, #1a237e 0%, #283593 60%, #303f9f 100%);
   border-radius: var(--radius-xl);
-  padding: 18px 24px;
+  padding: 28px 32px;
+  color: #ffffff;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  box-shadow: var(--shadow-xs);
-  flex-wrap: wrap;
+  box-shadow: 0 10px 25px -5px rgba(26, 35, 126, 0.35);
+  position: relative;
+  overflow: hidden;
 }
 
-.flight-user-col {
+.executive-hero-banner::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 350px;
+  height: 350px;
+  background: radial-gradient(circle, rgba(255, 152, 0, 0.18) 0%, transparent 70%);
+  pointer-events: none;
+}
+
+.hero-banner-content {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
+  max-width: 680px;
+  position: relative;
+  z-index: 1;
 }
 
-.flight-title-row {
+.hero-welcome-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(4px);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #e8eaf6;
+  width: fit-content;
+}
+
+.hero-sparkle-icon {
+  color: #ff9800;
+}
+
+.hero-title {
+  font-size: 1.85rem;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.hero-title .highlight {
+  color: #ff9800;
+  text-decoration: underline;
+  text-decoration-color: rgba(255, 152, 0, 0.4);
+}
+
+.hero-subtitle {
+  font-size: 0.92rem;
+  color: #e8eaf6;
+  line-height: 1.5;
+  margin: 0;
+  opacity: 0.95;
+}
+
+/* Hero Controls & Switcher */
+.hero-banner-controls {
   display: flex;
   align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
 }
 
-.flight-title {
-  font-size: 1.55rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1.2;
-  letter-spacing: -0.02em;
+.role-switcher-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 8px 12px;
+  border-radius: var(--radius-lg);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.flight-role-badge {
-  display: inline-flex;
+.role-switcher-label {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #c5cae9;
+  font-weight: 700;
+}
+
+.role-switcher-toggle {
+  display: flex;
+  gap: 4px;
+  background: rgba(0, 0, 0, 0.25);
+  padding: 3px;
+  border-radius: var(--radius-md);
+}
+
+.role-btn {
+  display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.74rem;
-  font-weight: 700;
-  padding: 3px 9px;
-  border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.flight-role-badge.admin {
-  background-color: #ecfdf5;
-  color: #065f46;
-  border: 1px solid #a7f3d0;
-}
-
-.flight-role-badge.manager {
-  background-color: #eff6ff;
-  color: #1e40af;
-  border: 1px solid #bfdbfe;
-}
-
-/* Role Switcher Pill for instant live testing */
-.flight-role-switcher {
-  display: inline-flex;
-  align-items: center;
-  background-color: var(--bg-app);
-  padding: 2px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border-color);
-  margin-left: 4px;
-}
-
-.flight-switch-opt {
-  padding: 3px 10px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  border-radius: var(--radius-full);
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #e8eaf6;
   transition: all var(--transition-fast);
 }
 
-.flight-switch-opt:hover {
-  color: var(--text-primary);
-}
-
-.flight-switch-opt.active {
-  background-color: var(--primary-600);
+.role-btn:hover {
   color: #ffffff;
-  box-shadow: var(--shadow-xs);
+  background: rgba(255, 255, 255, 0.1);
 }
 
-.flight-subtext {
-  font-size: 0.86rem;
-  color: var(--text-secondary);
-  max-width: 620px;
-  line-height: 1.4;
+.role-btn.active {
+  background: #e65100;
+  color: #ffffff;
+  font-weight: 700;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
 }
 
-/* Telemetry Inline Numbers */
-.flight-telemetry-metrics {
+.hero-quick-actions {
   display: flex;
-  align-items: center;
-  gap: 18px;
-  background-color: var(--bg-app);
-  padding: 10px 18px;
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--border-color);
-}
-
-.flight-metric-unit {
-  display: flex;
-  flex-direction: column;
-}
-
-.flight-metric-caption {
-  font-size: 0.7rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-}
-
-.flight-metric-figure {
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  line-height: 1.2;
-}
-
-.flight-metric-figure.green {
-  color: #059669;
-}
-
-.flight-metric-figure.orange {
-  color: #d97706;
-}
-
-.flight-metric-divider {
-  width: 1px;
-  height: 28px;
-  background-color: var(--border-color);
-}
-
-.flight-header-actions {
-  display: flex;
-  align-items: center;
   gap: 10px;
+}
+
+.hero-quick-actions .crm-btn-outline {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.hero-quick-actions .crm-btn-outline:hover {
+  background: rgba(255, 255, 255, 0.25);
+  border-color: #ffffff;
 }
 
 /* ==========================================================================
-   2. CORE WORKSPACE: LIVE INTERACTIVE PIPELINE KANBAN BOARD
+   2. TOP 4 EXECUTIVE TELEMETRY KPI CARDS
    ========================================================================== */
 
-.pipeline-board-section {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  padding: 22px;
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.board-control-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  padding-bottom: 12px;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.board-title-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.board-main-title {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 1.15rem;
-  font-weight: 800;
-  color: var(--text-primary);
-}
-
-.board-title-icon {
-  color: var(--primary-600);
-}
-
-.board-deal-counter {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-muted);
-  background-color: var(--bg-app);
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border-color);
-}
-
-.board-filter-cluster {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.board-filter-label {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--text-muted);
-}
-
-.board-filter-chip {
-  font-size: 0.78rem;
-  font-weight: 600;
-  padding: 4px 11px;
-  border-radius: var(--radius-full);
-  background-color: var(--bg-app);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-  transition: all var(--transition-fast);
-}
-
-.board-filter-chip:hover {
-  color: var(--text-primary);
-  border-color: var(--primary-300);
-}
-
-.board-filter-chip.active {
-  background-color: var(--primary-50);
-  color: var(--primary-700);
-  border-color: var(--primary-300);
-}
-
-/* The 4 Stage Columns */
-.kanban-columns-track {
+.executive-kpi-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 16px;
-  align-items: flex-start;
+  gap: 20px;
 }
 
-.kanban-column {
-  background-color: #f8fafc;
+.kpi-card {
+  background: var(--bg-surface);
   border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 14px;
+  border-radius: var(--radius-xl);
+  padding: 20px 22px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  min-height: 380px;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  position: relative;
+  overflow: hidden;
 }
 
-.kanban-column-header {
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+}
+
+.kpi-card.crimson-accent::before { background: var(--primary-600); }
+.kpi-card.gold-accent::before { background: #d97706; }
+.kpi-card.beige-accent::before { background: #7c3aed; }
+.kpi-card.amber-accent::before { background: #e11d48; }
+
+.kpi-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.kpi-top-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 
-.kanban-column-title-box {
+.kpi-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--text-secondary);
+}
+
+.kpi-icon-box {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-lg);
   display: flex;
   align-items: center;
-  gap: 7px;
+  justify-content: center;
 }
 
-.kanban-stage-title {
-  font-size: 0.86rem;
-  font-weight: 700;
-  color: var(--text-primary);
+.kpi-icon-box.crimson { background: #fff1f2; color: #be123c; }
+.kpi-icon-box.green { background: #f0fdf4; color: #15803d; }
+.kpi-icon-box.purple { background: #f5f3ff; color: #7c3aed; }
+.kpi-icon-box.amber { background: #fffbeb; color: #d97706; }
+
+.kpi-val-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.kanban-stage-count {
-  font-size: 0.74rem;
+.kpi-value {
+  font-size: 1.65rem;
   font-weight: 800;
-  background-color: #ffffff;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-  padding: 2px 7px;
+  color: var(--text-primary);
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.kpi-trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 2px 8px;
   border-radius: var(--radius-full);
 }
 
-.kanban-column-total {
+.kpi-trend.positive {
+  background: #f0fdf4;
+  color: #15803d;
+}
+
+.kpi-badge-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: #f5f3ff;
+  color: #7c3aed;
+}
+
+.kpi-urgent-pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: #fff1f2;
+  color: #be123c;
+}
+
+.kpi-footer-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ==========================================================================
+   3. MIDDLE OPERATIONS SPLIT DECK (60% Analytics / 40% Action Queue)
+   ========================================================================== */
+
+.operations-split-grid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+}
+
+.op-panel {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.op-panel-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 16px;
+}
+
+.op-panel-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px 0;
+}
+
+.panel-title-icon {
+  color: var(--primary-600);
+}
+
+.op-panel-sub {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Stage Analytics Bars */
+.stage-analytics-container {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  background: var(--bg-app);
+  padding: 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.stage-row-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.stage-row-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-size: 0.74rem;
-  color: var(--text-muted);
-  padding-bottom: 8px;
-  border-bottom: 1px dashed var(--border-color);
+  font-size: 0.85rem;
 }
 
-.kanban-column-total strong {
+.stage-name-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stage-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.stage-name {
+  font-weight: 600;
   color: var(--text-primary);
-  font-weight: 700;
 }
 
-.kanban-cards-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.kanban-card-skeleton {
-  background: #ffffff;
-  padding: 14px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border-color);
-}
-
-.kanban-empty-column {
-  padding: 36px 12px;
-  text-align: center;
+.stage-count {
   color: var(--text-muted);
-  font-size: 0.8rem;
-  font-style: italic;
+  font-size: 0.78rem;
 }
 
-/* Individual Deal Card */
-.kanban-deal-card {
-  background-color: #ffffff;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 14px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+.stage-val-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.stage-amount {
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stage-percent {
+  font-weight: 700;
+  color: var(--primary-600);
+  font-size: 0.8rem;
+}
+
+.stage-progress-track {
+  height: 8px;
+  background: #e8decb;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+
+.stage-progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 0.6s ease;
+}
+
+/* High Value Deals List */
+.high-deals-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.high-deals-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.high-deals-header h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.high-deals-count {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.high-deals-list {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.high-deal-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
   cursor: pointer;
   transition: all var(--transition-fast);
-  position: relative;
 }
 
-.kanban-deal-card:hover {
-  transform: translateY(-2px);
-  border-color: var(--primary-300);
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+.high-deal-card:hover {
+  border-color: var(--primary-600);
+  background: var(--bg-hover);
+  transform: translateX(2px);
 }
 
-.kanban-card-top {
+.deal-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.deal-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.deal-client {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.deal-stage-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  border-radius: var(--radius-full);
+}
+
+.deal-stage-badge .badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary-600);
+}
+
+.deal-val-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.deal-amount {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.deal-prob {
+  font-size: 0.72rem;
+  color: var(--primary-700);
+  font-weight: 600;
+}
+
+.deal-arrow-btn {
+  color: var(--text-muted);
+  transition: color var(--transition-fast);
+}
+
+.high-deal-card:hover .deal-arrow-btn {
+  color: var(--primary-600);
+}
+
+/* Right Wing Client Execution Queue */
+.client-queue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.queue-item-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px;
+  background: var(--bg-app);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  transition: border-color var(--transition-fast);
+}
+
+.queue-item-card:hover {
+  border-color: var(--primary-400);
+}
+
+.queue-item-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  background: var(--primary-50);
+  color: var(--primary-700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.queue-item-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.queue-item-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
 
-.kanban-customer-badge {
-  font-size: 0.72rem;
+.queue-client-name {
+  font-size: 0.85rem;
   font-weight: 700;
-  color: var(--primary-700);
-  background-color: var(--primary-50);
-  padding: 2px 7px;
-  border-radius: var(--radius-sm);
-  max-width: 140px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  color: var(--text-primary);
 }
 
-.kanban-prob-badge {
-  font-size: 0.7rem;
-  font-weight: 600;
+.queue-time-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.queue-title {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.queue-meta {
+  font-size: 0.75rem;
   color: var(--text-muted);
 }
 
-.kanban-deal-title {
-  font-size: 0.88rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  line-height: 1.3;
+.queue-item-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
-.kanban-deal-val-row {
+.queue-btn-done {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  background: #f0fdf4;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.queue-btn-done:hover {
+  background: #15803d;
+  color: #ffffff;
+}
+
+.queue-btn-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  background: var(--accent-carrot-bg);
+  color: var(--accent-carrot);
+  border: 1px solid #ffe0b2;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.queue-btn-trigger:hover {
+  background: var(--accent-carrot);
+  color: #ffffff;
+}
+
+.queue-empty-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--text-muted);
+}
+
+.queue-empty-box h4 {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+/* ==========================================================================
+   4. BOTTOM INTELLIGENCE GRID (Audit Stream & Quota Gauge)
+   ========================================================================== */
+
+.intelligence-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+.intel-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  box-shadow: var(--shadow-sm);
+}
+
+.intel-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+}
+
+.intel-card-header h3 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 2px 0;
+}
+
+.intel-card-header p {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.live-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+  background: var(--accent-carrot-bg);
+  color: var(--accent-carrot);
+}
+
+.live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-carrot);
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(1.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* Audit Feed Rows */
+.audit-stream {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.audit-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.82rem;
+  padding: 8px 12px;
+  background: var(--bg-app);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+}
+
+.audit-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--primary-600);
+  flex-shrink: 0;
+}
+
+.audit-text {
+  flex: 1;
+  color: var(--text-secondary);
+}
+
+.audit-text strong {
+  color: var(--text-primary);
+}
+
+.audit-target {
+  font-weight: 600;
+  color: var(--primary-700);
+}
+
+.audit-time {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+/* Quota Gauge */
+.quota-gauge-box {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--bg-app);
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+}
+
+.quota-gauge-top {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
 }
 
-.kanban-deal-amount {
-  font-size: 1.1rem;
+.quota-current-val {
+  font-size: 1.4rem;
   font-weight: 800;
-  color: #059669;
-}
-
-.kanban-deal-footer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-top: 8px;
-  border-top: 1px solid #f1f5f9;
-}
-
-.kanban-owner-info {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.kanban-owner-avatar {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background-color: #e2e8f0;
-  color: #475569;
-  font-size: 0.68rem;
-  font-weight: 800;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.kanban-owner-name {
-  font-size: 0.74rem;
-  color: var(--text-secondary);
-}
-
-.kanban-advance-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--primary-700);
-  background-color: var(--primary-50);
-  border: 1px solid var(--primary-200);
-  padding: 3px 8px;
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.kanban-advance-btn:hover {
-  background-color: var(--primary-600);
-  color: #ffffff;
-  border-color: var(--primary-600);
-}
-
-.kanban-won-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: #065f46;
-  background-color: #d1fae5;
-  padding: 2px 7px;
-  border-radius: var(--radius-sm);
-}
-
-/* ==========================================================================
-   3. BOTTOM TWIN OPERATIONS DECK (60% Execution / 40% Intelligence)
-   ========================================================================= */
-
-.twin-operations-deck {
-  display: grid;
-  grid-template-columns: 1.7fr 1.3fr;
-  gap: 20px;
-}
-
-.deck-panel {
-  background-color: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-xl);
-  padding: 22px;
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.deck-panel-header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-}
-
-.deck-panel-title {
-  font-size: 1.05rem;
-  font-weight: 700;
   color: var(--text-primary);
 }
 
-.deck-panel-sub {
-  font-size: 0.8rem;
+.quota-target-val {
+  font-size: 0.82rem;
   color: var(--text-muted);
-  margin-top: 2px;
-}
-
-/* Touchpoint List */
-.deck-touchpoint-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-.deck-touchpoint-card {
-  background-color: #f8fafc;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 12px 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  transition: all var(--transition-fast);
-}
-
-.deck-touchpoint-card:hover {
-  background-color: #ffffff;
-  border-color: var(--primary-300);
-  box-shadow: var(--shadow-xs);
-}
-
-.deck-touchpoint-icon-box {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background-color: #ecfdf5;
-  color: #059669;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  border: 1px solid #a7f3d0;
-}
-
-.deck-touchpoint-body {
-  flex: 1;
-  min-width: 0;
-}
-
-.deck-touchpoint-header-line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.deck-touchpoint-client {
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: var(--primary-700);
-}
-
-.deck-touchpoint-time {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 0.72rem;
-  color: #b45309;
-  background-color: #fffbeb;
-  padding: 1px 6px;
-  border-radius: var(--radius-sm);
-}
-
-.deck-touchpoint-title {
-  font-size: 0.86rem;
   font-weight: 600;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-top: 1px;
 }
 
-.deck-touchpoint-contact {
-  font-size: 0.74rem;
-  color: var(--text-muted);
-}
-
-.deck-touchpoint-actions {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.deck-action-done-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.74rem;
-  font-weight: 700;
-  padding: 5px 10px;
-  border-radius: var(--radius-sm);
-  background-color: #ffffff;
-  color: #059669;
-  border: 1px solid #a7f3d0;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.deck-action-done-btn:hover {
-  background-color: #059669;
-  color: #ffffff;
-}
-
-.deck-action-call-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.74rem;
-  font-weight: 600;
-  padding: 5px 9px;
-  border-radius: var(--radius-sm);
-  background-color: var(--bg-app);
-  color: var(--text-secondary);
-  border: 1px solid var(--border-color);
-  cursor: pointer;
-  transition: all var(--transition-fast);
-}
-
-.deck-action-call-btn:hover {
-  color: var(--text-primary);
-  border-color: #94a3b8;
-}
-
-.deck-empty-state {
-  padding: 30px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  color: var(--text-muted);
-  font-size: 0.86rem;
-}
-
-/* Right Wing: Quota & Intel */
-.deck-live-pulse-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.74rem;
-  font-weight: 700;
-  color: #065f46;
-  background-color: #ecfdf5;
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-}
-
-.pulse-circle {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background-color: #10b981;
-}
-
-.deck-quota-box {
-  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
-  border: 1px solid #a7f3d0;
-  border-radius: var(--radius-lg);
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.deck-quota-top {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.8rem;
-}
-
-.deck-quota-label {
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.deck-quota-percent {
-  font-weight: 800;
-  color: #065f46;
-}
-
-.deck-quota-track {
-  width: 100%;
-  height: 7px;
-  background-color: #d1fae5;
+.quota-progress-bar {
+  height: 12px;
+  background: #e8decb;
   border-radius: var(--radius-full);
   overflow: hidden;
 }
 
-.deck-quota-fill {
+.quota-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #10b981, #059669);
+  background: linear-gradient(90deg, #be123c, #e11d48);
   border-radius: var(--radius-full);
+  transition: width 0.8s ease;
 }
 
-.deck-quota-bottom {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.74rem;
-  color: var(--text-muted);
-}
-
-/* Role Capabilities Card */
-.deck-role-info-card {
-  background-color: #f8fafc;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-lg);
-  padding: 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.deck-role-info-header {
+.quota-gauge-bottom {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 0.86rem;
-  color: var(--text-primary);
-}
-
-.deck-role-desc {
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  line-height: 1.4;
-}
-
-/* Live Ticker */
-.deck-live-ticker {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.deck-ticker-header {
-  font-size: 0.74rem;
+  justify-content: space-between;
+  font-size: 0.8rem;
   font-weight: 700;
+}
+
+.quota-percent-label {
+  color: #15803d;
+}
+
+.quota-remaining-label {
   color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
 }
 
-.deck-ticker-stream {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.deck-ticker-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 8px;
-  font-size: 0.78rem;
-}
-
-.deck-ticker-dot {
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background-color: #059669;
-  margin-top: 6px;
-  flex-shrink: 0;
-}
-
-.deck-ticker-text {
-  color: var(--text-secondary);
-  line-height: 1.35;
-}
-
-.deck-ticker-text strong {
-  color: var(--text-primary);
-}
-
-.deck-ticker-target {
-  color: var(--primary-700);
-  font-weight: 600;
-}
-
-.deck-ticker-time {
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  margin-left: 6px;
-}
-
-/* ==========================================================================
-   RESPONSIVE BREAKPOINTS
-   ========================================================================== */
-
+/* Responsive Rules */
 @media (max-width: 1200px) {
-  .kanban-columns-track {
+  .executive-kpi-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-}
 
-@media (max-width: 1024px) {
-  .twin-operations-deck {
+  .operations-split-grid {
     grid-template-columns: 1fr;
   }
-  .flight-header-strip {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-  .flight-telemetry-metrics {
-    width: 100%;
-    justify-content: space-between;
-  }
-  .flight-header-actions {
-    width: 100%;
+
+  .intelligence-grid {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 768px) {
-  .kanban-columns-track {
-    grid-template-columns: 1fr;
-  }
-  .flight-telemetry-metrics {
+  .executive-hero-banner {
     flex-direction: column;
     align-items: flex-start;
-    gap: 8px;
   }
-  .flight-metric-divider {
-    display: none;
+
+  .executive-kpi-grid {
+    grid-template-columns: 1fr;
   }
 }

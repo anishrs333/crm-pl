@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Modal } from '../modals/Modal';
 import { FormField } from '../forms/FormField';
 import { Button } from '../common/Button';
+import { userService } from '../../services/userService';
 import { validators } from '../../utils/validators';
 import { Building2, User, Mail, Phone, DollarSign, Target, Award } from 'lucide-react';
 
@@ -14,6 +15,10 @@ export const LeadModal = ({
 }) => {
   const isEditing = Boolean(initialData);
 
+  const [assigneeOptions, setAssigneeOptions] = useState([
+    { value: 'Unassigned', label: 'Unassigned' }
+  ]);
+
   const [formData, setFormData] = useState({
     name: '',
     contactName: '',
@@ -22,11 +27,33 @@ export const LeadModal = ({
     source: 'Website',
     status: 'New',
     estimatedValue: '',
-    assignedTo: 'Jessica Chen',
+    assignedTo: 'Unassigned',
     score: 60,
   });
 
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    const fetchAssignees = async () => {
+      try {
+        const res = await userService.getUsers({ limit: 100 });
+        const list = res.data || res.results || [];
+        if (list.length > 0) {
+          const opts = list.map((u) => ({
+            value: u.name,
+            label: `${u.name} (${u.role || 'Staff'})`,
+          }));
+          setAssigneeOptions([{ value: 'Unassigned', label: 'Unassigned' }, ...opts]);
+        }
+      } catch (e) {
+        console.warn('Failed to load assignees for lead modal:', e);
+      }
+    };
+
+    if (isOpen) {
+      fetchAssignees();
+    }
+  }, [isOpen]);
 
   useEffect(() => {
     if (initialData) {
@@ -38,7 +65,7 @@ export const LeadModal = ({
         source: initialData.source || 'Website',
         status: initialData.status || 'New',
         estimatedValue: initialData.estimatedValue || '',
-        assignedTo: initialData.assignedTo || 'Jessica Chen',
+        assignedTo: initialData.assignedTo || 'Unassigned',
         score: initialData.score ?? 60,
       });
     } else {
@@ -50,7 +77,7 @@ export const LeadModal = ({
         source: 'Website',
         status: 'New',
         estimatedValue: '',
-        assignedTo: 'Jessica Chen',
+        assignedTo: 'Unassigned',
         score: 60,
       });
     }
@@ -214,12 +241,7 @@ export const LeadModal = ({
               type="select"
               value={formData.assignedTo}
               onChange={handleChange}
-              options={[
-                { value: 'Jessica Chen', label: 'Jessica Chen (Sales Rep)' },
-                { value: 'Alex Rivera', label: 'Alex Rivera (Sales Lead)' },
-                { value: 'Sarah Connor', label: 'Sarah Connor (Executive)' },
-                { value: 'Marcus Vance', label: 'Marcus Vance (Customer Rep)' },
-              ]}
+              options={assigneeOptions}
             />
           </div>
         </div>

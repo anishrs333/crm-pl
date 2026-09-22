@@ -3,12 +3,54 @@ import { initialProducts } from './mockData';
 
 let mockProductsList = [...initialProducts];
 
+const mapCategoryToDjango = (cat) => {
+  if (!cat) return 'software';
+  const c = String(cat).toLowerCase();
+  if (c.includes('soft')) return 'software';
+  if (c.includes('hard') || c.includes('infra')) return 'hardware';
+  if (c.includes('service') || c.includes('impl') || c.includes('pro')) return 'service';
+  if (c.includes('sub')) return 'subscription';
+  if (c.includes('maint')) return 'maintenance';
+  return 'other';
+};
+
+const normalizeProduct = (p) => {
+  if (!p) return p;
+  return {
+    ...p,
+    id: p.id,
+    code: p.sku || p.code || `PRD-${p.id}`,
+    sku: p.sku || p.code || `PRD-${p.id}`,
+    name: p.name || '',
+    category: p.category_label || p.category || 'Software License',
+    unitPrice: Number(p.unit_price ?? p.unitPrice ?? 0),
+    unit_price: Number(p.unit_price ?? p.unitPrice ?? 0),
+    taxPercentage: Number(p.tax_percentage ?? p.taxPercentage ?? 18),
+    tax_percentage: Number(p.tax_percentage ?? p.taxPercentage ?? 18),
+    status: p.is_active !== undefined ? (p.is_active ? 'Active' : 'Inactive') : (p.status || 'Active'),
+    is_active: p.is_active !== undefined ? Boolean(p.is_active) : p.status !== 'Inactive',
+    description: p.description || '',
+  };
+};
+
+const mapPayloadToBackend = (data) => {
+  return {
+    sku: (data.code || data.sku || `SKU-${Date.now().toString().slice(-6)}`).toUpperCase(),
+    name: data.name || 'New Product',
+    category: mapCategoryToDjango(data.category),
+    unit_price: parseFloat(data.unitPrice || data.unit_price) || 0,
+    tax_percentage: parseFloat(data.taxPercentage || data.tax_percentage) || 18,
+    is_active: data.status === 'Active' || data.is_active === true,
+    description: data.description || '',
+  };
+};
+
 export const productService = {
   getProducts: async ({ page = 1, limit = 10, search = '', category = '', status = '' } = {}) => {
     if (isMockEnabled) {
       await mockDelay(null, 250);
 
-      let filtered = [...mockProductsList];
+      let filtered = [...mockProductsList].map(normalizeProduct);
 
       if (search && search.trim()) {
         const q = search.toLowerCase();
@@ -52,14 +94,15 @@ export const productService = {
       if (page) params.append('page', page);
       if (limit) params.append('limit', limit);
       if (search) params.append('search', search);
-      if (category && category !== 'All') params.append('category', category);
+      if (category && category !== 'All') params.append('category', mapCategoryToDjango(category));
       if (status && status !== 'All') {
         if (status.toLowerCase() === 'active') params.append('is_active', 'true');
         else if (status.toLowerCase() === 'inactive') params.append('is_active', 'false');
       }
 
       const res = await api.get(`/products/?${params.toString()}`);
-      const dataList = Array.isArray(res) ? res : (res.results || res.data || []);
+      const rawList = Array.isArray(res) ? res : (res.results || res.data || []);
+      const dataList = rawList.map(normalizeProduct);
       const total = res.count || dataList.length;
       return {
         data: dataList,
@@ -71,20 +114,22 @@ export const productService = {
       };
     } catch (err) {
       console.warn('Product API fallback:', err);
-      return { data: mockProductsList, results: mockProductsList, totalItems: mockProductsList.length, totalPages: 1 };
+      const normalizedMock = mockProductsList.map(normalizeProduct);
+      return { data: normalizedMock, results: normalizedMock, totalItems: normalizedMock.length, totalPages: 1 };
     }
   },
 
   getAllActiveProducts: async () => {
     if (isMockEnabled) {
       await mockDelay(null, 150);
-      return mockProductsList.filter((p) => p.status === 'Active');
+      return mockProductsList.map(normalizeProduct).filter((p) => p.status === 'Active');
     }
     try {
       const res = await api.get('/products/');
-      return Array.isArray(res) ? res : (res.results || res.data || []);
+      const rawList = Array.isArray(res) ? res : (res.results || res.data || []);
+      return rawList.map(normalizeProduct);
     } catch (e) {
-      return mockProductsList;
+      return mockProductsList.map(normalizeProduct);
     }
   },
 
@@ -93,58 +138,53 @@ export const productService = {
       await mockDelay(null, 200);
       const found = mockProductsList.find((p) => p.id === id);
       if (!found) throw new Error('Product not found.');
-      return found;
+      return normalizeProduct(found);
     }
     try {
-      return await api.get(`/products/${id}/`);
+      const res = await api.get(`/products/${id}/`);
+      return normalizeProduct(res);
     } catch (e) {
-      return mockProductsList.find((p) => p.id === id) || { id, name: 'Sample Product' };
+      return normalizeProduct(mockProductsList.find((p) => p.id === id) || { id, name: 'Sample Product' });
     }
   },
 
   createProduct: async (productData) => {
     if (isMockEnabled) {
       await mockDelay(null, 350);
-
-      const newProduct = {
+      const newProduct = normalizeProduct({
         ...productData,
         id: `prod-${Date.now().toString().slice(-4)}`,
-      };
-
+      });
       mockProductsList = [newProduct, ...mockProductsList];
       return newProduct;
     }
 
-    try {
-      return await api.post('/products/', productData);
-    } catch (err) {
-      const fallback = { ...productData, id: `prod-${Date.now()}` };
-      mockProductsList = [fallback, ...mockProductsList];
-      return fallback;
-    }
+    const payload = mapPayloadToBackend(productData);
+    const res = await api.post('/products/', payload);
+    const normalized = normalizeProduct(res);
+    mockProductsList = [normalized, ...mockProductsList];
+    return normalized;
   },
 
   updateProduct: async (id, productData) => {
     if (isMockEnabled) {
       await mockDelay(null, 350);
-
       const index = mockProductsList.findIndex((p) => p.id === id);
       if (index === -1) throw new Error('Product not found.');
-
-      const updated = {
+      const updated = normalizeProduct({
         ...mockProductsList[index],
         ...productData,
-      };
-
+      });
       mockProductsList[index] = updated;
       return updated;
     }
 
-    try {
-      return await api.patch(`/products/${id}/`, productData);
-    } catch (err) {
-      return { id, ...productData };
-    }
+    const payload = mapPayloadToBackend(productData);
+    const res = await api.patch(`/products/${id}/`, payload);
+    const normalized = normalizeProduct(res);
+    const index = mockProductsList.findIndex((p) => p.id === id);
+    if (index !== -1) mockProductsList[index] = normalized;
+    return normalized;
   },
 
   deleteProduct: async (id) => {
@@ -153,12 +193,9 @@ export const productService = {
       mockProductsList = mockProductsList.filter((p) => p.id !== id);
       return { success: true };
     }
-    try {
-      return await api.delete(`/products/${id}/`);
-    } catch (err) {
-      mockProductsList = mockProductsList.filter((p) => p.id !== id);
-      return { success: true };
-    }
+    await api.delete(`/products/${id}/`);
+    mockProductsList = mockProductsList.filter((p) => p.id !== id);
+    return { success: true };
   },
 };
 

@@ -1,65 +1,70 @@
 /* ==========================================================================
-   ApexCRM Global Design System & CSS Variables
+   PL SOFT TECH CRM - Luxury Carrot, Persian Blue & Platinum Design System
    ========================================================================== */
 
 :root {
-  /* Brand / Primary Palette (Emerald & Forest Teal) */
-  --primary-50: #ecfdf5;
-  --primary-100: #d1fae5;
-  --primary-200: #a7f3d0;
-  --primary-300: #6ee7b7;
-  --primary-400: #34d399;
-  --primary-500: #10b981;
-  --primary-600: #059669;
-  --primary-700: #047857;
-  --primary-800: #065f46;
-  --primary-900: #064e3b;
+  /* Primary Persian Blue Palette */
+  --primary-50: #e8eaf6;
+  --primary-100: #c5cae9;
+  --primary-200: #9fa8da;
+  --primary-300: #7986cb;
+  --primary-400: #5c6bc0;
+  --primary-500: #3f51b5;
+  --primary-600: #303f9f;
+  --primary-700: #283593;
+  --primary-800: #1a237e;
+  --primary-900: #121858;
 
-  /* Neutral Surface & Background Colors */
-  --bg-app: #f8fafc;
+  /* Secondary Carrot Orange Accent */
+  --accent-carrot: #e65100;
+  --accent-carrot-light: #f57c00;
+  --accent-carrot-bg: #fff3e0;
+
+  /* Neutral Surface & Background Colors (Platinum) */
+  --bg-app: #f5f5f7;
   --bg-surface: #ffffff;
-  --bg-subtle: #f1f5f9;
-  --bg-hover: #f8fafc;
-  --bg-active: #ecfdf5;
+  --bg-subtle: #eeeeef;
+  --bg-hover: #e8e8ea;
+  --bg-active: #e8eaf6;
 
   /* Text Colors */
-  --text-primary: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #94a3b8;
+  --text-primary: #12183a;
+  --text-secondary: #4a4e69;
+  --text-muted: #8e92a8;
   --text-inverse: #ffffff;
 
   /* Borders */
-  --border-color: #e2e8f0;
-  --border-focus: #059669;
-  --border-subtle: #f1f5f9;
+  --border-color: #d1d1d6;
+  --border-focus: #283593;
+  --border-subtle: #e5e5ea;
 
   /* Status Colors */
-  --success-bg: #ecfdf5;
-  --success-text: #065f46;
-  --success-border: #a7f3d0;
-  --success-solid: #10b981;
+  --success-bg: #f0fdf4;
+  --success-text: #166534;
+  --success-border: #bbf7d0;
+  --success-solid: #15803d;
 
-  --warning-bg: #fffbeb;
-  --warning-text: #92400e;
-  --warning-border: #fde68a;
-  --warning-solid: #f59e0b;
+  --warning-bg: #fff3e0;
+  --warning-text: #e65100;
+  --warning-border: #ffe0b2;
+  --warning-solid: #f57c00;
 
-  --danger-bg: #fef2f2;
-  --danger-text: #991b1b;
-  --danger-border: #fecaca;
-  --danger-solid: #ef4444;
+  --danger-bg: #fff1f2;
+  --danger-text: #9f1239;
+  --danger-border: #fecdd3;
+  --danger-solid: #e11d48;
 
-  --info-bg: #eff6ff;
-  --info-text: #1e40af;
-  --info-border: #bfdbfe;
-  --info-solid: #3b82f6;
+  --info-bg: #e8eaf6;
+  --info-text: #1a237e;
+  --info-border: #c5cae9;
+  --info-solid: #303f9f;
 
   /* Shadows */
-  --shadow-xs: 0 1px 2px 0 rgba(15, 23, 42, 0.05);
-  --shadow-sm: 0 1px 3px 0 rgba(15, 23, 42, 0.08), 0 1px 2px -1px rgba(15, 23, 42, 0.08);
-  --shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.06);
-  --shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -4px rgba(15, 23, 42, 0.04);
-  --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 8px 10px -6px rgba(15, 23, 42, 0.04);
+  --shadow-xs: 0 1px 2px 0 rgba(26, 35, 126, 0.04);
+  --shadow-sm: 0 1px 3px 0 rgba(26, 35, 126, 0.06), 0 1px 2px -1px rgba(26, 35, 126, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(26, 35, 126, 0.06), 0 2px 4px -2px rgba(26, 35, 126, 0.04);
+  --shadow-lg: 0 10px 15px -3px rgba(26, 35, 126, 0.07), 0 4px 6px -4px rgba(26, 35, 126, 0.03);
+  --shadow-xl: 0 20px 25px -5px rgba(26, 35, 126, 0.08), 0 8px 10px -6px rgba(26, 35, 126, 0.03);
 
   /* Radii */
   --radius-sm: 6px;
@@ -160,10 +165,10 @@ img, svg {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d1d1d6;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #283593;
 }

@@ -52,20 +52,8 @@ export const dashboardService = {
         opportunityPipelineValue,
         quotationStats,
         pendingTasks,
-        monthlyPipeline: [
-          { month: 'Oct', revenue: 42000, leads: 18 },
-          { month: 'Nov', revenue: 68000, leads: 24 },
-          { month: 'Dec', revenue: 95000, leads: 32 },
-          { month: 'Jan', revenue: 78000, leads: 28 },
-          { month: 'Feb', revenue: 112000, leads: 38 },
-          { month: 'Mar', revenue: 145000, leads: 46 },
-        ],
-        leadDistribution: [
-          { stage: 'New', count: 12, color: '#3b82f6' },
-          { stage: 'Contacted', count: 18, color: '#f59e0b' },
-          { stage: 'Qualified', count: 15, color: '#059669' },
-          { stage: 'Proposal', count: 8, color: '#10b981' },
-        ],
+        monthlyPipeline: [],
+        leadDistribution: [],
       };
     }
 
@@ -92,47 +80,47 @@ export const dashboardService = {
   getRecentActivities: async () => {
     if (isMockEnabled) {
       await mockDelay(null, 250);
-      return [...initialActivities];
+      return [];
     }
     try {
       const data = await api.get('/leads/');
       const results = Array.isArray(data) ? data : (data?.results || data?.data || []);
-      if (!Array.isArray(results)) return [...initialActivities];
+      if (!Array.isArray(results) || results.length === 0) return [];
       return results.slice(0, 5).map((l) => ({
         id: `act-${l.id}`,
-        user: l.assigned_to_name || 'Sales Rep',
+        user: l.assigned_to_name || 'Staff',
         action: 'created lead',
         target: l.first_name ? `${l.first_name} ${l.last_name || ''}` : (l.company_name || 'New Client'),
         timestamp: l.created_at || new Date().toISOString(),
       }));
     } catch (e) {
-      return [...initialActivities];
+      return [];
     }
   },
 
   getRecentLeads: async () => {
     if (isMockEnabled) {
       await mockDelay(null, 250);
-      return initialLeads.slice(0, 5);
+      return [];
     }
     try {
       const data = await api.get('/leads/');
       const results = Array.isArray(data) ? data : (data?.results || data?.data || []);
-      return Array.isArray(results) ? results : initialLeads.slice(0, 5);
+      return Array.isArray(results) ? results : [];
     } catch (e) {
-      return initialLeads.slice(0, 5);
+      return [];
     }
   },
 
   getPendingFollowUps: async () => {
     if (isMockEnabled) {
       await mockDelay(null, 200);
-      return initialFollowUps.filter((f) => f.status === 'Pending').slice(0, 4);
+      return [];
     }
     try {
       const data = await api.get('/tasks/');
       const tasks = Array.isArray(data) ? data : (data?.results || data?.data || []);
-      if (!Array.isArray(tasks)) return [...initialFollowUps];
+      if (!Array.isArray(tasks) || tasks.length === 0) return [];
       return tasks.slice(0, 5).map((t) => ({
         id: t.id,
         title: t.title,
@@ -143,19 +131,19 @@ export const dashboardService = {
         assignedTo: t.assigned_to_name || 'Assigned Rep',
       }));
     } catch (e) {
-      return [...initialFollowUps];
+      return [];
     }
   },
 
   getRecentOpportunities: async () => {
     if (isMockEnabled) {
       await mockDelay(null, 200);
-      return initialOpportunities.slice(0, 8);
+      return [];
     }
     try {
       const res = await api.get('/opportunities/');
       const list = Array.isArray(res) ? res : (res?.results || res?.data || []);
-      if (!Array.isArray(list)) return [...initialOpportunities];
+      if (!Array.isArray(list) || list.length === 0) return [];
       return list.map((opp) => ({
         id: opp.id,
         title: opp.title,
@@ -166,7 +154,7 @@ export const dashboardService = {
         probability: opp.probability || 50,
       }));
     } catch (e) {
-      return [...initialOpportunities];
+      return [];
     }
   },
 };

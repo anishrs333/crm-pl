@@ -47,8 +47,12 @@ export const UserListPage = () => {
         role: roleFilter,
         status: statusFilter,
       });
-      setUsers(response.data);
-      setTotalItems(response.totalItems);
+      // "admin is not an employee": Exclude Admin account from employee monitoring roster
+      const employeeList = (response.data || []).filter(
+        (u) => u.username !== 'crm_admin' && u.username !== 'admin' && String(u.role || '').toLowerCase() !== 'administrator' && String(u.role || '').toLowerCase() !== 'admin'
+      );
+      setUsers(employeeList);
+      setTotalItems(employeeList.length);
     } catch (err) {
       console.error('Failed to load users:', err);
       setError(err.message || 'Failed to load user records.');
@@ -117,7 +121,7 @@ export const UserListPage = () => {
       } else {
         // Create
         await userService.createUser(formData);
-        showToast('New user account created.', 'success');
+        showToast('New employee account created.', 'success');
       }
       setIsFormModalOpen(false);
       setSelectedUser(null);
@@ -149,7 +153,7 @@ export const UserListPage = () => {
   const columns = [
     {
       key: 'name',
-      label: 'User',
+      label: 'Employee',
       sortable: true,
       render: (_, row) => (
         <div className="user-cell">
@@ -171,9 +175,7 @@ export const UserListPage = () => {
       label: 'Role / Designation',
       render: (val) => {
         const variant =
-          val === 'Administrator'
-            ? 'primary'
-            : val === 'Sales Manager'
+          val === 'Sales Manager'
             ? 'purple'
             : 'info';
         return <Badge variant={variant}>{val || 'Sales Representative'}</Badge>;
@@ -184,7 +186,7 @@ export const UserListPage = () => {
       label: 'Department',
       render: (val) => (
         <span style={{ fontWeight: 500, color: 'var(--text-primary)', fontSize: '0.88rem' }}>
-          {val || 'Sales & Accounts'}
+          {val || 'Sales & Operations'}
         </span>
       ),
     },
@@ -213,7 +215,7 @@ export const UserListPage = () => {
               color: 'var(--primary-700)',
             }}
           >
-            <Flame size={13} /> {row.assignedLeadsCount ?? 4} Leads
+            <Flame size={13} /> {row.assignedLeadsCount ?? 0} Leads
           </span>
           <span
             style={{
@@ -228,7 +230,7 @@ export const UserListPage = () => {
               color: 'var(--success-700, #047857)',
             }}
           >
-            <Briefcase size={13} /> {row.assignedCustomersCount ?? 2} Accounts
+            <Briefcase size={13} /> {row.assignedCustomersCount ?? 0} Accounts
           </span>
         </div>
       ),
@@ -260,7 +262,7 @@ export const UserListPage = () => {
         <SearchBar
           value={search}
           onChange={handleSearchChange}
-          placeholder="Search by name, email, or username..."
+          placeholder="Search employee by name, email, or username..."
         />
 
         <div className="users-filters-group">
@@ -269,8 +271,7 @@ export const UserListPage = () => {
             value={roleFilter}
             onChange={handleRoleFilterChange}
             options={[
-              { value: '', label: 'All Roles' },
-              { value: 'Administrator', label: 'Administrator' },
+              { value: '', label: 'All Employee Roles' },
               { value: 'Sales Manager', label: 'Sales Manager' },
               { value: 'Sales Representative', label: 'Sales Representative' },
             ]}
@@ -300,9 +301,9 @@ export const UserListPage = () => {
         onView={handleOpenView}
         onEdit={handleOpenEdit}
         onDelete={handleOpenDelete}
-        emptyTitle="No team members found"
-        emptyDescription="No users match your query or filter criteria. Try resetting filters."
-        emptyActionText="Create User"
+        emptyTitle="No employee records found"
+        emptyDescription="Add employees to track pipeline workload and client assignments."
+        emptyActionText="Add First Employee"
         onEmptyAction={handleOpenAdd}
       />
 
@@ -358,3 +359,5 @@ export const UserListPage = () => {
     </div>
   );
 };
+
+export default UserListPage;

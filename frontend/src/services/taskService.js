@@ -3,24 +3,85 @@ import { initialTasks } from './mockData';
 
 let mockTasksList = [...initialTasks];
 
-const mapStatusToDjango = (st) => {
-  if (!st) return '';
-  const s = String(st).toLowerCase();
-  if (s.includes('progress')) return 'in_progress';
-  if (s.includes('pend')) return 'pending';
-  if (s.includes('complete')) return 'completed';
-  if (s.includes('cancel')) return 'cancelled';
-  return s;
+const mapTaskTypeToDjango = (tp) => {
+  if (!tp) return 'to_do';
+  const t = String(tp).toLowerCase();
+  if (t.includes('call')) return 'call';
+  if (t.includes('meet')) return 'meeting';
+  if (t.includes('email') || t.includes('mail')) return 'email';
+  if (t.includes('follow')) return 'follow_up';
+  if (t.includes('demo')) return 'demo';
+  return 'to_do';
 };
 
 const mapPriorityToDjango = (pr) => {
-  if (!pr) return '';
+  if (!pr) return 'medium';
   const p = String(pr).toLowerCase();
   if (p.includes('high') || p.includes('hot')) return 'high';
   if (p.includes('med') || p.includes('warm')) return 'medium';
   if (p.includes('low') || p.includes('cold')) return 'low';
   if (p.includes('urg')) return 'urgent';
-  return p;
+  return 'medium';
+};
+
+const mapStatusToDjango = (st) => {
+  if (!st) return 'pending';
+  const s = String(st).toLowerCase();
+  if (s.includes('progress')) return 'in_progress';
+  if (s.includes('pend')) return 'pending';
+  if (s.includes('complete')) return 'completed';
+  if (s.includes('cancel')) return 'cancelled';
+  return 'pending';
+};
+
+const normalizeTask = (t) => {
+  if (!t) return t;
+
+  let statusDisplay = t.status || 'Pending';
+  const s = String(t.status || '').toLowerCase();
+  if (s === 'pending') statusDisplay = 'Pending';
+  else if (s === 'in_progress') statusDisplay = 'In Progress';
+  else if (s === 'completed') statusDisplay = 'Completed';
+  else if (s === 'cancelled') statusDisplay = 'Cancelled';
+
+  let typeDisplay = t.task_type_label || t.task_type || t.taskType || 'General To-Do';
+  const tp = String(t.task_type || t.type || '').toLowerCase();
+  if (tp === 'call') typeDisplay = 'Phone Call';
+  else if (tp === 'meeting') typeDisplay = 'Meeting';
+  else if (tp === 'email') typeDisplay = 'Send Email';
+  else if (tp === 'follow_up') typeDisplay = 'Follow-up';
+  else if (tp === 'demo') typeDisplay = 'Product Demo';
+
+  return {
+    ...t,
+    id: t.id,
+    title: t.title || 'Task',
+    description: t.description || '',
+    taskType: typeDisplay,
+    type: typeDisplay,
+    priority: t.priority || 'Medium',
+    status: statusDisplay,
+    dueDate: t.due_date ? t.due_date.split('T')[0] : (t.dueDate || ''),
+    due_date: t.due_date || t.dueDate || '',
+    assignedTo: t.assigned_to_name || t.assignedTo || 'Unassigned',
+  };
+};
+
+const mapPayloadToBackend = (data) => {
+  const payload = {
+    title: data.title || 'Task Item',
+    description: data.description || data.notes || '',
+    task_type: mapTaskTypeToDjango(data.taskType || data.task_type || data.type),
+    priority: mapPriorityToDjango(data.priority),
+    status: mapStatusToDjango(data.status),
+    due_date: data.dueDate || data.due_date || data.scheduledDate || null,
+  };
+
+  if (typeof data.lead === 'number') payload.lead = data.lead;
+  if (typeof data.customer === 'number') payload.customer = data.customer;
+  if (typeof data.opportunity === 'number') payload.opportunity = data.opportunity;
+
+  return payload;
 };
 
 export const taskService = {
@@ -28,7 +89,7 @@ export const taskService = {
     if (isMockEnabled) {
       await mockDelay(null, 250);
 
-      let filtered = [...mockTasksList];
+      let filtered = [...mockTasksList].map(normalizeTask);
 
       if (search && search.trim()) {
         const q = search.toLowerCase();
@@ -78,7 +139,8 @@ export const taskService = {
       }
 
       const res = await api.get(`/tasks/?${params.toString()}`);
-      const dataList = Array.isArray(res) ? res : (res.results || res.data || []);
+      const rawList = Array.isArray(res) ? res : (res.results || res.data || []);
+      const dataList = rawList.map(normalizeTask);
       const total = res.count || dataList.length;
       return {
         data: dataList,
@@ -90,78 +152,63 @@ export const taskService = {
       };
     } catch (err) {
       console.warn('Task API fallback:', err);
-      return { data: mockTasksList, results: mockTasksList, totalItems: mockTasksList.length, totalPages: 1 };
+      const normalizedMock = mockTasksList.map(normalizeTask);
+      return { data: normalizedMock, results: normalizedMock, totalItems: normalizedMock.length, totalPages: 1 };
     }
   },
 
   createTask: async (taskData) => {
     if (isMockEnabled) {
       await mockDelay(null, 350);
-
-      const newTask = {
+      const newTask = normalizeTask({
         ...taskData,
         id: `task-${Date.now().toString().slice(-4)}`,
-      };
-
+      });
       mockTasksList = [newTask, ...mockTasksList];
       return newTask;
     }
 
-    try {
-      return await api.post('/tasks/', taskData);
-    } catch (err) {
-      const fallback = { ...taskData, id: `task-${Date.now()}` };
-      mockTasksList = [fallback, ...mockTasksList];
-      return fallback;
-    }
+    const payload = mapPayloadToBackend(taskData);
+    const res = await api.post('/tasks/', payload);
+    const normalized = normalizeTask(res);
+    mockTasksList = [normalized, ...mockTasksList];
+    return normalized;
   },
 
   updateTask: async (id, taskData) => {
     if (isMockEnabled) {
       await mockDelay(null, 350);
-
       const index = mockTasksList.findIndex((t) => t.id === id);
       if (index === -1) throw new Error('Task not found.');
-
-      const updated = {
+      const updated = normalizeTask({
         ...mockTasksList[index],
         ...taskData,
-      };
-
+      });
       mockTasksList[index] = updated;
       return updated;
     }
 
-    try {
-      return await api.patch(`/tasks/${id}/`, taskData);
-    } catch (err) {
-      return { id, ...taskData };
-    }
+    const payload = mapPayloadToBackend(taskData);
+    const res = await api.patch(`/tasks/${id}/`, payload);
+    const normalized = normalizeTask(res);
+    const index = mockTasksList.findIndex((t) => t.id === id);
+    if (index !== -1) mockTasksList[index] = normalized;
+    return normalized;
   },
 
   toggleComplete: async (id) => {
     if (isMockEnabled) {
       await mockDelay(null, 200);
-
       const index = mockTasksList.findIndex((t) => t.id === id);
       if (index === -1) throw new Error('Task not found.');
-
       const currentStatus = mockTasksList[index].status;
       const newStatus = currentStatus === 'Completed' ? 'Pending' : 'Completed';
-
-      mockTasksList[index] = {
-        ...mockTasksList[index],
-        status: newStatus,
-      };
-
+      mockTasksList[index] = { ...mockTasksList[index], status: newStatus };
       return mockTasksList[index];
     }
 
-    try {
-      return await api.post(`/tasks/${id}/complete/`);
-    } catch (err) {
-      return { id, status: 'completed' };
-    }
+    const res = await api.post(`/tasks/${id}/complete/`);
+    return normalizeTask(res);
   },
 
   deleteTask: async (id) => {
@@ -170,12 +217,9 @@ export const taskService = {
       mockTasksList = mockTasksList.filter((t) => t.id !== id);
       return { success: true };
     }
-    try {
-      return await api.delete(`/tasks/${id}/`);
-    } catch (err) {
-      mockTasksList = mockTasksList.filter((t) => t.id !== id);
-      return { success: true };
-    }
+    await api.delete(`/tasks/${id}/`);
+    mockTasksList = mockTasksList.filter((t) => t.id !== id);
+    return { success: true };
   },
 };
 

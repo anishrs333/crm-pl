@@ -6,10 +6,8 @@ import { FormField } from '../../components/forms/FormField';
 import { Button } from '../../components/common/Button';
 import { 
   Building2, 
-  ShieldCheck, 
   Save, 
-  Mail,
-  Clock
+  Mail
 } from 'lucide-react';
 import './SettingsPage.css';
 
@@ -26,28 +24,16 @@ export const SettingsPage = () => {
     gstNumber: '33AAAAA0000A1Z5',
   });
 
-  const [securitySettings, setSecuritySettings] = useState({
-    sessionTimeout: '60',
-    emailNotifications: true,
-    weeklyDigest: true,
-    activityAuditLog: true,
-  });
-
   const handleSaveCompanySettings = (e) => {
     e.preventDefault();
     showToast('Organization profile saved successfully.', 'success');
-  };
-
-  const handleSaveSecuritySettings = (e) => {
-    e.preventDefault();
-    showToast('Security and notification preferences updated.', 'success');
   };
 
   return (
     <div className="settings-container">
       <div className="settings-header">
         <h1>Platform Settings</h1>
-        <p>Manage organization details, security policies, and system preferences.</p>
+        <p>Manage organization details and system parameters.</p>
       </div>
 
       <div className="settings-grid">
@@ -141,75 +127,9 @@ export const SettingsPage = () => {
             </CardFooter>
           </form>
         </Card>
-
-        {/* Security & System Preferences */}
-        <Card>
-          <CardHeader
-            title="Security & System Preferences"
-            subtitle="Configure session timeouts, alerts, and audit policies"
-          />
-          <form onSubmit={handleSaveSecuritySettings}>
-            <CardBody>
-              <FormField
-                label="Session Inactivity Timeout"
-                name="sessionTimeout"
-                type="select"
-                value={securitySettings.sessionTimeout}
-                onChange={(e) =>
-                  setSecuritySettings({ ...securitySettings, sessionTimeout: e.target.value })
-                }
-                icon={Clock}
-                options={[
-                  { value: '30', label: '30 Minutes' },
-                  { value: '60', label: '1 Hour (Recommended)' },
-                  { value: '120', label: '2 Hours' },
-                  { value: '480', label: '8 Hours' },
-                ]}
-              />
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '10px' }}>
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={securitySettings.emailNotifications}
-                    onChange={(e) =>
-                      setSecuritySettings({ ...securitySettings, emailNotifications: e.target.checked })
-                    }
-                  />
-                  <span>Enable Email Alerts for New Leads & Quotations</span>
-                </label>
-
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={securitySettings.weeklyDigest}
-                    onChange={(e) =>
-                      setSecuritySettings({ ...securitySettings, weeklyDigest: e.target.checked })
-                    }
-                  />
-                  <span>Send Weekly Sales Performance Digest to Managers</span>
-                </label>
-
-                <label style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '0.9rem', cursor: 'pointer' }}>
-                  <input
-                    type="checkbox"
-                    checked={securitySettings.activityAuditLog}
-                    onChange={(e) =>
-                      setSecuritySettings({ ...securitySettings, activityAuditLog: e.target.checked })
-                    }
-                  />
-                  <span>Enable User Activity Audit Trail Logging</span>
-                </label>
-              </div>
-            </CardBody>
-            <CardFooter>
-              <Button type="submit" variant="primary" icon={ShieldCheck}>
-                Save Security Settings
-              </Button>
-            </CardFooter>
-          </form>
-        </Card>
       </div>
     </div>
   );
 };
+
+export default SettingsPage;

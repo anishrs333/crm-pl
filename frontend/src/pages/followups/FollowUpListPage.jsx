@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { followUpService } from '../../services/followUpService';
+import { userService } from '../../services/userService';
 import { useToast } from '../../hooks/useToast';
 import { exportToCsv } from '../../utils/exportToCsv';
 import { formatDateTime } from '../../utils/formatters';
@@ -25,8 +26,16 @@ export const FollowUpListPage = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [typeFilter, setTypeFilter] = useState('');
   const [assignedFilter, setAssignedFilter] = useState('');
+  const [userOptions, setUserOptions] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  useEffect(() => {
+    userService.getUsers({ limit: 100 }).then((res) => {
+      const list = res.data || res.results || [];
+      setUserOptions(list.map((u) => ({ value: u.name, label: u.name })));
+    }).catch(() => {});
+  }, []);
 
   // Modals state
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
@@ -272,9 +281,7 @@ export const FollowUpListPage = () => {
             }}
             options={[
               { value: '', label: 'All Salespeople' },
-              { value: 'Alex Rivera', label: 'Alex Rivera' },
-              { value: 'Jessica Chen', label: 'Jessica Chen' },
-              { value: 'Sarah Connor', label: 'Sarah Connor' },
+              ...userOptions,
             ]}
           />
         </div>

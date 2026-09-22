@@ -12,7 +12,10 @@ import {
   Loader2, 
   ArrowRight, 
   AlertCircle,
-  ShieldCheck
+  ShieldCheck,
+  Shield,
+  Briefcase,
+  Sparkles
 } from 'lucide-react';
 import './LoginPage.css';
 
@@ -22,6 +25,7 @@ export const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Inputs MUST be completely empty by default
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -31,6 +35,7 @@ export const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [serverError, setServerError] = useState('');
+  const [portalMode, setPortalMode] = useState('Admin');
 
   const redirectPath = location.state?.from?.pathname || '/dashboard';
 
@@ -43,10 +48,14 @@ export const LoginPage = () => {
     if (serverError) setServerError('');
   };
 
+  const handlePortalSwitch = (mode) => {
+    setPortalMode(mode);
+  };
+
   const validateForm = () => {
     const newErrors = {};
 
-    const usernameErr = validators.required(formData.username, 'Username or Email');
+    const usernameErr = validators.required(formData.username, 'User ID / Corporate Email');
     if (usernameErr) newErrors.username = usernameErr;
 
     const passwordErr = validators.required(formData.password, 'Password');
@@ -69,87 +78,108 @@ export const LoginPage = () => {
 
     try {
       const response = await login(formData.username, formData.password);
-      showToast(`Welcome back, ${response.user.name || 'Admin'}!`, 'success');
+      showToast(`Welcome back, ${response.user?.name || 'User'}!`, 'success');
       navigate(redirectPath, { replace: true });
     } catch (err) {
-      setServerError(err.message || 'Authentication failed. Please check your username and password.');
+      setServerError(err.message || 'Authentication failed. Please verify your credentials.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="login-container">
-      <div className="login-card">
+    <div className="premium-login-container">
+      {/* Animated Ambient Persian Blue & Carrot Orange Background Orbs */}
+      <div className="ambient-orb orb-1" />
+      <div className="ambient-orb orb-2" />
+      <div className="ambient-orb orb-3" />
+
+      <div className="premium-login-card">
         {/* Brand Header */}
-        <div className="login-brand">
-          <div className="login-logo-icon">
-            <Building2 size={24} />
+        <div className="login-brand-header">
+          <div className="brand-logo-container">
+            <Building2 size={26} className="brand-logo-icon" />
           </div>
-          <div className="login-brand-text">
-            <h1>PL SOFT CRM</h1>
-            <p>Enterprise Management Portal</p>
+          <div className="brand-text-block">
+            <div className="brand-badge-pill">
+              <Sparkles size={12} />
+              <span>Enterprise CRM v2.0</span>
+            </div>
+            <h1 className="brand-title">PL SOFT TECH CRM</h1>
           </div>
         </div>
 
-        <div className="login-header">
-          <h2>Sign in to your account</h2>
-          <p>Welcome back! Enter your corporate credentials to continue.</p>
+        {/* Portal Scope Switcher */}
+        <div className="role-chips-bar">
+          <button
+            type="button"
+            className={`role-chip ${portalMode === 'Admin' ? 'active' : ''}`}
+            onClick={() => handlePortalSwitch('Admin')}
+          >
+            <Shield size={14} /> Admin Portal
+          </button>
+          <button
+            type="button"
+            className={`role-chip ${portalMode === 'Manager' ? 'active' : ''}`}
+            onClick={() => handlePortalSwitch('Manager')}
+          >
+            <Briefcase size={14} /> Manager Portal
+          </button>
         </div>
 
         {/* Global Server Error Alert */}
         {serverError && (
-          <div className="login-error-alert" role="alert">
+          <div className="login-error-banner" role="alert">
             <AlertCircle size={18} />
             <span>{serverError}</span>
           </div>
         )}
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="login-form" noValidate>
-          {/* Username / User ID Field */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="username">
-              Username or Corporate Email <span className="form-required">*</span>
+        {/* Login Form - Inputs start 100% empty */}
+        <form onSubmit={handleSubmit} className="premium-login-form" noValidate>
+          {/* Username Field */}
+          <div className="form-field-group">
+            <label className="field-label" htmlFor="username">
+              USER ID / CORPORATE EMAIL
             </label>
-            <div className="input-wrapper">
-              <User className="input-icon" size={18} />
+            <div className="field-input-wrapper">
+              <User className="field-icon" size={18} />
               <input
                 id="username"
                 name="username"
                 type="text"
-                autoComplete="username"
-                className={`form-input ${errors.username ? 'has-error' : ''}`}
-                placeholder="e.g. crm_admin"
+                autoComplete="off"
+                className={`field-input ${errors.username ? 'error' : ''}`}
+                placeholder="Enter your user ID..."
                 value={formData.username}
                 onChange={handleChange}
                 disabled={isSubmitting}
               />
             </div>
-            {errors.username && <span className="field-error-text">{errors.username}</span>}
+            {errors.username && <span className="field-error-msg">{errors.username}</span>}
           </div>
 
           {/* Password Field */}
-          <div className="form-group">
-            <label className="form-label" htmlFor="password">
-              Password <span className="form-required">*</span>
+          <div className="form-field-group">
+            <label className="field-label" htmlFor="password">
+              SECURITY PASSWORD
             </label>
-            <div className="input-wrapper">
-              <Lock className="input-icon" size={18} />
+            <div className="field-input-wrapper">
+              <Lock className="field-icon" size={18} />
               <input
                 id="password"
                 name="password"
                 type={showPassword ? 'text' : 'password'}
-                autoComplete="current-password"
-                className={`form-input ${errors.password ? 'has-error' : ''}`}
-                placeholder="••••••••"
+                autoComplete="off"
+                className={`field-input ${errors.password ? 'error' : ''}`}
+                placeholder="Enter password..."
                 value={formData.password}
                 onChange={handleChange}
                 disabled={isSubmitting}
               />
               <button
                 type="button"
-                className="input-toggle-btn"
+                className="password-toggle-btn"
                 onClick={() => setShowPassword((prev) => !prev)}
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
                 tabIndex={-1}
@@ -157,37 +187,37 @@ export const LoginPage = () => {
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>
             </div>
-            {errors.password && <span className="field-error-text">{errors.password}</span>}
+            {errors.password && <span className="field-error-msg">{errors.password}</span>}
           </div>
 
           {/* Submit Button */}
           <button
             type="submit"
-            className="login-submit-btn"
+            className="premium-submit-btn"
             disabled={isSubmitting}
           >
             {isSubmitting ? (
               <>
                 <Loader2 size={18} className="animate-spin" />
-                <span>Authenticating...</span>
+                <span>Authenticating Session...</span>
               </>
             ) : (
               <>
-                <span>Sign In to System</span>
-                <ArrowRight size={18} />
+                <span>Sign In to Portal</span>
+                <ArrowRight size={18} className="submit-arrow" />
               </>
             )}
           </button>
         </form>
 
-        {/* Security Footer Badge */}
-        <div className="login-security-footer">
-          <ShieldCheck size={16} />
-          <span>256-Bit SSL Encrypted • Authorized Personnel Only</span>
+        {/* Security Footer */}
+        <div className="login-security-strip">
+          <ShieldCheck size={16} className="security-icon" />
+          <span>256-Bit SSL Encrypted • Single Sign-On Ready</span>
         </div>
       </div>
     </div>
   );
 };
 
-
+export default LoginPage;
