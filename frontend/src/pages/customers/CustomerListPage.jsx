@@ -150,7 +150,7 @@ export const CustomerListPage = () => {
       render: (_, row) => (
         <div>
           <div style={{ fontWeight: 600, color: 'var(--text-primary)' }}>
-            {row.contactPerson || row.name || 'Primary Representative'}
+            {row.contactPerson || row.contact_person || 'Primary Representative'}
           </div>
           <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
             {row.phone || 'Phone on record'}

@@ -14,11 +14,14 @@ const mapStatusToDjango = (st) => {
 const normalizeCustomer = (c) => {
   if (!c) return c;
 
-  const companyName = c.name || c.companyName || (c.email ? c.email.split('@')[1]?.split('.')[0]?.toUpperCase() + ' Corp' : 'Corporate Client');
+  const companyName = c.name || c.companyName || 'Corporate Client';
   const contactPerson = c.contact_person || c.contactPerson || (c.contacts && c.contacts[0] ? `${c.contacts[0].first_name} ${c.contacts[0].last_name || ''}`.trim() : (c.first_name ? `${c.first_name} ${c.last_name || ''}`.trim() : 'N/A'));
   const email = c.email || (c.contacts && c.contacts[0] ? c.contacts[0].email : '');
   const phone = c.phone || (c.contacts && c.contacts[0] ? c.contacts[0].phone : '');
-  const assignedTo = c.account_manager_name || c.assignedTo || 'Unassigned';
+  
+  const mgr = c.account_manager;
+  const mgrId = typeof mgr === 'object' && mgr !== null ? mgr.id : (typeof mgr === 'number' && !isNaN(mgr) ? mgr : null);
+  const assignedTo = c.account_manager_name || c.assignedTo || (mgrId ? `User #${mgrId}` : 'Unassigned');
   const city = c.city || c.location || '';
   
   let statusDisplay = c.status_label || c.stage || 'Active';
@@ -43,12 +46,16 @@ const normalizeCustomer = (c) => {
     stage: statusDisplay,
     status: c.status || 'active',
     assignedTo: assignedTo,
+    account_manager: mgrId,
     account_manager_name: assignedTo,
     dealValue: dealValue,
   };
 };
 
 const mapPayloadToBackend = (data) => {
+  const mgrId = data.accountManagerId ?? data.account_manager;
+  const validMgrId = (typeof mgrId === 'number' && !isNaN(mgrId) && mgrId > 0) ? mgrId : (typeof mgrId === 'string' && !isNaN(Number(mgrId)) && Number(mgrId) > 0 ? Number(mgrId) : null);
+
   return {
     name: data.companyName || data.name || 'Corporate Client',
     contact_person: data.contactPerson || data.contact_person || '',
@@ -58,7 +65,7 @@ const mapPayloadToBackend = (data) => {
     address: data.address || '',
     city: data.city || '',
     status: mapStatusToDjango(data.status || data.stage),
-    account_manager: typeof data.accountManagerId === 'number' ? data.accountManagerId : null,
+    account_manager: validMgrId,
   };
 };
 

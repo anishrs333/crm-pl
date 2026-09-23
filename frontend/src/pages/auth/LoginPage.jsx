@@ -66,7 +66,7 @@ export const LoginPage = () => {
   const validateForm = () => {
     const newErrors = {};
 
-    const usernameErr = validators.required(formData.username, 'User ID ');
+    const usernameErr = validators.required(formData.username, 'User ID');
     if (usernameErr) newErrors.username = usernameErr;
 
     const passwordErr = validators.required(formData.password, 'Password');

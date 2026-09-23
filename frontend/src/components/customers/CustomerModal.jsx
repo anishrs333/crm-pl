@@ -57,16 +57,19 @@ export const CustomerModal = ({
 
   useEffect(() => {
     if (initialData) {
+      const mgrVal = initialData.account_manager;
+      const mgrIdStr = typeof mgrVal === 'object' && mgrVal !== null ? String(mgrVal.id) : (mgrVal ? String(mgrVal) : '');
+
       setFormData({
-        companyName: initialData.companyName || '',
-        contactPerson: initialData.contactPerson || '',
+        companyName: initialData.companyName || initialData.name || '',
+        contactPerson: initialData.contactPerson || initialData.contact_person || '',
         email: initialData.email || '',
         phone: initialData.phone || '',
         stage: initialData.stage || 'Active',
         industry: initialData.industry || 'Enterprise Software',
         dealValue: initialData.dealValue || '',
-        assignedTo: initialData.account_manager ? String(initialData.account_manager) : (initialData.assignedTo || 'Unassigned'),
-        city: initialData.city || '',
+        assignedTo: mgrIdStr || 'Unassigned',
+        city: initialData.city || initialData.location || '',
       });
     } else {
       setFormData({
@@ -114,11 +117,13 @@ export const CustomerModal = ({
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!validate()) return;
-    const selectedUserId = formData.assignedTo !== 'Unassigned' ? Number(formData.assignedTo) : null;
+    const parsedId = Number(formData.assignedTo);
+    const selectedUserId = (formData.assignedTo !== 'Unassigned' && !isNaN(parsedId) && parsedId > 0) ? parsedId : null;
     const selectedUserObj = assigneeOptions.find((o) => String(o.value) === String(formData.assignedTo));
     onSubmit({
       ...formData,
       accountManagerId: selectedUserId,
+      account_manager: selectedUserId,
       assignedTo: selectedUserObj ? selectedUserObj.label.split(' (')[0] : formData.assignedTo,
     });
   };
