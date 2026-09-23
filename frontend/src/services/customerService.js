@@ -55,6 +55,7 @@ const normalizeCustomer = (c) => {
 const mapPayloadToBackend = (data) => {
   const mgrId = data.accountManagerId ?? data.account_manager;
   const validMgrId = (typeof mgrId === 'number' && !isNaN(mgrId) && mgrId > 0) ? mgrId : (typeof mgrId === 'string' && !isNaN(Number(mgrId)) && Number(mgrId) > 0 ? Number(mgrId) : null);
+  const parsedDealValue = Number(data.dealValue || data.deal_value);
 
   return {
     name: data.companyName || data.name || 'Corporate Client',
@@ -64,6 +65,8 @@ const mapPayloadToBackend = (data) => {
     phone: data.phone || '',
     address: data.address || '',
     city: data.city || '',
+    industry: data.industry || 'Enterprise Software',
+    deal_value: !isNaN(parsedDealValue) ? parsedDealValue : 0,
     status: mapStatusToDjango(data.status || data.stage),
     account_manager: validMgrId,
   };

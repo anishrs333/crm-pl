@@ -170,45 +170,48 @@ export const CustomerListPage = () => {
     {
       key: 'dealValue',
       label: 'Contract Deal Value',
-      render: (val) => (
+      render: (val, row) => (
         <span style={{ fontWeight: 700, color: 'var(--text-primary)', fontSize: '0.92rem' }}>
-          {formatCurrency(val || 150000)}
+          {formatCurrency(val ?? row.deal_value ?? 0)}
         </span>
       ),
     },
     {
       key: 'assignedTo',
       label: 'Assigned Account Rep',
-      render: (val) => (
-        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <span
-            style={{
-              width: '24px',
-              height: '24px',
-              borderRadius: '50%',
-              backgroundColor: 'var(--primary-100)',
-              color: 'var(--primary-700)',
-              fontSize: '0.72rem',
-              fontWeight: 700,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            {getInitials(val || 'Unassigned')}
-          </span>
-          <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
-            {val || 'Unassigned'}
-          </span>
-        </div>
-      ),
+      render: (val, row) => {
+        const displayRep = val || row.account_manager_name || 'Unassigned';
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <span
+              style={{
+                width: '24px',
+                height: '24px',
+                borderRadius: '50%',
+                backgroundColor: 'var(--primary-100)',
+                color: 'var(--primary-700)',
+                fontSize: '0.72rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+              }}
+            >
+              {getInitials(displayRep)}
+            </span>
+            <span style={{ fontSize: '0.85rem', fontWeight: 500, color: 'var(--text-primary)' }}>
+              {displayRep}
+            </span>
+          </div>
+        );
+      },
     },
     {
       key: 'city',
       label: 'Location',
-      render: (val) => (
+      render: (val, row) => (
         <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-          {val || 'Chennai'}
+          {val || row.city || 'N/A'}
         </span>
       ),
     },

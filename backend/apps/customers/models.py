@@ -23,6 +23,8 @@ class Customer(models.Model):
     phone = models.CharField(max_length=30, blank=True, null=True)
     website = models.URLField(blank=True, null=True)
     gst_number = models.CharField(max_length=50, blank=True, null=True, verbose_name="GST / Tax ID")
+    industry = models.CharField(max_length=100, blank=True, null=True)
+    deal_value = models.DecimalField(max_digits=12, decimal_places=2, default=0.00, verbose_name="Contract Deal Value")
 
     # Address
     address = models.TextField(blank=True, null=True)
