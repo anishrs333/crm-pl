@@ -4,8 +4,8 @@ import { storage } from "../utils/storage";
 export const isMockEnabled = false;
 export const mockDelay = async (ms = 300) => new Promise((resolve) => setTimeout(resolve, ms));
 
-const api  = axios.create({
-    baseURL: "http://localhost:8000/api",
+const api = axios.create({
+    baseURL: import.meta.env.VITE_API_BASE_URL,
     headers: {
         "Content-Type": "application/json"
     },
