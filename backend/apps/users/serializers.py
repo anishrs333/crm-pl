@@ -13,7 +13,8 @@ class LoginSerializer(TokenObtainPairSerializer):
             'email': self.user.email,
             'name': self.user.get_full_name() or self.user.username,
             'role': self.user.role,
-            'department': self.user.department,
+           'department': self.user.department,
+'is_superuser': self.user.is_superuser,
         }
         return data
 
